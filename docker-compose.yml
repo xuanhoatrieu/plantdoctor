@@ -1,43 +1,40 @@
+version: "3.8"
+
 services:
-  backend:
-    build: ./backend
-    ports:
-      - "8000:8000"
-    volumes:
-      - model_cache:/app/model_cache
-    environment:
-      - DATABASE_URL=postgresql+asyncpg://leaf:leaf@db:5432/leaf
-      - MODEL_DIR=/app/model_cache
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
-    depends_on:
-      - db
-
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    ports:
-      - "3000:80"
-    depends_on:
-      - backend
-
-  db:
+  postgres:
     image: postgres:16-alpine
+    restart: always
     environment:
-      POSTGRES_USER: leaf
-      POSTGRES_PASSWORD: leaf
-      POSTGRES_DB: leaf
+      POSTGRES_DB: plantdoctor
+      POSTGRES_USER: plantdoctor
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-plantdoctor123}
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U plantdoctor"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  backend:
+    image: ghcr.io/xuanhoatrieu/plantdoctor-backend:latest
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://plantdoctor:${DB_PASSWORD:-plantdoctor123}@postgres:5432/plantdoctor
+      SECRET_KEY: ${SECRET_KEY:-change-this-in-production}
     ports:
-      - "5432:5432"
+      - "8001:8001"
+
+  frontend:
+    image: ghcr.io/xuanhoatrieu/plantdoctor-frontend:latest
+    restart: always
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
 
 volumes:
-  model_cache:
   pgdata:

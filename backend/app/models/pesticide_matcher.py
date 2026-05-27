@@ -20,9 +20,12 @@ def _load_pesticides():
     global _pesticides_data
     if _pesticides_data is not None:
         return _pesticides_data
-    path = Path(__file__).parent.parent.parent.parent / "frontend" / "public" / "pesticides.json"
+    # Try local data dir first, then frontend public
+    path = Path(__file__).parent.parent / "data" / "pesticides.json"
     if not path.exists():
-        logger.warning("pesticides.json not found at %s", path)
+        path = Path(__file__).parent.parent.parent.parent / "frontend" / "public" / "pesticides.json"
+    if not path.exists():
+        logger.warning("pesticides.json not found")
         _pesticides_data = []
         return _pesticides_data
     with open(path, "r", encoding="utf-8") as f:
