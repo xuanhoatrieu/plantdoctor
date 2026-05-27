@@ -30,6 +30,13 @@ export default function HomeScreen() {
   const [result, setResult] = useState(null);
 
   const pickImage = async (useCamera) => {
+    if (useCamera) {
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+      if (status !== 'granted') { Alert.alert('Cần quyền camera', 'Vui lòng cấp quyền camera trong Cài đặt'); return; }
+    } else {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') { Alert.alert('Cần quyền thư viện ảnh', 'Vui lòng cấp quyền trong Cài đặt'); return; }
+    }
     const method = useCamera ? ImagePicker.launchCameraAsync : ImagePicker.launchImageLibraryAsync;
     const res = await method({ mediaTypes: ['images'], quality: 0.8 });
     if (!res.canceled) {
