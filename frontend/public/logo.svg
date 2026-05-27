@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Leaf -->
+  <path d="M50 85 C50 50, 30 40, 30 25 C30 15, 40 10, 50 20 C60 10, 70 15, 70 25 C70 40, 50 50, 50 85Z" fill="#22c55e"/>
+  <path d="M50 45 L50 80" stroke="#166534" stroke-width="2.5" fill="none"/>
+  <path d="M50 55 L40 45" stroke="#166534" stroke-width="2" fill="none"/>
+  <path d="M50 65 L60 55" stroke="#166534" stroke-width="2" fill="none"/>
+  <!-- Magnifying glass -->
+  <circle cx="62" cy="35" r="16" fill="none" stroke="#166534" stroke-width="3.5"/>
+  <circle cx="62" cy="35" r="16" fill="white" opacity="0.3"/>
+  <line x1="73" y1="47" x2="85" y2="59" stroke="#166534" stroke-width="4" stroke-linecap="round"/>
+</svg>

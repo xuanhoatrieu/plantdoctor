@@ -1,0 +1,43 @@
+{
+  "expo": {
+    "name": "PlantDoctor",
+    "slug": "plantdoctor",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.trieuxuanhoa.plantdoctor",
+      "infoPlist": {
+        "NSCameraUsageDescription": "PlantDoctor cần truy cập camera để chụp ảnh lá cây chẩn đoán bệnh",
+        "NSPhotoLibraryUsageDescription": "PlantDoctor cần truy cập thư viện ảnh để chọn ảnh lá cây"
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.trieuxuanhoa.plantdoctor",
+      "permissions": [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE"
+      ]
+    },
+    "scheme": "plantdoctor",
+    "plugins": [
+      "expo-camera",
+      "expo-image-picker",
+      "expo-location",
+      "expo-router",
+      "expo-asset",
+      "expo-font"
+    ]
+  }
+}

@@ -1,0 +1,43 @@
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - model_cache:/app/model_cache
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://leaf:leaf@db:5432/leaf
+      - MODEL_DIR=/app/model_cache
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: leaf
+      POSTGRES_PASSWORD: leaf
+      POSTGRES_DB: leaf
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+volumes:
+  model_cache:
+  pgdata:

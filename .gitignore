@@ -1,0 +1,12 @@
+node_modules/
+venv/
+__pycache__/
+*.pyc
+.env
+dist/
+*.log
+.expo/
+android/
+ios/
+*.pdf
+backend/.env
