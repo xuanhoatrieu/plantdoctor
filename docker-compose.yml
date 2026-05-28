@@ -26,7 +26,7 @@ services:
       DATABASE_URL: postgresql://plantdoctor:${DB_PASSWORD:-plantdoctor123}@postgres:5432/plantdoctor
       SECRET_KEY: ${SECRET_KEY:-dev-secret-key}
     ports:
-      - "8080:8080"
+      - "8090:8090"
 
   frontend:
     build: ./frontend

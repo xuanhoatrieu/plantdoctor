@@ -11,9 +11,9 @@ RUN pip install --no-cache-dir -r requirements.txt httpx pyjwt python-dotenv
 
 COPY . .
 
-EXPOSE 8080
+EXPOSE 8090
 
 HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
-    CMD curl -f http://localhost:8080/api/v1/health || exit 1
+    CMD curl -f http://localhost:8090/api/v1/health || exit 1
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8090"]
