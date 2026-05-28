@@ -61,11 +61,20 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "https://plant.tuaf.edu.vn",
+        "https://tuaf.edu.vn",
+        "https://lms.tuaf.edu.vn",
+    ],
+    allow_origin_regex=r"https://([a-z0-9-]+\.)?tuaf\.edu\.vn(:\d+)?",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Trust Caddy proxy headers
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
+app.add_middleware(TrustedHostMiddleware, allowed_hosts=["plant.tuaf.edu.vn", "localhost", "127.0.0.1"])
 
 app.include_router(prediction_router)
 app.include_router(admin_router)
