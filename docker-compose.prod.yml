@@ -1,7 +1,7 @@
 services:
   plant-api:
     image: ghcr.io/xuanhoatrieu/plantdoctor-backend:latest
-    container_name: plant-api
+    container_name: benhcay-api
     restart: unless-stopped
     environment:
       DATABASE_URL: ${DATABASE_URL}
@@ -17,7 +17,7 @@ services:
 
   plant-web:
     image: ghcr.io/xuanhoatrieu/plantdoctor-frontend:latest
-    container_name: plant-web
+    container_name: benhcay-web
     restart: unless-stopped
     depends_on:
       plant-api:
