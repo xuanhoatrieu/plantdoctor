@@ -6,6 +6,16 @@ body {
   font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
   background: #ffffff;
   min-height: 100vh;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Hide scrollbar on nav tabs but keep scrollable */
+nav::-webkit-scrollbar, nav > div::-webkit-scrollbar {
+  display: none;
+}
+nav, nav > div {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 @keyframes pulse-slow {

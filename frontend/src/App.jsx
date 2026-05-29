@@ -94,47 +94,47 @@ function App() {
   return (
     <div className="min-h-screen flex flex-col">
       <header className="bg-white border-b sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <span className="text-2xl">🌿</span>
-            <div>
-              <h1 className="text-xl font-bold text-green-800">PlantDoctor</h1>
-              <p className="text-xs text-green-600">{t.subtitle}</p>
+        <div className="max-w-6xl mx-auto px-3 sm:px-4 py-2 sm:py-3 flex justify-between items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+            <span className="text-xl sm:text-2xl">🌿</span>
+            <div className="min-w-0">
+              <h1 className="text-base sm:text-xl font-bold text-green-800 truncate">PlantDoctor</h1>
+              <p className="text-[10px] sm:text-xs text-green-600 truncate">{t.subtitle}</p>
             </div>
           </div>
-          <div className="flex flex-col items-center">
+          <div className="hidden md:flex flex-col items-center">
             <span className="text-xl font-bold text-green-800">Trường Đại học Nông Lâm Thái Nguyên</span>
             <span className="text-xs text-green-600">Cùng bạn ra thế giới!</span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             {user ? (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 sm:gap-2">
                 <span className="text-xs text-gray-600 hidden sm:inline">{user.phone}</span>
-                {isAdmin && <span className="text-xs bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded">Admin</span>}
-                <button onClick={logout} className="px-2 py-1 text-xs text-red-600 hover:text-red-800">Thoát</button>
+                {isAdmin && <span className="text-[10px] sm:text-xs bg-purple-100 text-purple-700 px-1 sm:px-1.5 py-0.5 rounded">Admin</span>}
+                <button onClick={logout} className="px-1.5 sm:px-2 py-1 text-xs text-red-600 hover:text-red-800">Thoát</button>
               </div>
             ) : (
-              <button onClick={() => setShowLogin(true)} className="px-3 py-1 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700">
+              <button onClick={() => setShowLogin(true)} className="px-2 sm:px-3 py-1 bg-green-600 text-white rounded-lg text-xs sm:text-sm hover:bg-green-700 whitespace-nowrap">
                 {lang === 'vi' ? 'Đăng nhập' : 'Login'}
               </button>
             )}
-            <button onClick={() => setLang(lang === 'vi' ? 'en' : 'vi')} className="px-3 py-1 border rounded-lg text-sm hover:bg-gray-50">{t.switchLang}</button>
+            <button onClick={() => setLang(lang === 'vi' ? 'en' : 'vi')} className="px-2 sm:px-3 py-1 border rounded-lg text-xs sm:text-sm hover:bg-gray-50">{t.switchLang}</button>
           </div>
         </div>
       </header>
 
-      <nav className="bg-white border-b">
-        <div className="max-w-6xl mx-auto px-4 flex gap-1">
+      <nav className="bg-white border-b overflow-x-auto">
+        <div className="max-w-6xl mx-auto px-3 sm:px-4 flex gap-0.5 sm:gap-1 min-w-max">
           {['diagnose', ...(user ? ['history', 'library', 'pesticides'] : []), ...(isAdmin ? ['admin'] : [])].map(id => (
             <button key={id} onClick={() => setTab(id)}
-              className={`px-4 py-2.5 text-sm font-medium border-b-2 transition ${tab === id ? 'border-green-600 text-green-700' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
+              className={`px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-medium border-b-2 transition whitespace-nowrap ${tab === id ? 'border-green-600 text-green-700' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
               {t[`tab_${id}`]}
             </button>
           ))}
         </div>
       </nav>
 
-      <main className="flex-1 max-w-6xl mx-auto w-full px-4 py-6">
+      <main className="flex-1 max-w-6xl mx-auto w-full px-3 sm:px-4 py-4 sm:py-6">
         {tab === 'diagnose' && <DiagnoseView {...{t, file, preview, loading, result, error, topPrediction, isHealthy, fileRef, handleFile, handlePredict, handleReset, weather, lang, user}} />}
         {tab === 'history' && user && <HistoryView {...{t, history, setHistory}} />}
         {tab === 'library' && user && <LibraryView {...{t, lang}} />}
@@ -144,8 +144,8 @@ function App() {
 
       {showLogin && <LoginModal onClose={() => setShowLogin(false)} lang={lang} />}
 
-      <footer className="bg-white border-t py-4 text-center text-xs text-gray-400">
-        <div className="flex justify-center items-center gap-3 mb-2">
+      <footer className="bg-white border-t py-3 sm:py-4 text-center text-xs text-gray-400">
+        <div className="flex flex-col sm:flex-row justify-center items-center gap-2 sm:gap-3 mb-2 px-4">
           <a href="https://apps.apple.com/app/plantdoctor" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-black text-white rounded-lg hover:bg-gray-800 transition text-xs font-medium">
             <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
             App Store
@@ -167,20 +167,20 @@ function WeatherWidget({ weather, t }) {
   const code = weather.current.weather_code
   const desc = weatherNames[code] || `🌡️ Code ${code}`
   return (
-    <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-      <h4 className="font-semibold text-blue-800 mb-2">⛅ {t.weather}</h4>
-      <div className="flex items-center justify-between">
+    <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 sm:p-4">
+      <h4 className="font-semibold text-blue-800 mb-2 text-sm sm:text-base">⛅ {t.weather}</h4>
+      <div className="flex items-center justify-between gap-2">
         <div>
-          <p className="text-lg font-bold text-blue-900">{weather.current.temperature_2m}°C</p>
-          <p className="text-sm text-blue-700">{desc}</p>
+          <p className="text-base sm:text-lg font-bold text-blue-900">{weather.current.temperature_2m}°C</p>
+          <p className="text-xs sm:text-sm text-blue-700">{desc}</p>
         </div>
-        <div className="text-right text-sm text-blue-700">
+        <div className="text-right text-xs sm:text-sm text-blue-700">
           <p>💧 {t.humidity}: {weather.current.relative_humidity_2m}%</p>
           <p>💨 {t.wind}: {weather.current.wind_speed_10m} km/h</p>
         </div>
       </div>
       {weather.daily && (
-        <div className="mt-3 pt-3 border-t border-blue-200 grid grid-cols-3 gap-2 text-center text-xs">
+        <div className="mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-blue-200 grid grid-cols-3 gap-1 sm:gap-2 text-center text-[10px] sm:text-xs">
           {weather.daily.time.map((day, i) => (
             <div key={i}>
               <p className="text-blue-600">{new Date(day).toLocaleDateString(undefined, {weekday:'short'})}</p>
@@ -196,25 +196,25 @@ function WeatherWidget({ weather, t }) {
 
 function DiagnoseView({ t, file, preview, loading, result, error, topPrediction, isHealthy, fileRef, handleFile, handlePredict, handleReset, weather, lang, user }) {
   return (
-    <div className="grid md:grid-cols-2 gap-6">
+    <div className="grid md:grid-cols-2 gap-4 sm:gap-6">
       {/* Left column */}
-      <div className="space-y-4">
+      <div className="space-y-3 sm:space-y-4">
         {/* Steps guide */}
         {!preview && !result && (
-          <div className="bg-white rounded-xl border p-4">
-            <h3 className="font-semibold text-gray-800 mb-3">{t.howToUse}</h3>
-            <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                <span className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center text-sm font-bold text-green-700">1</span>
-                <p className="text-sm text-gray-600">{t.step1_desc}</p>
+          <div className="bg-white rounded-xl border p-3 sm:p-4">
+            <h3 className="font-semibold text-gray-800 mb-2 sm:mb-3 text-sm sm:text-base">{t.howToUse}</h3>
+            <div className="space-y-2 sm:space-y-3">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <span className="w-7 h-7 sm:w-8 sm:h-8 bg-green-100 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold text-green-700 shrink-0">1</span>
+                <p className="text-xs sm:text-sm text-gray-600">{t.step1_desc}</p>
               </div>
-              <div className="flex items-center gap-3">
-                <span className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center text-sm font-bold text-green-700">2</span>
-                <p className="text-sm text-gray-600">{t.step2_desc}</p>
+              <div className="flex items-center gap-2 sm:gap-3">
+                <span className="w-7 h-7 sm:w-8 sm:h-8 bg-green-100 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold text-green-700 shrink-0">2</span>
+                <p className="text-xs sm:text-sm text-gray-600">{t.step2_desc}</p>
               </div>
-              <div className="flex items-center gap-3">
-                <span className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center text-sm font-bold text-green-700">3</span>
-                <p className="text-sm text-gray-600">{t.step3_desc}</p>
+              <div className="flex items-center gap-2 sm:gap-3">
+                <span className="w-7 h-7 sm:w-8 sm:h-8 bg-green-100 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold text-green-700 shrink-0">3</span>
+                <p className="text-xs sm:text-sm text-gray-600">{t.step3_desc}</p>
               </div>
             </div>
           </div>
@@ -225,11 +225,11 @@ function DiagnoseView({ t, file, preview, loading, result, error, topPrediction,
           onDrop={(e) => { e.preventDefault(); handleFile(e.dataTransfer.files[0]) }}
           onDragOver={(e) => e.preventDefault()}
           onClick={() => fileRef.current.click()}
-          className="relative border-2 border-dashed border-green-300 rounded-xl p-6 text-center cursor-pointer hover:border-green-500 hover:bg-green-50/50 transition min-h-[220px] flex items-center justify-center"
+          className="relative border-2 border-dashed border-green-300 rounded-xl p-4 sm:p-6 text-center cursor-pointer hover:border-green-500 hover:bg-green-50/50 transition min-h-[160px] sm:min-h-[220px] flex items-center justify-center"
         >
           {preview ? (
             <div className="relative">
-              <img src={preview} alt="preview" className="max-h-64 mx-auto rounded-lg shadow-sm" />
+              <img src={preview} alt="preview" className="max-h-48 sm:max-h-64 mx-auto rounded-lg shadow-sm" />
               {loading && (
                 <div className="absolute inset-0 bg-black/30 rounded-lg flex items-center justify-center">
                   <div className="relative w-full h-full overflow-hidden rounded-lg">
@@ -240,17 +240,17 @@ function DiagnoseView({ t, file, preview, loading, result, error, topPrediction,
             </div>
           ) : (
             <div className="text-green-600 space-y-2">
-              <div className="text-5xl">📷</div>
-              <p className="font-medium">{t.dragDrop}</p>
-              <p className="text-xs text-gray-400">{t.maxSize}</p>
+              <div className="text-4xl sm:text-5xl">📷</div>
+              <p className="font-medium text-sm sm:text-base">{t.dragDrop}</p>
+              <p className="text-[10px] sm:text-xs text-gray-400">{t.maxSize}</p>
             </div>
           )}
-          <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => handleFile(e.target.files[0])} />
+          <input ref={fileRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => handleFile(e.target.files[0])} />
         </div>
 
         {/* Predict button */}
         <button onClick={handlePredict} disabled={!file || loading}
-          className="w-full py-3.5 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition text-lg shadow-sm">
+          className="w-full py-3 sm:py-3.5 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition text-base sm:text-lg shadow-sm">
           {loading ? (
             <span className="flex items-center justify-center gap-2">
               <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
@@ -260,7 +260,7 @@ function DiagnoseView({ t, file, preview, loading, result, error, topPrediction,
         </button>
 
         {result && (
-          <button onClick={handleReset} className="w-full py-2.5 border-2 border-green-600 text-green-700 rounded-xl font-medium hover:bg-green-50 transition">
+          <button onClick={handleReset} className="w-full py-2 sm:py-2.5 border-2 border-green-600 text-green-700 rounded-xl font-medium hover:bg-green-50 transition">
             📷 {t.tryAgain}
           </button>
         )}
@@ -270,7 +270,7 @@ function DiagnoseView({ t, file, preview, loading, result, error, topPrediction,
         {/* Register prompt for guests */}
         {!user && (
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-center">
-            <p className="text-sm text-blue-800">{lang === 'vi' ? '📝 Hãy đăng ký tài khoản để sử dụng nhiều tính năng hơn (lịch sử, thư viện bệnh, tra cứu thuốc BVTV...)' : '📝 Register an account to access more features (history, disease library, pesticide lookup...)'}</p>
+            <p className="text-xs sm:text-sm text-blue-800">{lang === 'vi' ? '📝 Hãy đăng ký tài khoản để sử dụng nhiều tính năng hơn (lịch sử, thư viện bệnh, tra cứu thuốc BVTV...)' : '📝 Register an account to access more features (history, disease library, pesticide lookup...)'}</p>
           </div>
         )}
 
@@ -279,9 +279,9 @@ function DiagnoseView({ t, file, preview, loading, result, error, topPrediction,
       </div>
 
       {/* Right column - Results */}
-      <div className="space-y-4">
-        <div className="bg-white rounded-xl shadow-lg p-6 min-h-[300px]">
-          <h2 className="text-lg font-bold text-gray-800 mb-4">{t.results}</h2>
+      <div className="space-y-3 sm:space-y-4">
+        <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 min-h-[200px] sm:min-h-[300px]">
+          <h2 className="text-base sm:text-lg font-bold text-gray-800 mb-3 sm:mb-4">{t.results}</h2>
           {!result ? (
             <p className="text-gray-400 text-center py-12">{t.noResults}</p>
           ) : (
@@ -374,19 +374,19 @@ function HistoryView({ t, history, setHistory }) {
   const clear = () => { localStorage.removeItem(HISTORY_KEY); setHistory([]) }
   if (!history.length) return <p className="text-center text-gray-400 py-12">{t.noHistory}</p>
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 sm:space-y-4">
       <div className="flex justify-end"><button onClick={clear} className="text-sm text-red-500 hover:text-red-700">{t.clearHistory}</button></div>
       {history.map((entry, i) => {
         const p = entry.result?.predictions?.[0]
         if (!p) return null
         return (
-          <div key={i} className="bg-white p-4 rounded-xl border flex gap-4 items-center">
-            {entry.preview && <img src={entry.preview} alt="" className="w-14 h-14 object-cover rounded-lg" />}
+          <div key={i} className="bg-white p-3 sm:p-4 rounded-xl border flex gap-3 sm:gap-4 items-center">
+            {entry.preview && <img src={entry.preview} alt="" className="w-12 h-12 sm:w-14 sm:h-14 object-cover rounded-lg shrink-0" />}
             <div className="flex-1 min-w-0">
-              <p className="font-medium text-gray-900 truncate">{p.name}</p>
-              <p className="text-xs text-gray-500">{new Date(entry.date).toLocaleString()}</p>
+              <p className="font-medium text-gray-900 truncate text-sm sm:text-base">{p.name}</p>
+              <p className="text-[10px] sm:text-xs text-gray-500">{new Date(entry.date).toLocaleString()}</p>
             </div>
-            <span className="text-sm font-semibold text-gray-600">{p.confidence}%</span>
+            <span className="text-xs sm:text-sm font-semibold text-gray-600 shrink-0">{p.confidence}%</span>
           </div>
         )
       })}
@@ -422,10 +422,10 @@ function LibraryView({ t, lang }) {
 
                   {/* Expanded content */}
                   {isOpen && (
-                    <div className="px-4 pb-4 space-y-4 border-t">
+                    <div className="px-3 sm:px-4 pb-3 sm:pb-4 space-y-3 sm:space-y-4 border-t">
                       {/* Image + basic info */}
-                      <div className="flex gap-4 pt-4">
-                        <img src={d.image} alt={d.name[lang]} className="w-32 h-24 object-cover rounded-lg bg-gray-100" onError={(e) => { e.target.style.display = 'none' }} />
+                      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-3 sm:pt-4">
+                        <img src={d.image} alt={d.name[lang]} className="w-full sm:w-32 h-32 sm:h-24 object-cover rounded-lg bg-gray-100" onError={(e) => { e.target.style.display = 'none' }} />
                         <div className="flex-1">
                           <p className="text-xs text-gray-500 italic mb-1">{d.scientific}</p>
                           <p className="text-sm text-gray-700 leading-relaxed">{d.symptoms[lang]}</p>
@@ -497,7 +497,7 @@ function PesticidesView({ t, lang }) {
     return (
       <div className="space-y-3">
         <button onClick={() => setViewPdf(null)} className="flex items-center gap-1 text-sm text-green-700 hover:text-green-900 font-medium">← {lang === 'vi' ? 'Quay lại' : 'Back'}</button>
-        <div className="bg-white rounded-xl border overflow-hidden" style={{height:'80vh'}}>
+        <div className="bg-white rounded-xl border overflow-hidden" style={{height:'70vh'}}>
           <iframe src={viewPdf} className="w-full h-full" title="PDF" />
         </div>
       </div>
@@ -513,7 +513,7 @@ function PesticidesView({ t, lang }) {
       </div>
 
       {/* PDF links */}
-      <div className="flex gap-2">
+      <div className="flex flex-col sm:flex-row gap-2">
         <button onClick={() => setViewPdf('/thong-tu-75-2025.pdf')} className="flex-1 p-3 bg-blue-50 border border-blue-200 rounded-xl text-left hover:shadow transition text-sm">
           📋 {lang === 'vi' ? 'Xem Thông tư 75/2025' : 'View Circular 75/2025'}
         </button>
@@ -537,7 +537,7 @@ function PesticidesView({ t, lang }) {
         <h3 className="font-bold text-green-800">✅ {lang === 'vi' ? `Danh mục được phép (${pesticides?.length || '...'} sản phẩm)` : `Permitted list (${pesticides?.length || '...'} products)`}</h3>
 
         {/* Search & filter */}
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2">
           <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder={lang === 'vi' ? 'Tìm theo tên, hoạt chất, công ty...' : 'Search by name, ingredient, company...'} className="flex-1 px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-300" />
           <select value={filterCat} onChange={e => setFilterCat(e.target.value)} className="px-3 py-2 border rounded-lg text-sm bg-white">
             <option value="">{lang === 'vi' ? 'Tất cả loại' : 'All types'}</option>
