@@ -73,7 +73,7 @@ def predict_vlm(image: Image.Image, lang: str = "vi") -> Optional[dict]:
             ]},
         ],
         "max_tokens": 500,
-        "temperature": 0.1,
+        "temperature": 0,
     }
 
     try:
