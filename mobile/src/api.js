@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 
-const API_BASE = 'http://10.64.220.241:8001';
+const API_BASE = 'https://benhcay.tuaf.edu.vn';
 
 export async function login(phone, password) {
   const res = await axios.post(`${API_BASE}/api/v1/auth/login`, { phone, password });

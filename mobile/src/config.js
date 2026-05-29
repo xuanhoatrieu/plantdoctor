@@ -1,6 +1,6 @@
 // API configuration
 // TODO: Replace with production URL when deploying
-export const API_BASE_URL = 'http://10.64.220.241:8001';
+export const API_BASE_URL = 'https://benhcay.tuaf.edu.vn';
 
 export const API = {
   predict: `${API_BASE_URL}/api/v1/predict`,
