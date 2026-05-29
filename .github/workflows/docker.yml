@@ -2,7 +2,6 @@ name: Build & Deploy PlantDoctor
 
 on:
   push:
-    branches: [main]
     tags: ['v*']
 
 jobs:
