@@ -245,7 +245,7 @@ function DiagnoseView({ t, file, preview, loading, result, error, topPrediction,
               <p className="text-[10px] sm:text-xs text-gray-400">{t.maxSize}</p>
             </div>
           )}
-          <input ref={fileRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => handleFile(e.target.files[0])} />
+          <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => handleFile(e.target.files[0])} />
         </div>
 
         {/* Predict button */}
