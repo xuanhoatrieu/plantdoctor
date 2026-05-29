@@ -135,7 +135,7 @@ function App() {
       </nav>
 
       <main className="flex-1 max-w-6xl mx-auto w-full px-4 py-6">
-        {tab === 'diagnose' && <DiagnoseView {...{t, file, preview, loading, result, error, topPrediction, isHealthy, fileRef, handleFile, handlePredict, handleReset, weather, lang}} />}
+        {tab === 'diagnose' && <DiagnoseView {...{t, file, preview, loading, result, error, topPrediction, isHealthy, fileRef, handleFile, handlePredict, handleReset, weather, lang, user}} />}
         {tab === 'history' && user && <HistoryView {...{t, history, setHistory}} />}
         {tab === 'library' && user && <LibraryView {...{t, lang}} />}
         {tab === 'pesticides' && user && <PesticidesView {...{t, lang}} />}
@@ -194,7 +194,7 @@ function WeatherWidget({ weather, t }) {
   )
 }
 
-function DiagnoseView({ t, file, preview, loading, result, error, topPrediction, isHealthy, fileRef, handleFile, handlePredict, handleReset, weather, lang }) {
+function DiagnoseView({ t, file, preview, loading, result, error, topPrediction, isHealthy, fileRef, handleFile, handlePredict, handleReset, weather, lang, user }) {
   return (
     <div className="grid md:grid-cols-2 gap-6">
       {/* Left column */}
