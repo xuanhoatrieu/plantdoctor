@@ -102,6 +102,10 @@ function App() {
               <p className="text-xs text-green-600">{t.subtitle}</p>
             </div>
           </div>
+          <div className="flex flex-col items-center">
+            <span className="text-xl font-bold text-green-800">Trường Đại học Nông Lâm Thái Nguyên</span>
+            <span className="text-xs text-green-600">Cùng bạn ra thế giới!</span>
+          </div>
           <div className="flex items-center gap-2">
             {user ? (
               <div className="flex items-center gap-2">
