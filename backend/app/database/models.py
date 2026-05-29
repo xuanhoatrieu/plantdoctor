@@ -3,8 +3,11 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from datetime import datetime
 import os
+from dotenv import load_dotenv
 
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://vitts@localhost:5432/plantdoctor")
+load_dotenv()
+
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://vitts:vitts123@localhost:5432/plantdoctor")
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(bind=engine)

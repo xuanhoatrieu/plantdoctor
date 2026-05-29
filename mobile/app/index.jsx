@@ -76,6 +76,11 @@ export default function HomeScreen() {
           </View>
         </View>
 
+        <View style={{ alignItems: 'center', marginBottom: 16 }}>
+          <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#166534' }}>Trường Đại học Nông Lâm Thái Nguyên</Text>
+          <Text style={{ fontSize: 11, color: '#16a34a' }}>Cùng bạn ra thế giới!</Text>
+        </View>
+
         {!result ? (
           <>
             {image ? (
@@ -106,10 +111,19 @@ export default function HomeScreen() {
                 </View>
               ) : <Text style={s.btnPrimaryText}>🔍 Chẩn đoán bệnh</Text>}
             </TouchableOpacity>
+
+            <View style={{ backgroundColor: '#eff6ff', borderWidth: 1, borderColor: '#bfdbfe', borderRadius: 10, padding: 10, marginTop: 10 }}>
+              <Text style={{ fontSize: 12, color: '#1e40af', textAlign: 'center' }}>📝 Hãy đăng ký tài khoản để sử dụng nhiều tính năng hơn (lịch sử, thư viện bệnh, tra cứu thuốc BVTV...)</Text>
+            </View>
           </>
         ) : (
           <>
             {image && <Image source={{ uri: image.uri }} style={s.previewSmall} resizeMode="contain" />}
+
+            <View style={{ backgroundColor: '#fefce8', borderWidth: 1, borderColor: '#fde047', borderRadius: 10, padding: 10, marginBottom: 12, flexDirection: 'row', gap: 6 }}>
+              <Text>⚠️</Text>
+              <Text style={{ fontSize: 11, color: '#854d0e', flex: 1 }}>Kết quả chẩn đoán chỉ mang tính tham khảo. Vui lòng tham vấn chuyên gia nông nghiệp trước khi sử dụng thuốc BVTV.</Text>
+            </View>
 
             <View style={[s.resultCard, isHealthy ? s.resultOk : s.resultBad]}>
               <Text style={s.resultName}>{p.name}</Text>

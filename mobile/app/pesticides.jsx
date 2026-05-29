@@ -3,7 +3,7 @@ import { View, Text, TextInput, FlatList, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import axios from 'axios';
 
-const API_BASE = 'http://10.64.220.241:8001';
+const API_BASE = 'https://benhcay.tuaf.edu.vn';
 
 const BANNED = ['Aldrin','BHC/Lindane','Cadmium compound','Carbofuran','Chlordane','Chlordimeform','DDT','Dieldrin','Endosulfan','Endrin','Heptachlor','Isobenzan','Isodrin','Lead (Pb)','Methamidophos','Methyl Parathion','Monocrotophos','Parathion Ethyl','Pentachlorophenol','Phosphamidon','Polychlorocamphene','Trichlorfon','Arsenic','Captan','Captafol','Hexachlorobenzene','Mercury','Selenium','Talium','2,4,5-T'];
 
@@ -13,9 +13,7 @@ export default function PesticidesScreen() {
   const [filtered, setFiltered] = useState([]);
 
   useEffect(() => {
-    fetch(`${API_BASE}/../pesticides.json`).catch(() => null);
-    // Load from web public folder via proxy or bundled
-    axios.get('http://10.64.220.241:3001/pesticides.json').then(r => {
+    axios.get(`${API_BASE}/pesticides.json`).then(r => {
       setData(r.data);
       setFiltered(r.data.slice(0, 50));
     }).catch(() => {});
