@@ -267,6 +267,13 @@ function DiagnoseView({ t, file, preview, loading, result, error, topPrediction,
 
         {error && <p className="text-red-500 text-sm text-center bg-red-50 p-3 rounded-lg">{error}</p>}
 
+        {/* Register prompt for guests */}
+        {!user && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-center">
+            <p className="text-sm text-blue-800">{lang === 'vi' ? '📝 Hãy đăng ký tài khoản để sử dụng nhiều tính năng hơn (lịch sử, thư viện bệnh, tra cứu thuốc BVTV...)' : '📝 Register an account to access more features (history, disease library, pesticide lookup...)'}</p>
+          </div>
+        )}
+
         {/* Weather */}
         <WeatherWidget weather={weather} t={t} />
       </div>
@@ -279,6 +286,11 @@ function DiagnoseView({ t, file, preview, loading, result, error, topPrediction,
             <p className="text-gray-400 text-center py-12">{t.noResults}</p>
           ) : (
             <div className="space-y-4">
+              {/* AI disclaimer */}
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 flex items-start gap-2">
+                <span className="text-yellow-600">⚠️</span>
+                <p className="text-xs text-yellow-800">{lang === 'vi' ? 'Kết quả chẩn đoán chỉ mang tính tham khảo. Vui lòng tham vấn chuyên gia nông nghiệp trước khi sử dụng thuốc bảo vệ thực vật.' : 'Diagnosis results are for reference only. Please consult an agricultural expert before applying pesticides.'}</p>
+              </div>
               {/* Main result */}
               <div className={`p-4 rounded-xl ${isHealthy ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
                 <div className="flex items-start justify-between mb-2">
