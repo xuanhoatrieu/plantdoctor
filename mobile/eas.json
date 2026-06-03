@@ -21,5 +21,18 @@
         "buildType": "app-bundle"
       }
     }
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "appleId": "xuanhoatrieu@tuaf.edu.vn",
+        "ascAppId": "6773555310",
+        "appleTeamId": "Z82UU5SCSZ"
+      },
+      "android": {
+        "serviceAccountKeyPath": "./google-service-account.json",
+        "track": "production"
+      }
+    }
   }
 }

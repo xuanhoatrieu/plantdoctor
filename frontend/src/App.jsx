@@ -286,6 +286,40 @@ function DiagnoseView({ t, file, preview, loading, result, error, topPrediction,
             <p className="text-gray-400 text-center py-12">{t.noResults}</p>
           ) : (
             <div className="space-y-4">
+              {/* Image quality warnings */}
+              {result.image_quality_warnings?.length > 0 && (
+                <div className="bg-orange-50 border border-orange-300 rounded-lg p-3 sm:p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-lg">📸</span>
+                    <h4 className="font-semibold text-orange-900 text-sm">{lang === 'vi' ? 'Gợi ý cải thiện ảnh:' : 'Image improvement tips:'}</h4>
+                  </div>
+                  <ul className="space-y-1 ml-7">
+                    {result.image_quality_warnings.map((w, i) => (
+                      <li key={i} className="text-xs sm:text-sm text-orange-800">• {w}</li>
+                    ))}
+                  </ul>
+                  <p className="text-xs text-orange-700 mt-2 ml-7 italic">
+                    💡 {lang === 'vi' ? 'Chụp lại ảnh rõ hơn (có cành, quả, nhiều lá) để kết quả chính xác hơn' : 'Retake with better context (branches, fruit, multiple leaves) for more accurate results'}
+                  </p>
+                </div>
+              )}
+
+              {/* Voting badge */}
+              {result.voting_used && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-2.5 flex items-center gap-2">
+                  <span>🔄</span>
+                  <p className="text-xs text-blue-800">{lang === 'vi' ? 'Kết quả đã được xác nhận qua AI voting (3 lần phân tích)' : 'Result confirmed via AI voting (3 analysis rounds)'}</p>
+                </div>
+              )}
+
+              {/* Cached badge */}
+              {result.cached && (
+                <div className="bg-green-50 border border-green-200 rounded-lg p-2.5 flex items-center gap-2">
+                  <span>⚡</span>
+                  <p className="text-xs text-green-800">{lang === 'vi' ? 'Kết quả từ bộ nhớ đệm (nhất quán 100%)' : 'Cached result (100% consistent)'}</p>
+                </div>
+              )}
+
               {/* AI disclaimer */}
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 flex items-start gap-2">
                 <span className="text-yellow-600">⚠️</span>

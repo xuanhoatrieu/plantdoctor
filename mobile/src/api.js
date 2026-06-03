@@ -42,3 +42,10 @@ export async function predict(imageUri, lang = 'vi') {
   const res = await axios.post(`${API_BASE}/api/v1/predict`, form, { headers, timeout: 30000 });
   return res.data;
 }
+
+export async function appleLogin(identityToken, givenName) {
+  const res = await axios.post(`${API_BASE}/api/v1/auth/apple`, { identity_token: identityToken, name: givenName || '' });
+  await AsyncStorage.setItem('token', res.data.token);
+  await AsyncStorage.setItem('user', JSON.stringify(res.data.user));
+  return res.data;
+}

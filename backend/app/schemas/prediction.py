@@ -17,6 +17,9 @@ class PredictionResponse(BaseModel):
     model_id: str
     model_name: str
     predictions: list[PredictionResult]
+    image_quality_warnings: list[str] = []
+    voting_used: bool = False
+    cached: bool = False
 
 
 class ModelInfo(BaseModel):

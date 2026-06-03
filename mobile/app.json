@@ -14,9 +14,11 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.trieuxuanhoa.plantdoctor",
+      "usesAppleSignIn": true,
       "infoPlist": {
         "NSCameraUsageDescription": "PlantDoctor cần truy cập camera để chụp ảnh lá cây chẩn đoán bệnh",
         "NSPhotoLibraryUsageDescription": "PlantDoctor cần truy cập thư viện ảnh để chọn ảnh lá cây",
+        "NSLocationWhenInUseUsageDescription": "PlantDoctor cần vị trí của bạn để hiển thị thời tiết địa phương, hỗ trợ đánh giá nguy cơ phát bệnh",
         "ITSAppUsesNonExemptEncryption": false
       }
     },
@@ -29,13 +31,13 @@
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.READ_EXTERNAL_STORAGE",
-        "android.permission.RECORD_AUDIO",
         "android.permission.ACCESS_COARSE_LOCATION",
         "android.permission.ACCESS_FINE_LOCATION"
       ]
     },
     "scheme": "plantdoctor",
     "plugins": [
+      "expo-apple-authentication",
       "expo-camera",
       "expo-image-picker",
       "expo-location",

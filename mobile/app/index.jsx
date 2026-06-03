@@ -60,10 +60,15 @@ export default function HomeScreen() {
     } finally { setLoading(false); }
   };
 
+  const qualityWarnings = result?.image_quality_warnings || [];
+  const votingUsed = result?.voting_used || false;
+  const isCached = result?.cached || false;
+
   const reset = () => { setImage(null); setResult(null); };
 
   const p = result?.predictions?.[0];
   const isHealthy = p?.label?.toLowerCase().includes('healthy') || p?.label?.includes('Khỏe mạnh');
+  const hasQualityWarnings = qualityWarnings.length > 0;
 
   return (
     <SafeAreaView style={s.container}>
@@ -119,6 +124,36 @@ export default function HomeScreen() {
         ) : (
           <>
             {image && <Image source={{ uri: image.uri }} style={s.previewSmall} resizeMode="contain" />}
+
+            {/* Image quality warnings */}
+            {hasQualityWarnings && (
+              <View style={{ backgroundColor: '#fff7ed', borderWidth: 1, borderColor: '#fdba74', borderRadius: 10, padding: 12, marginBottom: 12 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+                  <Text style={{ fontSize: 16 }}>📸</Text>
+                  <Text style={{ fontSize: 13, fontWeight: '700', color: '#9a3412' }}>Gợi ý cải thiện ảnh:</Text>
+                </View>
+                {qualityWarnings.map((w, i) => (
+                  <Text key={i} style={{ fontSize: 12, color: '#c2410c', marginLeft: 22, marginTop: 2, lineHeight: 18 }}>• {w}</Text>
+                ))}
+                <Text style={{ fontSize: 11, color: '#ea580c', marginTop: 8, fontStyle: 'italic', marginLeft: 22 }}>💡 Chụp lại ảnh rõ hơn (có cành, quả, nhiều lá) để kết quả chính xác hơn</Text>
+              </View>
+            )}
+
+            {/* Voting badge */}
+            {votingUsed && (
+              <View style={{ backgroundColor: '#eff6ff', borderWidth: 1, borderColor: '#93c5fd', borderRadius: 8, padding: 8, marginBottom: 8, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <Text>🔄</Text>
+                <Text style={{ fontSize: 11, color: '#1e40af' }}>Kết quả đã được xác nhận qua AI voting (3 lần phân tích)</Text>
+              </View>
+            )}
+
+            {/* Cached badge */}
+            {isCached && (
+              <View style={{ backgroundColor: '#f0fdf4', borderWidth: 1, borderColor: '#86efac', borderRadius: 8, padding: 8, marginBottom: 8, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <Text>⚡</Text>
+                <Text style={{ fontSize: 11, color: '#166534' }}>Kết quả từ bộ nhớ đệm (nhất quán 100%)</Text>
+              </View>
+            )}
 
             <View style={{ backgroundColor: '#fefce8', borderWidth: 1, borderColor: '#fde047', borderRadius: 10, padding: 10, marginBottom: 12, flexDirection: 'row', gap: 6 }}>
               <Text>⚠️</Text>

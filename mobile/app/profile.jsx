@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Alert, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { login, register, logout, getUser } from '../src/api';
+import * as AppleAuthentication from 'expo-apple-authentication';
+import { login, register, logout, getUser, appleLogin } from '../src/api';
 
 export default function ProfileScreen() {
   const [user, setUser] = useState(null);
@@ -98,6 +99,38 @@ export default function ProfileScreen() {
             {mode === 'login' ? 'Chưa có tài khoản? Đăng ký' : 'Đã có tài khoản? Đăng nhập'}
           </Text>
         </TouchableOpacity>
+
+        {Platform.OS === 'ios' && (
+          <View style={{ marginTop: 24 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
+              <View style={{ flex: 1, height: 1, backgroundColor: '#d1d5db' }} />
+              <Text style={{ marginHorizontal: 12, color: '#9ca3af', fontSize: 13 }}>hoặc</Text>
+              <View style={{ flex: 1, height: 1, backgroundColor: '#d1d5db' }} />
+            </View>
+            <AppleAuthentication.AppleAuthenticationButton
+              buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
+              buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
+              cornerRadius={14}
+              style={{ height: 50 }}
+              onPress={async () => {
+                try {
+                  const credential = await AppleAuthentication.signInAsync({
+                    requestedScopes: [
+                      AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+                      AppleAuthentication.AppleAuthenticationScope.EMAIL,
+                    ],
+                  });
+                  const data = await appleLogin(credential.identityToken, credential.fullName?.givenName);
+                  setUser(data.user);
+                } catch (e) {
+                  if (e.code !== 'ERR_REQUEST_CANCELED') {
+                    setError('Đăng nhập Apple thất bại');
+                  }
+                }
+              }}
+            />
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
