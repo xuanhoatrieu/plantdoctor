@@ -10,3 +10,13 @@ android/
 ios/
 *.pdf
 backend/.env
+.brain/
+
+# Sub-repositories
+rig/
+awf-repo/
+
+# Rig harness database (local state)
+harness.db
+harness.db-wal
+harness.db-shm
