@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import Optional
 
 from ..auth import require_admin
-from ..database.models import get_db, Disease, Pesticide, User
+from ..database.models import get_db, Disease, Pesticide, User, Setting
 
 router = APIRouter(prefix="/api/v1/admin", tags=["admin"])
 
@@ -137,3 +137,140 @@ def delete_user(user_id: int, db: Session = Depends(get_db), admin: User = Depen
     db.delete(user)
     db.commit()
     return {"ok": True}
+
+
+# --- Settings ---
+@router.get("/settings")
+def get_settings(db: Session = Depends(get_db), admin: User = Depends(require_admin)):
+    db_settings = db.query(Setting).all()
+    settings_dict = {s.key: s.value for s in db_settings}
+    
+    # Defaults
+    defaults = {
+        "llm_provider": "cliproxy",
+        "llm_api_url": "http://152.67.112.145:8317/v1/chat/completions",
+        "llm_api_key": "ai-teaching-assistant-prod",
+        "llm_model_name": "gpt-5.5",
+    }
+    for k, v in defaults.items():
+        if k not in settings_dict:
+            settings_dict[k] = v
+            
+    # Mask API key for security
+    raw_key = settings_dict.get("llm_api_key", "")
+    if raw_key:
+        if len(raw_key) > 8:
+            masked_key = raw_key[:4] + "•" * (len(raw_key) - 8) + raw_key[-4:]
+        else:
+            masked_key = "•" * len(raw_key)
+        settings_dict["llm_api_key"] = masked_key
+        
+    return settings_dict
+
+
+@router.put("/settings")
+def update_settings(data: dict, db: Session = Depends(get_db), admin: User = Depends(require_admin)):
+    for k, v in data.items():
+        if k in ("llm_provider", "llm_api_url", "llm_api_key", "llm_model_name"):
+            # Avoid overwriting with masked key
+            if k == "llm_api_key" and v and "•" in str(v):
+                continue
+            
+            setting = db.query(Setting).filter(Setting.key == k).first()
+            if not setting:
+                setting = Setting(key=k, value=str(v))
+                db.add(setting)
+            else:
+                setting.value = str(v)
+    db.commit()
+    return {"ok": True}
+
+
+@router.post("/settings/models")
+def test_connection_and_list_models(
+    data: dict,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_admin)
+):
+    import urllib.request
+    import json
+    
+    provider = data.get("llm_provider", "cliproxy")
+    api_url = data.get("llm_api_url", "")
+    api_key = data.get("llm_api_key", "")
+    
+    # Resolve masked key
+    if api_key and "•" in str(api_key):
+        db_key = db.query(Setting).filter(Setting.key == "llm_api_key").first()
+        if db_key:
+            api_key = db_key.value
+        else:
+            if provider == "cliproxy":
+                api_key = "ai-teaching-assistant-prod"
+            else:
+                api_key = ""
+                
+    if provider == "cliproxy" and not api_key:
+        api_key = "ai-teaching-assistant-prod"
+        
+    try:
+        models = []
+        if provider in ("cliproxy", "openai"):
+            # Compute models endpoint URL
+            if not api_url:
+                if provider == "cliproxy":
+                    api_url = "http://152.67.112.145:8317/v1/chat/completions"
+                else:
+                    api_url = "https://api.openai.com/v1/chat/completions"
+                    
+            models_url = api_url.replace("/chat/completions", "/models")
+            
+            headers = {"Content-Type": "application/json"}
+            if api_key:
+                headers["Authorization"] = f"Bearer {api_key}"
+                
+            req = urllib.request.Request(models_url, headers=headers, method="GET")
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                resp_data = json.loads(resp.read().decode())
+                
+            models = [m["id"] for m in resp_data.get("data", []) if "id" in m]
+            
+        elif provider == "google":
+            if not api_key:
+                raise ValueError("API Key is required for Google Gemini")
+                
+            url = f"https://generativelanguage.googleapis.com/v1beta/models?key={api_key}"
+            req = urllib.request.Request(url, method="GET")
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                resp_data = json.loads(resp.read().decode())
+                
+            for m in resp_data.get("models", []):
+                name = m.get("name", "")
+                if name.startswith("models/"):
+                    name = name[7:]
+                if "gemini" in name:
+                    models.append(name)
+        else:
+            raise ValueError(f"Unknown provider: {provider}")
+            
+        # Fallback list if no models returned
+        if not models:
+            if provider == "cliproxy":
+                models = ["gpt-5.5"]
+            elif provider == "openai":
+                models = ["gpt-4o", "gpt-4o-mini", "o1-mini", "gpt-4-turbo"]
+            elif provider == "google":
+                models = ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-2.0-flash", "gemini-2.0-pro-exp"]
+                
+        return {"ok": True, "models": models}
+        
+    except Exception as e:
+        if hasattr(e, 'read'):
+            try:
+                err_detail = json.loads(e.read().decode())
+                detail_msg = err_detail.get("error", {}).get("message", str(e))
+            except:
+                detail_msg = str(e)
+        else:
+            detail_msg = str(e)
+        raise HTTPException(status_code=400, detail=f"Connection failed: {detail_msg}")

@@ -59,6 +59,12 @@ class Pesticide(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
+class Setting(Base):
+    __tablename__ = "settings"
+    key = Column(String(100), primary_key=True)
+    value = Column(Text, default="")
+
+
 def get_db():
     db = SessionLocal()
     try:

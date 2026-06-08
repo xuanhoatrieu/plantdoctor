@@ -10,6 +10,7 @@ import imagehash
 from cachetools import TTLCache
 from PIL import Image
 from .pesticide_matcher import match_medicines
+from ..database.models import Setting, SessionLocal
 
 logger = logging.getLogger(__name__)
 
@@ -135,32 +136,117 @@ def _encode_image(image: Image.Image) -> str:
     return base64.b64encode(buf.getvalue()).decode()
 
 
-def _call_vlm_once(b64: str, lang: str, temperature: float = 0, seed: int = 42) -> Optional[dict]:
-    """Make a single VLM API call and return parsed result."""
+def _call_vlm_once(b64: str, lang: str, temperature: float = 0, seed: int = 42, db = None) -> Optional[dict]:
+    """Make a single VLM API call and return parsed result based on configured provider."""
+    # Get settings from db (or use defaults)
+    provider = "cliproxy"
+    api_url = "http://152.67.112.145:8317/v1/chat/completions"
+    api_key = "ai-teaching-assistant-prod"
+    model_name = "gpt-5.5"
+
+    if db is not None:
+        p_setting = db.query(Setting).filter(Setting.key == "llm_provider").first()
+        if p_setting:
+            provider = p_setting.value
+        
+        url_setting = db.query(Setting).filter(Setting.key == "llm_api_url").first()
+        if url_setting:
+            api_url = url_setting.value
+            
+        key_setting = db.query(Setting).filter(Setting.key == "llm_api_key").first()
+        if key_setting:
+            api_key = key_setting.value
+            
+        model_setting = db.query(Setting).filter(Setting.key == "llm_model_name").first()
+        if model_setting:
+            model_name = model_setting.value
+
+    # If provider is cliproxy but setting is empty or defaults:
+    # Use defaults if not set in db
+    if not provider:
+        provider = "cliproxy"
+    if provider == "cliproxy":
+        if not api_url:
+            api_url = "http://152.67.112.145:8317/v1/chat/completions"
+        if not api_key:
+            api_key = "ai-teaching-assistant-prod"
+        if not model_name:
+            model_name = "gpt-5.5"
+    elif provider == "openai":
+        if not api_url:
+            api_url = "https://api.openai.com/v1/chat/completions"
+        if not model_name:
+            model_name = "gpt-4o"
+    elif provider == "google":
+        if not model_name:
+            model_name = "gemini-1.5-flash"
+
     prompt = SYSTEM_PROMPT_VI if lang == "vi" else SYSTEM_PROMPT
 
-    payload = {
-        "model": MODEL,
-        "messages": [
-            {"role": "system", "content": prompt},
-            {"role": "user", "content": [
-                {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{b64}"}},
-                {"type": "text", "text": "Phân tích bệnh cây trong ảnh này." if lang == "vi" else "Identify the plant disease in this image."},
-            ]},
-        ],
-        "max_tokens": 800,
-        "temperature": temperature,
-        "seed": seed,
-    }
+    if provider in ("cliproxy", "openai"):
+        payload = {
+            "model": model_name,
+            "messages": [
+                {"role": "system", "content": prompt},
+                {"role": "user", "content": [
+                    {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{b64}"}},
+                    {"type": "text", "text": "Phân tích bệnh cây trong ảnh này." if lang == "vi" else "Identify the plant disease in this image."},
+                ]},
+            ],
+            "max_tokens": 800,
+            "temperature": temperature,
+            "seed": seed,
+        }
 
-    req = urllib.request.Request(
-        API_URL,
-        data=json.dumps(payload).encode(),
-        headers={"Authorization": f"Bearer {API_KEY}", "Content-Type": "application/json"},
-    )
-    resp = urllib.request.urlopen(req, timeout=30)
-    data = json.loads(resp.read())
-    content = data["choices"][0]["message"]["content"]
+        req = urllib.request.Request(
+            api_url,
+            data=json.dumps(payload).encode(),
+            headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+        )
+        resp = urllib.request.urlopen(req, timeout=45)
+        data = json.loads(resp.read())
+        content = data["choices"][0]["message"]["content"]
+    
+    elif provider == "google":
+        # Google Gemini native generateContent API
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={api_key}"
+        
+        payload = {
+            "contents": [
+                {
+                    "parts": [
+                        {
+                            "inlineData": {
+                                "mimeType": "image/jpeg",
+                                "data": b64
+                            }
+                        },
+                        {
+                            "text": "Phân tích bệnh cây trong ảnh này." if lang == "vi" else "Identify the plant disease in this image."
+                        }
+                    ]
+                }
+            ],
+            "systemInstruction": {
+                "parts": [{"text": prompt}]
+            },
+            "generationConfig": {
+                "responseMimeType": "application/json",
+                "temperature": temperature
+            }
+        }
+        
+        req = urllib.request.Request(
+            url,
+            data=json.dumps(payload).encode(),
+            headers={"Content-Type": "application/json"},
+        )
+        resp = urllib.request.urlopen(req, timeout=45)
+        data = json.loads(resp.read())
+        content = data["candidates"][0]["content"]["parts"][0]["text"]
+    
+    else:
+        raise ValueError(f"Unsupported LLM provider: {provider}")
 
     # Parse JSON from response (handle markdown code blocks)
     content = content.strip()
@@ -255,7 +341,7 @@ def _store_cache(img_hash: imagehash.ImageHash, lang: str, result: dict):
     logger.info("Cached prediction: hash=%s, entries=%d/%d", img_hash, len(_prediction_cache), _prediction_cache.maxsize)
 
 
-def predict_vlm(image: Image.Image, lang: str = "vi") -> Optional[dict]:
+def predict_vlm(image: Image.Image, lang: str = "vi", db = None) -> Optional[dict]:
     """Use GPT-5.5 vision to identify plant disease with pHash caching + self-consistency voting."""
 
     # Step 1: Check pHash cache
@@ -271,7 +357,7 @@ def predict_vlm(image: Image.Image, lang: str = "vi") -> Optional[dict]:
 
     try:
         # Round 1: deterministic call
-        result = _call_vlm_once(b64, lang, temperature=0, seed=42)
+        result = _call_vlm_once(b64, lang, temperature=0, seed=42, db=db)
         confidence = result.get("confidence", 0)
 
         # Fast path: high confidence → return immediately
@@ -288,7 +374,7 @@ def predict_vlm(image: Image.Image, lang: str = "vi") -> Optional[dict]:
 
         for i in range(1, VOTING_ROUNDS):
             try:
-                extra = _call_vlm_once(b64, lang, temperature=0.3, seed=42 + i * 17)
+                extra = _call_vlm_once(b64, lang, temperature=0.3, seed=42 + i * 17, db=db)
                 all_results.append(extra)
                 logger.info("Voting round %d: %s (confidence=%d%%)", i + 1, extra.get("disease"), extra.get("confidence", 0))
             except Exception as e:

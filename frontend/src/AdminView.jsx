@@ -5,7 +5,6 @@ import axios from 'axios'
 function api(token) {
   return axios.create({ headers: { Authorization: `Bearer ${token}` } })
 }
-
 export default function AdminView({ lang }) {
   const { token } = useAuth()
   const [tab, setTab] = useState('diseases')
@@ -15,9 +14,10 @@ export default function AdminView({ lang }) {
       <h2 className="text-lg font-bold text-gray-900">⚙️ {lang === 'vi' ? 'Quản trị hệ thống' : 'Admin Panel'}</h2>
       <div className="flex gap-2 flex-wrap">
         {[
-          { id: 'diseases', label: '📚 Thư viện bệnh' },
-          { id: 'pesticides', label: '🧪 Thuốc BVTV' },
-          { id: 'users', label: '👥 Người dùng' },
+          { id: 'diseases', label: lang === 'vi' ? '📚 Thư viện bệnh' : '📚 Disease Library' },
+          { id: 'pesticides', label: lang === 'vi' ? '🧪 Thuốc BVTV' : '🧪 Pesticides' },
+          { id: 'users', label: lang === 'vi' ? '👥 Người dùng' : '👥 Users' },
+          { id: 'settings', label: lang === 'vi' ? '⚙️ Cấu hình Model' : '⚙️ Model Config' },
         ].map(t => (
           <button key={t.id} onClick={() => setTab(t.id)}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition ${tab === t.id ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
@@ -28,9 +28,11 @@ export default function AdminView({ lang }) {
       {tab === 'diseases' && <DiseasesAdmin token={token} lang={lang} />}
       {tab === 'pesticides' && <PesticidesAdmin token={token} lang={lang} />}
       {tab === 'users' && <UsersAdmin token={token} lang={lang} />}
+      {tab === 'settings' && <SettingsAdmin token={token} lang={lang} />}
     </div>
   )
 }
+
 
 // ==================== DISEASES ====================
 function DiseasesAdmin({ token, lang }) {
@@ -352,5 +354,231 @@ function Textarea({ label, value, onChange, placeholder }) {
       <textarea value={value || ''} onChange={e => onChange(e.target.value)} placeholder={placeholder} rows={3}
         className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-300 resize-y" />
     </div>
+  )
+}
+
+function SettingsAdmin({ token, lang }) {
+  const [settings, setSettings] = useState({
+    llm_provider: 'cliproxy',
+    llm_api_url: '',
+    llm_api_key: '',
+    llm_model_name: '',
+  })
+  const [loading, setLoading] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [testing, setTesting] = useState(false)
+  const [availableModels, setAvailableModels] = useState([])
+  const [message, setMessage] = useState('')
+  const [error, setError] = useState('')
+
+  const fetchSettings = () => {
+    setLoading(true)
+    api(token).get('/api/v1/admin/settings')
+      .then(r => setSettings(r.data))
+      .catch(e => setError(e.response?.data?.detail || 'Failed to fetch settings'))
+      .finally(() => setLoading(false))
+  }
+
+  useEffect(fetchSettings, [])
+
+  const save = async (e) => {
+    e.preventDefault()
+    setSaving(true)
+    setMessage('')
+    setError('')
+    try {
+      await api(token).put('/api/v1/admin/settings', settings)
+      setMessage(lang === 'vi' ? 'Cập nhật cấu hình thành công!' : 'Settings updated successfully!')
+      fetchSettings()
+    } catch (e) {
+      setError(e.response?.data?.detail || 'Failed to save settings')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const testConnection = async () => {
+    setTesting(true)
+    setMessage('')
+    setError('')
+    try {
+      const res = await api(token).post('/api/v1/admin/settings/models', {
+        llm_provider: settings.llm_provider,
+        llm_api_url: settings.llm_api_url,
+        llm_api_key: settings.llm_api_key,
+      })
+      if (res.data.ok) {
+        setAvailableModels(res.data.models || [])
+        setMessage(lang === 'vi' 
+          ? `Kết nối thành công! Tải được ${res.data.models.length} model.` 
+          : `Connection successful! Loaded ${res.data.models.length} models.`)
+        if (res.data.models.length > 0 && (!settings.llm_model_name || !res.data.models.includes(settings.llm_model_name))) {
+          set('llm_model_name', res.data.models[0])
+        }
+      }
+    } catch (e) {
+      setError(e.response?.data?.detail || 'Connection failed')
+    } finally {
+      setTesting(false)
+    }
+  }
+
+  const set = (k, v) => setSettings(prev => ({ ...prev, [k]: v }))
+
+  if (loading) return <p className="text-gray-400">Loading...</p>
+
+  // Prepare models list to include currently selected model if it is not present in fetched availableModels list
+  const modelsList = [...availableModels]
+  if (settings.llm_model_name && !modelsList.includes(settings.llm_model_name)) {
+    modelsList.unshift(settings.llm_model_name)
+  }
+
+  return (
+    <form onSubmit={save} className="space-y-4 max-w-2xl bg-white p-6 border rounded-xl shadow-sm">
+      <h3 className="font-bold text-gray-900 text-base border-b pb-2">
+        {lang === 'vi' ? 'Cấu hình AI Model (LLM Provider)' : 'AI Model Configuration'}
+      </h3>
+
+      {message && <div className="p-3 bg-green-50 text-green-700 rounded-lg text-sm font-medium">{message}</div>}
+      {error && <div className="p-3 bg-red-50 text-red-700 rounded-lg text-sm font-medium">{error}</div>}
+
+      <div className="space-y-3">
+        <div>
+          <label className="block text-xs font-semibold text-gray-700 mb-1">
+            {lang === 'vi' ? 'Nhà cung cấp (Provider)' : 'Provider'}
+          </label>
+          <select
+            value={settings.llm_provider}
+            onChange={e => {
+              const p = e.target.value
+              set('llm_provider', p)
+              setAvailableModels([]) // Reset list on provider change
+              if (p === 'cliproxy') {
+                set('llm_api_url', 'http://152.67.112.145:8317/v1/chat/completions')
+                set('llm_model_name', 'gpt-5.5')
+              } else if (p === 'openai') {
+                set('llm_api_url', 'https://api.openai.com/v1/chat/completions')
+                set('llm_model_name', 'gpt-4o')
+              } else if (p === 'google') {
+                set('llm_api_url', '')
+                set('llm_model_name', 'gemini-1.5-flash')
+              }
+            }}
+            className="w-full px-3 py-2 border rounded-lg text-sm bg-white focus:ring-2 focus:ring-green-500 focus:outline-none"
+          >
+            <option value="cliproxy">Cliproxy (Default)</option>
+            <option value="openai">OpenAI API</option>
+            <option value="google">Google Gemini API</option>
+          </select>
+        </div>
+
+        {settings.llm_provider !== 'google' && (
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 mb-1">
+              {lang === 'vi' ? 'Đường dẫn API (API Endpoint URL)' : 'API Endpoint URL'}
+            </label>
+            <input
+              type="url"
+              required
+              value={settings.llm_api_url || ''}
+              onChange={e => {
+                set('llm_api_url', e.target.value)
+                setAvailableModels([])
+              }}
+              placeholder="https://..."
+              className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:outline-none"
+            />
+          </div>
+        )}
+
+        <div>
+          <label className="block text-xs font-semibold text-gray-700 mb-1">
+            API Key
+          </label>
+          <input
+            type="password"
+            value={settings.llm_api_key || ''}
+            onChange={e => {
+              set('llm_api_key', e.target.value)
+              setAvailableModels([])
+            }}
+            placeholder={lang === 'vi' ? 'Nhập API key mới hoặc để nguyên' : 'Enter new API key or keep existing'}
+            className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:outline-none"
+          />
+          <p className="text-gray-400 text-[10px] mt-1">
+            {lang === 'vi' 
+              ? 'Khuyên dùng: API key được ẩn đi để bảo mật. Chỉ điền khi cần thay đổi.'
+              : 'Note: API key is masked for security. Only fill if you want to change it.'}
+          </p>
+        </div>
+
+        <div>
+          <label className="block text-xs font-semibold text-gray-700 mb-1">
+            {lang === 'vi' ? 'Tên Model (Model Name)' : 'Model Name'}
+          </label>
+          {modelsList.length > 0 ? (
+            <div className="flex gap-2">
+              <select
+                value={settings.llm_model_name || ''}
+                onChange={e => set('llm_model_name', e.target.value)}
+                className="flex-1 px-3 py-2 border rounded-lg text-sm bg-white focus:ring-2 focus:ring-green-500 focus:outline-none"
+              >
+                {modelsList.map(m => (
+                  <option key={m} value={m}>{m}</option>
+                ))}
+              </select>
+              <button
+                type="button"
+                onClick={() => {
+                  const custom = prompt(
+                    lang === 'vi' ? 'Nhập tên model thủ công:' : 'Enter custom model name:', 
+                    settings.llm_model_name
+                  )
+                  if (custom) {
+                    set('llm_model_name', custom)
+                    setAvailableModels(prev => [...prev, custom])
+                  }
+                }}
+                className="px-3 py-2 border rounded-lg text-sm bg-gray-50 text-gray-700 hover:bg-gray-100 font-medium whitespace-nowrap"
+              >
+                {lang === 'vi' ? 'Khác...' : 'Other...'}
+              </button>
+            </div>
+          ) : (
+            <input
+              type="text"
+              required
+              value={settings.llm_model_name || ''}
+              onChange={e => set('llm_model_name', e.target.value)}
+              placeholder={settings.llm_provider === 'google' ? 'gemini-1.5-flash' : 'gpt-4o'}
+              className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:outline-none"
+            />
+          )}
+        </div>
+      </div>
+
+      <div className="flex gap-3 pt-2">
+        <button
+          type="button"
+          disabled={testing}
+          onClick={testConnection}
+          className="flex-1 py-2.5 border border-green-600 text-green-700 font-semibold rounded-lg text-sm hover:bg-green-50 transition disabled:opacity-50"
+        >
+          {testing 
+            ? (lang === 'vi' ? 'Đang kết nối...' : 'Connecting...') 
+            : (lang === 'vi' ? '🔌 Thử kết nối & Tải model' : '🔌 Test Connection & Load Models')}
+        </button>
+
+        <button
+          type="submit"
+          disabled={saving}
+          className="flex-1 py-2.5 bg-green-600 text-white rounded-lg text-sm font-semibold hover:bg-green-700 transition disabled:opacity-50"
+        >
+          {saving 
+            ? (lang === 'vi' ? 'Đang lưu...' : 'Saving...') 
+            : (lang === 'vi' ? 'Lưu cấu hình' : 'Save Settings')}
+        </button>
+      </div>
+    </form>
   )
 }

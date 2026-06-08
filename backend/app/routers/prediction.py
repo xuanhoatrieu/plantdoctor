@@ -1,9 +1,11 @@
-from fastapi import APIRouter, File, Form, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
+from sqlalchemy.orm import Session
 from PIL import Image
 import io
 
 from ..models.vlm import predict_vlm
 from ..schemas.prediction import ModelsResponse, PredictionResponse
+from ..database.models import get_db
 
 router = APIRouter(prefix="/api/v1", tags=["prediction"])
 
@@ -19,6 +21,7 @@ async def predict(
     file: UploadFile = File(...),
     model_id: str = Form("gpt55_vision"),
     lang: str = Form("vi"),
+    db: Session = Depends(get_db),
 ):
     if lang not in ("vi", "en"):
         lang = "vi"
@@ -32,7 +35,7 @@ async def predict(
     except Exception:
         raise HTTPException(status_code=400, detail="Invalid image file")
 
-    result = predict_vlm(image, lang)
+    result = predict_vlm(image, lang, db)
 
     if result is None:
         raise HTTPException(status_code=500, detail="Prediction failed")
