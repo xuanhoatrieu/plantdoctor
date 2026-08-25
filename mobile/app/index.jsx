@@ -56,7 +56,9 @@ export default function HomeScreen() {
       history.unshift({ date: new Date().toISOString(), result: data, imageUri: image.uri });
       await AsyncStorage.setItem('history', JSON.stringify(history.slice(0, 30)));
     } catch (e) {
-      Alert.alert('Lỗi', 'Không thể kết nối server. Kiểm tra mạng và thử lại.');
+      console.error('Diagnosis error:', e);
+      const detail = e.response?.data?.detail || e.message || 'Không thể kết nối server. Kiểm tra mạng và thử lại.';
+      Alert.alert('Lỗi chẩn đoán', typeof detail === 'string' ? detail : JSON.stringify(detail));
     } finally { setLoading(false); }
   };
 

@@ -16,6 +16,10 @@ backend/.env
 rig/
 awf-repo/
 
+# Database files
+*.db
+*.sqlite3
+
 # Rig harness database (local state)
 harness.db
 harness.db-wal

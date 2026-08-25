@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import { View, Text, TextInput, FlatList, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import axios from 'axios';
+import { API_BASE_URL } from '../src/config';
 
-const API_BASE = 'https://benhcay.tuaf.edu.vn';
+const API_BASE = API_BASE_URL;
 
 const BANNED = ['Aldrin','BHC/Lindane','Cadmium compound','Carbofuran','Chlordane','Chlordimeform','DDT','Dieldrin','Endosulfan','Endrin','Heptachlor','Isobenzan','Isodrin','Lead (Pb)','Methamidophos','Methyl Parathion','Monocrotophos','Parathion Ethyl','Pentachlorophenol','Phosphamidon','Polychlorocamphene','Trichlorfon','Arsenic','Captan','Captafol','Hexachlorobenzene','Mercury','Selenium','Talium','2,4,5-T'];
 

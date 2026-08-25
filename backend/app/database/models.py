@@ -3,13 +3,27 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from datetime import datetime
 import os
+import logging
 from dotenv import load_dotenv
 
 load_dotenv()
+logger = logging.getLogger(__name__)
 
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://vitts:vitts123@localhost:5432/plantdoctor")
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./plantdoctor.db")
 
-engine = create_engine(DATABASE_URL)
+try:
+    if DATABASE_URL.startswith("sqlite"):
+        engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+    else:
+        engine = create_engine(DATABASE_URL)
+        # Test connection
+        with engine.connect() as conn:
+            pass
+except Exception as e:
+    logger.warning(f"Failed to connect to {DATABASE_URL}, falling back to SQLite: {e}")
+    DATABASE_URL = "sqlite:///./plantdoctor.db"
+    engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+
 SessionLocal = sessionmaker(bind=engine)
 Base = declarative_base()
 
@@ -75,3 +89,38 @@ def get_db():
 
 def init_db():
     Base.metadata.create_all(bind=engine)
+    db = SessionLocal()
+    try:
+        from ..auth import hash_password
+        # Create default admin user if none exists
+        admin = db.query(User).filter(User.role == "admin").first()
+        if not admin:
+            default_admin = User(
+                phone="0944550007",
+                password_hash=hash_password("Hoa@123"),
+                name="Quản trị viên",
+                role="admin",
+            )
+            db.add(default_admin)
+            logger.info("Created default admin user: 0944550007 / Hoa@123")
+        else:
+            admin.phone = "0944550007"
+            admin.password_hash = hash_password("Hoa@123")
+            logger.info("Updated admin credentials: 0944550007 / Hoa@123")
+
+        # Seed default settings if not exists
+        defaults = {
+            "llm_provider": "cliproxy",
+            "llm_api_url": "http://152.67.112.145:8317/v1/chat/completions",
+            "llm_api_key": "ai-teaching-assistant-prod",
+            "llm_model_name": "gpt-5.5",
+        }
+        for k, v in defaults.items():
+            if not db.query(Setting).filter(Setting.key == k).first():
+                db.add(Setting(key=k, value=v))
+        db.commit()
+    except Exception as e:
+        logger.warning(f"Error during init_db seed: {e}")
+        db.rollback()
+    finally:
+        db.close()

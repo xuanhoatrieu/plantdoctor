@@ -3,8 +3,9 @@ import { View, Text, ScrollView, TouchableOpacity, TextInput, Alert, StyleSheet 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import axios from 'axios';
 import { getToken } from '../src/api';
+import { API_BASE_URL } from '../src/config';
 
-const API_BASE = 'http://10.64.220.241:8001';
+const API_BASE = API_BASE_URL;
 
 export default function AdminScreen() {
   const [tab, setTab] = useState('users');

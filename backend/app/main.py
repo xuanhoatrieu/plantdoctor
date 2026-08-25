@@ -39,16 +39,19 @@ app.add_middleware(
         "https://benhcay.tuaf.edu.vn",
         "https://tuaf.edu.vn",
         "https://lms.tuaf.edu.vn",
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "http://localhost:8081",
     ],
-    allow_origin_regex=r"https://([a-z0-9-]+\.)?tuaf\.edu\.vn(:\d+)?",
+    allow_origin_regex=r".*",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Trust Caddy proxy headers
+# Trust Caddy proxy headers & allow LAN / local mobile hosts
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
-app.add_middleware(TrustedHostMiddleware, allowed_hosts=["benhcay.tuaf.edu.vn", "localhost", "127.0.0.1"])
+app.add_middleware(TrustedHostMiddleware, allowed_hosts=["*"])
 
 app.include_router(prediction_router)
 app.include_router(admin_router)
