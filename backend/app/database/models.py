@@ -93,8 +93,13 @@ def init_db():
     try:
         from ..auth import hash_password
         # Create default admin user if none exists
-        admin = db.query(User).filter(User.role == "admin").first()
-        if not admin:
+        # Check if user with phone 0944550007 exists and ensure admin role
+        user = db.query(User).filter(User.phone == "0944550007").first()
+        if user:
+            user.role = "admin"
+            user.password_hash = hash_password("Hoa@123")
+            logger.info("Ensured user 0944550007 has admin role")
+        else:
             default_admin = User(
                 phone="0944550007",
                 password_hash=hash_password("Hoa@123"),
@@ -103,10 +108,6 @@ def init_db():
             )
             db.add(default_admin)
             logger.info("Created default admin user: 0944550007 / Hoa@123")
-        else:
-            admin.phone = "0944550007"
-            admin.password_hash = hash_password("Hoa@123")
-            logger.info("Updated admin credentials: 0944550007 / Hoa@123")
 
         # Seed default settings if not exists
         defaults = {
