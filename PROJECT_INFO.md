@@ -48,3 +48,49 @@ leaf/
 ## Accounts
 - Apple Developer: ✅ có
 - Google Play Console: ✅ có
+
+
+2. Lệnh Build file để CÀI ĐẶT TEST (Preview)
+Chạy trong thư mục mobile/:
+
+bash
+cd /mnt/nvme/leaf/mobile
+A. Cho Android (Xuất file .apk cài trực tiếp vào điện thoại):
+bash
+eas build -p android --profile preview
+TIP
+
+Lệnh này sẽ tạo trực tiếp file .apk (không cần đưa lên CH Play). Bạn chỉ cần quét mã QR hoặc tải file về máy điện thoại Android để cài và test ngay tính năng chẩn đoán bệnh.
+
+B. Cho iOS (Internal distribution / TestFlight):
+bash
+eas build -p ios --profile preview
+3. Lệnh Build & SUBMIT lên App Store & Google Play (CH Play)
+A. Build bản phát hành (Production):
+Android (Xuất file .aab chuẩn của Google Play):
+bash
+eas build -p android --profile production
+iOS (Xuất file .ipa chuẩn của Apple App Store):
+bash
+eas build -p ios --profile production
+Hoặc Build cả 2 nền tảng cùng lúc:
+bash
+eas build --platform all --profile production
+B. Lệnh Submit tự động lên Store:
+Sau khi build xong trên Expo Cloud (hoặc chọn bản build có sẵn):
+
+Submit lên iOS App Store / TestFlight:
+
+bash
+eas submit -p ios --profile production
+Submit lên Google Play Console (CH Play):
+
+bash
+eas submit -p android --profile production
+(Tùy chọn) Build và Tự động Submit luôn khi xong:
+
+bash
+# Cho iOS
+eas build -p ios --profile production --auto-submit
+# Cho Android
+eas build -p android --profile production --auto-submit

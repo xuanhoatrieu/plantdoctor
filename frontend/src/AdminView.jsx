@@ -363,6 +363,8 @@ function SettingsAdmin({ token, lang }) {
     llm_api_url: '',
     llm_api_key: '',
     llm_model_name: '',
+    app_ios_url: '',
+    app_android_url: '',
   })
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -554,6 +556,45 @@ function SettingsAdmin({ token, lang }) {
               className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:outline-none"
             />
           )}
+        </div>
+
+        {/* Mobile App Download Links */}
+        <div className="pt-4 border-t space-y-3">
+          <h4 className="font-bold text-gray-900 text-sm flex items-center gap-1.5">
+            📱 {lang === 'vi' ? 'Link tải ứng dụng di động (Footer Web)' : 'Mobile App Download Links (Web Footer)'}
+          </h4>
+
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 mb-1">
+              🍎 {lang === 'vi' ? 'Link App Store (iOS)' : 'App Store URL (iOS)'}
+            </label>
+            <input
+              type="url"
+              value={settings.app_ios_url || ''}
+              onChange={e => set('app_ios_url', e.target.value)}
+              placeholder="https://apps.apple.com/app/plantdoctor"
+              className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:outline-none"
+            />
+            <p className="text-gray-400 text-[10px] mt-1">
+              {lang === 'vi' ? 'Để trống hoặc điền # nếu chưa phát hành trên App Store' : 'Leave empty or # if not yet published on App Store'}
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 mb-1">
+              🤖 {lang === 'vi' ? 'Link Android (CH Play / File APK)' : 'Android URL (Google Play / APK)'}
+            </label>
+            <input
+              type="text"
+              value={settings.app_android_url || ''}
+              onChange={e => set('app_android_url', e.target.value)}
+              placeholder="https://benhcay.tuaf.edu.vn/plantdoctor.apk hoặc link Google Play"
+              className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:outline-none"
+            />
+            <p className="text-gray-400 text-[10px] mt-1">
+              {lang === 'vi' ? 'Link tải file APK trực tiếp hoặc link trên CH Play' : 'Direct APK download URL or Google Play Store link'}
+            </p>
+          </div>
         </div>
       </div>
 

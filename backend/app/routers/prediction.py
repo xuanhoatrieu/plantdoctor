@@ -5,9 +5,19 @@ import io
 
 from ..models.vlm import predict_vlm
 from ..schemas.prediction import ModelsResponse, PredictionResponse
-from ..database.models import get_db
+from ..database.models import get_db, Setting
 
 router = APIRouter(prefix="/api/v1", tags=["prediction"])
+
+
+@router.get("/config")
+async def get_public_config(db: Session = Depends(get_db)):
+    ios_setting = db.query(Setting).filter(Setting.key == "app_ios_url").first()
+    android_setting = db.query(Setting).filter(Setting.key == "app_android_url").first()
+    return {
+        "app_ios_url": ios_setting.value if ios_setting and ios_setting.value else "https://apps.apple.com/app/plantdoctor",
+        "app_android_url": android_setting.value if android_setting and android_setting.value else "https://benhcay.tuaf.edu.vn/plantdoctor.apk",
+    }
 
 
 @router.get("/models", response_model=ModelsResponse)

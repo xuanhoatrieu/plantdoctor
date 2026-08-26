@@ -28,7 +28,7 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.trieuxuanhoa.plantdoctor",
-      "versionCode": 3,
+      "versionCode": 4,
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.READ_EXTERNAL_STORAGE",

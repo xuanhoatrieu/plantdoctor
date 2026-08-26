@@ -47,6 +47,11 @@ function App() {
   const { user, logout } = useAuth()
   const isAdmin = user?.role === 'admin'
 
+  const [appLinks, setAppLinks] = useState({
+    ios: 'https://apps.apple.com/app/plantdoctor',
+    android: 'https://benhcay.tuaf.edu.vn/plantdoctor.apk',
+  })
+
   useEffect(() => {
     const fetchWeather = (lat, lon) => {
       fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=3`)
@@ -56,6 +61,18 @@ function App() {
       (pos) => fetchWeather(pos.coords.latitude, pos.coords.longitude),
       () => { fetchWeather(21.03, 105.85) } // Fallback: Hanoi
     )
+
+    // Fetch public app config
+    axios.get('/api/v1/config')
+      .then(res => {
+        if (res.data) {
+          setAppLinks({
+            ios: res.data.app_ios_url || 'https://apps.apple.com/app/plantdoctor',
+            android: res.data.app_android_url || 'https://benhcay.tuaf.edu.vn/plantdoctor.apk',
+          })
+        }
+      })
+      .catch(() => {})
   }, [])
 
   const handleFile = (f) => {
@@ -146,14 +163,29 @@ function App() {
 
       <footer className="bg-white border-t py-3 sm:py-4 text-center text-xs text-gray-400">
         <div className="flex flex-col sm:flex-row justify-center items-center gap-2 sm:gap-3 mb-2 px-4">
-          <a href="https://apps.apple.com/app/plantdoctor" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-black text-white rounded-lg hover:bg-gray-800 transition text-xs font-medium">
-            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
-            App Store
-          </a>
-          <a href="#" id="android-download-link" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-700 text-white rounded-lg hover:bg-green-800 transition text-xs font-medium">
-            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M17.523 2.226l1.392-2.415a.4.4 0 00-.692-.4l-1.41 2.446C15.742 1.312 14.58.96 13.32.96c-1.26 0-2.422.352-3.493.897L8.417-.589a.4.4 0 00-.692.4l1.392 2.415C6.82 3.528 5.28 5.748 5.28 8.32h16.08c0-2.572-1.54-4.792-3.837-6.094zM9.6 6.4a.8.8 0 110-1.6.8.8 0 010 1.6zm7.44 0a.8.8 0 110-1.6.8.8 0 010 1.6zM5.28 9.6v7.92a1.2 1.2 0 001.2 1.2h1.2v3.36a1.2 1.2 0 002.4 0v-3.36h3.48v3.36a1.2 1.2 0 002.4 0v-3.36h1.2a1.2 1.2 0 001.2-1.2V9.6H5.28zM3.12 9.6a1.2 1.2 0 00-1.2 1.2v5.76a1.2 1.2 0 002.4 0V10.8a1.2 1.2 0 00-1.2-1.2zm20.4 0a1.2 1.2 0 00-1.2 1.2v5.76a1.2 1.2 0 002.4 0V10.8a1.2 1.2 0 00-1.2-1.2z"/></svg>
-            Android APK
-          </a>
+          {appLinks.ios && appLinks.ios !== '#' ? (
+            <a href={appLinks.ios} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-black text-white rounded-lg hover:bg-gray-800 transition text-xs font-medium">
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+              App Store
+            </a>
+          ) : (
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 text-gray-400 rounded-lg text-xs font-medium cursor-not-allowed">
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+              App Store (Sắp có)
+            </span>
+          )}
+
+          {appLinks.android && appLinks.android !== '#' ? (
+            <a href={appLinks.android} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-700 text-white rounded-lg hover:bg-green-800 transition text-xs font-medium">
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M17.523 2.226l1.392-2.415a.4.4 0 00-.692-.4l-1.41 2.446C15.742 1.312 14.58.96 13.32.96c-1.26 0-2.422.352-3.493.897L8.417-.589a.4.4 0 00-.692.4l1.392 2.415C6.82 3.528 5.28 5.748 5.28 8.32h16.08c0-2.572-1.54-4.792-3.837-6.094zM9.6 6.4a.8.8 0 110-1.6.8.8 0 010 1.6zm7.44 0a.8.8 0 110-1.6.8.8 0 010 1.6zM5.28 9.6v7.92a1.2 1.2 0 001.2 1.2h1.2v3.36a1.2 1.2 0 002.4 0v-3.36h3.48v3.36a1.2 1.2 0 002.4 0v-3.36h1.2a1.2 1.2 0 001.2-1.2V9.6H5.28zM3.12 9.6a1.2 1.2 0 00-1.2 1.2v5.76a1.2 1.2 0 002.4 0V10.8a1.2 1.2 0 00-1.2-1.2zm20.4 0a1.2 1.2 0 00-1.2 1.2v5.76a1.2 1.2 0 002.4 0V10.8a1.2 1.2 0 00-1.2-1.2z"/></svg>
+              Android (APK / CH Play)
+            </a>
+          ) : (
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 text-gray-400 rounded-lg text-xs font-medium cursor-not-allowed">
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M17.523 2.226l1.392-2.415a.4.4 0 00-.692-.4l-1.41 2.446C15.742 1.312 14.58.96 13.32.96c-1.26 0-2.422.352-3.493.897L8.417-.589a.4.4 0 00-.692.4l1.392 2.415C6.82 3.528 5.28 5.748 5.28 8.32h16.08c0-2.572-1.54-4.792-3.837-6.094zM9.6 6.4a.8.8 0 110-1.6.8.8 0 010 1.6zm7.44 0a.8.8 0 110-1.6.8.8 0 010 1.6zM5.28 9.6v7.92a1.2 1.2 0 001.2 1.2h1.2v3.36a1.2 1.2 0 002.4 0v-3.36h3.48v3.36a1.2 1.2 0 002.4 0v-3.36h1.2a1.2 1.2 0 001.2-1.2V9.6H5.28zM3.12 9.6a1.2 1.2 0 00-1.2 1.2v5.76a1.2 1.2 0 002.4 0V10.8a1.2 1.2 0 00-1.2-1.2zm20.4 0a1.2 1.2 0 00-1.2 1.2v5.76a1.2 1.2 0 002.4 0V10.8a1.2 1.2 0 00-1.2-1.2z"/></svg>
+              Android (Sắp có)
+            </span>
+          )}
         </div>
         PlantDoctor v2.0 — Powered by Triệu Xuân Hòa
       </footer>
