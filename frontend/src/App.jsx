@@ -52,6 +52,19 @@ function App() {
     android: 'https://benhcay.tuaf.edu.vn/plantdoctor.apk',
   })
 
+  const fetchPublicConfig = () => {
+    axios.get('/api/v1/config')
+      .then(res => {
+        if (res.data) {
+          setAppLinks({
+            ios: res.data.app_ios_url ?? '',
+            android: res.data.app_android_url ?? '',
+          })
+        }
+      })
+      .catch(() => {})
+  }
+
   useEffect(() => {
     const fetchWeather = (lat, lon) => {
       fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=3`)
@@ -62,17 +75,7 @@ function App() {
       () => { fetchWeather(21.03, 105.85) } // Fallback: Hanoi
     )
 
-    // Fetch public app config
-    axios.get('/api/v1/config')
-      .then(res => {
-        if (res.data) {
-          setAppLinks({
-            ios: res.data.app_ios_url || 'https://apps.apple.com/app/plantdoctor',
-            android: res.data.app_android_url || 'https://benhcay.tuaf.edu.vn/plantdoctor.apk',
-          })
-        }
-      })
-      .catch(() => {})
+    fetchPublicConfig()
   }, [])
 
   const handleFile = (f) => {
@@ -156,7 +159,7 @@ function App() {
         {tab === 'history' && user && <HistoryView {...{t, history, setHistory}} />}
         {tab === 'library' && user && <LibraryView {...{t, lang}} />}
         {tab === 'pesticides' && user && <PesticidesView {...{t, lang}} />}
-        {tab === 'admin' && isAdmin && <AdminView lang={lang} />}
+        {tab === 'admin' && isAdmin && <AdminView lang={lang} onConfigUpdated={fetchPublicConfig} />}
       </main>
 
       {showLogin && <LoginModal onClose={() => setShowLogin(false)} lang={lang} />}

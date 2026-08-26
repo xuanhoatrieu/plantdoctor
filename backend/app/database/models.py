@@ -115,6 +115,8 @@ def init_db():
             "llm_api_url": "http://152.67.112.145:8317/v1/chat/completions",
             "llm_api_key": "ai-teaching-assistant-prod",
             "llm_model_name": "gpt-5.5",
+            "app_ios_url": "https://apps.apple.com/app/plantdoctor",
+            "app_android_url": "https://benhcay.tuaf.edu.vn/plantdoctor.apk",
         }
         for k, v in defaults.items():
             if not db.query(Setting).filter(Setting.key == k).first():

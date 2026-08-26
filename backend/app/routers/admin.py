@@ -179,12 +179,13 @@ def update_settings(data: dict, db: Session = Depends(get_db), admin: User = Dep
             if k == "llm_api_key" and v and "•" in str(v):
                 continue
             
+            clean_val = str(v).strip() if v is not None else ""
             setting = db.query(Setting).filter(Setting.key == k).first()
             if not setting:
-                setting = Setting(key=k, value=str(v))
+                setting = Setting(key=k, value=clean_val)
                 db.add(setting)
             else:
-                setting.value = str(v)
+                setting.value = clean_val
     db.commit()
     return {"ok": True}
 
