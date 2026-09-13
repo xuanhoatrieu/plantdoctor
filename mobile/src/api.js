@@ -46,17 +46,53 @@ export async function predict(imageUri, lang = 'vi') {
   form.append('model_id', 'gpt55_vision');
   form.append('lang', lang);
 
-  const headers = {};
+  const headers = {
+    Accept: 'application/json',
+  };
   if (token) {
     headers.Authorization = `Bearer ${token}`;
   }
 
-  // NOTE: Do not set Content-Type header manually here so React Native Axios generates boundary automatically
-  const res = await axios.post(`${API_BASE_URL}/api/v1/predict`, form, {
-    headers,
-    timeout: 30000,
-  });
-  return res.data;
+  // Use native fetch to ensure React Native stream multipart boundary is handled correctly without Axios interceptor issues
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 120000);
+
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/v1/predict`, {
+      method: 'POST',
+      body: form,
+      headers,
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    const responseText = await res.text();
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch {
+      throw new Error(`Phản hồi không hợp lệ từ máy chủ (${res.status}): ${responseText.slice(0, 100)}`);
+    }
+
+    if (!res.ok) {
+      const detail = data?.detail || `Lỗi máy chủ (${res.status})`;
+      const err = new Error(typeof detail === 'string' ? detail : JSON.stringify(detail));
+      err.status = res.status;
+      err.response = { status: res.status, data };
+      throw err;
+    }
+
+    return data;
+  } catch (e) {
+    clearTimeout(timeoutId);
+    if (e.name === 'AbortError') {
+      const err = new Error('Quá thời gian chờ phản hồi AI (hơn 120 giây). Vui lòng thử lại với ảnh rõ nét hơn.');
+      err.code = 'ECONNABORTED';
+      throw err;
+    }
+    throw e;
+  }
 }
 
 export async function appleLogin(identityToken, givenName) {

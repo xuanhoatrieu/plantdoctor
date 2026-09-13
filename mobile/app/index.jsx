@@ -38,7 +38,7 @@ export default function HomeScreen() {
       if (status !== 'granted') { Alert.alert('Cần quyền thư viện ảnh', 'Vui lòng cấp quyền trong Cài đặt'); return; }
     }
     const method = useCamera ? ImagePicker.launchCameraAsync : ImagePicker.launchImageLibraryAsync;
-    const res = await method({ mediaTypes: ['images'], quality: 0.8 });
+    const res = await method({ mediaTypes: ['images'], quality: 0.7 });
     if (!res.canceled) {
       setImage(res.assets[0]);
       setResult(null);
@@ -57,8 +57,13 @@ export default function HomeScreen() {
       await AsyncStorage.setItem('history', JSON.stringify(history.slice(0, 30)));
     } catch (e) {
       console.error('Diagnosis error:', e);
-      const detail = e.response?.data?.detail || e.message || 'Không thể kết nối server. Kiểm tra mạng và thử lại.';
-      Alert.alert('Lỗi chẩn đoán', typeof detail === 'string' ? detail : JSON.stringify(detail));
+      let detail = e.message || 'Không thể kết nối máy chủ. Vui lòng kiểm tra kết nối mạng và thử lại.';
+      if (e.code === 'ECONNABORTED' || e.message?.includes('timeout') || e.message?.includes('Quá thời gian')) {
+        detail = 'Quá thời gian chờ phản hồi AI (hơn 120 giây). Vui lòng thử lại với ảnh rõ nét hơn.';
+      } else if (e.response?.data?.detail) {
+        detail = typeof e.response.data.detail === 'string' ? e.response.data.detail : JSON.stringify(e.response.data.detail);
+      }
+      Alert.alert('Lỗi chẩn đoán', detail);
     } finally { setLoading(false); }
   };
 

@@ -24,3 +24,6 @@ awf-repo/
 harness.db
 harness.db-wal
 harness.db-shm
+
+# Google service account keys
+*service-account*.json

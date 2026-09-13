@@ -8,7 +8,7 @@ from typing import Optional
 
 import imagehash
 from cachetools import TTLCache
-from PIL import Image
+from PIL import Image, ImageOps
 from .pesticide_matcher import match_medicines
 from ..database.models import Setting, SessionLocal
 
@@ -78,62 +78,105 @@ Rules:
 - image_quality_warnings should be empty [] if the image is clear and has sufficient context
 - plant_candidates should list all plausible plants based on leaf morphology"""
 
-SYSTEM_PROMPT_VI = """Bạn là chuyên gia bệnh lý thực vật. Phân tích ảnh lá/cây và xác định bệnh.
+SYSTEM_PROMPT_VI = """You are an expert plant pathologist. Analyze the leaf/plant image and identify any plant disease.
 
-BƯỚC 1 — NHẬN DẠNG CÂY:
-Quan sát kỹ hình thái lá: hình dạng, mép lá (răng cưa/trơn), kiểu gân lá, bề mặt, đặc điểm cuống lá.
-Đặc biệt chú ý:
-- Lá cây có múi (cam/chanh/quýt/bưởi): hình oval, thường có tuyến dầu (đốm trong suốt khi soi sáng), cuống lá có cánh, có mùi thơm khi vò
-- Lá chè: hình elip, mép răng cưa rõ, gân phụ cong lên, lá non mỏng mềm
-- Lá cà phê: to, xanh đậm, bóng mặt trên, mọc đối xứng
-- Lá lúa: dài hẹp, gân song song
-Nếu chỉ thấy 1 lá đơn lẻ, hãy liệt kê TẤT CẢ các loại cây có thể
+STEP 1 — IDENTIFY THE PLANT:
+Carefully observe leaf morphology: shape, leaf margins (serrated/smooth), venation pattern, surface texture, petiole characteristics.
+Pay special attention to common Vietnamese crops:
+- Citrus leaves (cam, chanh, quýt, bưởi): oval, often with oil glands (translucent dots when backlit), winged petioles, aromatic when crushed
+- Tea leaves (chè): elliptical with clearly serrated margins, curved secondary veins, young leaves thin and soft
+- Coffee leaves (cà phê): large, dark green, waxy surface, opposite arrangement
+- Rice leaves (lúa): long narrow blades with parallel venation
+- Other common crops: Pepper (tiêu, ớt), Mango (xoài), Longan (nhãn), Lychee (vải), Banana (chuối), Durian (sầu riêng), Guava (ổi), Jackfruit (mít), Tomato (cà chua), Potato (khoai tây), Corn (ngô), Soybean (đậu nành), Cassava (sắn), Grape (nho), Squash (bí)
+If only a single detached leaf is visible, list ALL plausible plant candidates.
 
-BƯỚC 2 — ĐÁNH GIÁ CHẤT LƯỢNG ẢNH:
-Đánh giá ảnh đầu vào và ghi nhận các vấn đề:
-- Chỉ có 1 lá đơn lẻ (không thấy cành/quả/hoa để xác nhận)?
-- Ảnh bị mờ hoặc không đúng nét?
-- Ánh sáng yếu hoặc ngược sáng ảnh hưởng màu sắc?
-- Ngón tay/bàn tay che khuất phần lá?
-Ghi nhận bất kỳ vấn đề nào có thể ảnh hưởng độ chính xác chẩn đoán.
+STEP 2 — ASSESS IMAGE QUALITY:
+Evaluate the input image and note any issues:
+- Is only a single detached leaf visible (no branch/fruit/flower for context)?
+- Is the image blurry, low-resolution, or out of focus?
+- Is there poor lighting or backlighting affecting color accuracy?
+- Are fingers or objects obscuring parts of the leaf?
+Report any issues that may reduce diagnosis accuracy.
 
-BƯỚC 3 — NHẬN DẠNG TRIỆU CHỨNG:
-Mô tả chi tiết: vị trí, màu sắc, hình dạng, kích thước, pattern của các vết tổn thương.
+STEP 3 — IDENTIFY SYMPTOMS:
+Describe in detail: location, color, shape, size, pattern of any lesions or abnormalities.
 
-BƯỚC 4 — CHẨN ĐOÁN:
-Dựa trên bước 1-3, đưa ra chẩn đoán.
+STEP 4 — DIAGNOSIS:
+Based on steps 1-3, provide your diagnosis.
 
-Các cây trồng phổ biến tại Việt Nam cần xem xét:
-Cây có múi (cam, chanh, quýt, bưởi), Lúa, Chè, Cà phê, Tiêu, Ớt, Xoài, Nhãn, Vải, Chuối, Sầu riêng, Ổi, Mít, Cà chua, Khoai tây, Ngô, Đậu nành, Sắn, Nho, Táo, Đào, Cherry, Dâu tây, Bí
-
-Trả lời CHỈ bằng JSON hợp lệ theo format:
+OUTPUT FORMAT & LANGUAGE REQUIREMENT:
+Respond ONLY with a valid JSON object in this exact schema.
+All JSON keys MUST remain in English, but ALL textual values MUST be in natural, fluent Vietnamese for Vietnamese farmers:
 {
-  "reasoning": "Suy luận từng bước: quan sát hình dạng lá → mô tả triệu chứng → logic chẩn đoán",
+  "reasoning": "Suy luận từng bước bằng tiếng Việt: quan sát hình thái lá → mô tả triệu chứng → logic chẩn đoán",
   "plant_candidates": ["cây 1", "cây 2"],
-  "image_quality_warnings": ["cảnh báo 1", "cảnh báo 2"],
-  "plant": "tên cây trồng chính xác nhất",
-  "disease": "tên bệnh hoặc 'Khỏe mạnh'",
+  "image_quality_warnings": ["cảnh báo nếu có"],
+  "plant": "tên cây trồng chính xác nhất bằng tiếng Việt (ví dụ: Lúa, Cam, Chè)",
+  "disease": "tên bệnh bằng tiếng Việt (ví dụ: Bệnh đạo ôn lá, Bệnh đốm mắt cua) hoặc 'Khỏe mạnh' hoặc 'Không phải ảnh cây trồng'",
   "confidence": 85,
   "severity": "nhẹ/trung bình/nặng/không",
-  "description": "mô tả triệu chứng quan sát được",
-  "treatment": "khuyến nghị điều trị",
-  "medicines": ["thuốc1", "thuốc2"]
+  "description": "mô tả chi tiết triệu chứng quan sát được bằng tiếng Việt",
+  "treatment": "khuyến nghị biện pháp phòng trừ và kỹ thuật canh tác bằng tiếng Việt",
+  "medicines": ["tên thuốc BVTV hoặc hoạt chất khuyến nghị 1", "thuốc 2"]
 }
 
-Quy tắc:
-- Nếu ảnh không phải cây/lá, set disease = "Không phải ảnh cây trồng", confidence = 0
-- Nếu khỏe mạnh, severity = "không", medicines = []
-- Confidence là số nguyên 0-100
-- Nêu cụ thể tên bệnh (cả tên thường và tên khoa học nếu có)
-- image_quality_warnings phải là [] nếu ảnh rõ ràng và đủ context
-- plant_candidates phải liệt kê tất cả loại cây có thể dựa trên hình thái lá"""
+Rules:
+- All JSON keys MUST remain in English as specified above.
+- All values MUST be written in natural Vietnamese for farmers in Vietnam.
+- If the image is not a plant or leaf: set disease to 'Không phải ảnh cây trồng', confidence to 0, severity to 'không', medicines to [].
+- If the plant is healthy: set disease to 'Khỏe mạnh', severity to 'không', medicines to [].
+- Confidence is an integer between 0 and 100.
+- Be specific about the disease name in Vietnamese.
+- image_quality_warnings should be [] if the image is clear and has sufficient context.
+- plant_candidates should list all plausible plants based on leaf morphology."""
 
 
 def _encode_image(image: Image.Image) -> str:
-    """Convert PIL Image to base64 JPEG string."""
+    """Convert PIL Image to base64 JPEG string with EXIF auto-orientation and downscaling."""
+    try:
+        image = ImageOps.exif_transpose(image)
+    except Exception:
+        pass
+
+    img_rgb = image.convert("RGB")
+    # Downscale so max dimension is at most 1024px for fast VLM inference and small payload
+    max_dim = 1024
+    if max(img_rgb.width, img_rgb.height) > max_dim:
+        img_rgb.thumbnail((max_dim, max_dim), Image.Resampling.LANCZOS)
+
     buf = io.BytesIO()
-    image.convert("RGB").save(buf, format="JPEG", quality=85)
+    img_rgb.save(buf, format="JPEG", quality=85)
     return base64.b64encode(buf.getvalue()).decode()
+
+
+def _extract_json(content: str) -> dict:
+    """Safely extract and parse JSON from model response even if formatted with markdown or commentary."""
+    content = content.strip()
+
+    # 1. Look for markdown code blocks (```json ... ``` or ``` ... ```)
+    if "```" in content:
+        for block in content.split("```"):
+            b = block.strip()
+            if b.startswith("json"):
+                b = b[4:].strip()
+            if b.startswith("{") and b.endswith("}"):
+                try:
+                    return json.loads(b)
+                except Exception:
+                    pass
+
+    # 2. Extract substring between first '{' and last '}'
+    first_brace = content.find("{")
+    last_brace = content.rfind("}")
+    if first_brace != -1 and last_brace != -1 and last_brace > first_brace:
+        json_str = content[first_brace : last_brace + 1]
+        try:
+            return json.loads(json_str)
+        except Exception:
+            pass
+
+    # 3. Direct JSON parse
+    return json.loads(content)
 
 
 def _call_vlm_once(b64: str, lang: str, temperature: float = 0, seed: int = 42, db = None) -> Optional[dict]:
@@ -190,10 +233,10 @@ def _call_vlm_once(b64: str, lang: str, temperature: float = 0, seed: int = 42, 
                 {"role": "system", "content": prompt},
                 {"role": "user", "content": [
                     {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{b64}"}},
-                    {"type": "text", "text": "Phân tích bệnh cây trong ảnh này." if lang == "vi" else "Identify the plant disease in this image."},
+                    {"type": "text", "text": "Phân tích bệnh cây trong ảnh này. Trả về JSON." if lang == "vi" else "Identify the plant disease in this image. Respond with JSON."},
                 ]},
             ],
-            "max_tokens": 800,
+            "max_tokens": 2048,
             "temperature": temperature,
             "seed": seed,
         }
@@ -203,7 +246,7 @@ def _call_vlm_once(b64: str, lang: str, temperature: float = 0, seed: int = 42, 
             data=json.dumps(payload).encode(),
             headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
         )
-        resp = urllib.request.urlopen(req, timeout=45)
+        resp = urllib.request.urlopen(req, timeout=60)
         data = json.loads(resp.read())
         content = data["choices"][0]["message"]["content"]
     
@@ -222,7 +265,7 @@ def _call_vlm_once(b64: str, lang: str, temperature: float = 0, seed: int = 42, 
                             }
                         },
                         {
-                            "text": "Phân tích bệnh cây trong ảnh này." if lang == "vi" else "Identify the plant disease in this image."
+                            "text": "Phân tích bệnh cây trong ảnh này. Trả về JSON." if lang == "vi" else "Identify the plant disease in this image. Respond with JSON."
                         }
                     ]
                 }
@@ -241,35 +284,35 @@ def _call_vlm_once(b64: str, lang: str, temperature: float = 0, seed: int = 42, 
             data=json.dumps(payload).encode(),
             headers={"Content-Type": "application/json"},
         )
-        resp = urllib.request.urlopen(req, timeout=45)
+        resp = urllib.request.urlopen(req, timeout=60)
         data = json.loads(resp.read())
         content = data["candidates"][0]["content"]["parts"][0]["text"]
     
     else:
         raise ValueError(f"Unsupported LLM provider: {provider}")
 
-    # Parse JSON from response (handle markdown code blocks)
-    content = content.strip()
-    if content.startswith("```"):
-        content = content.split("\n", 1)[1].rsplit("```", 1)[0]
-
-    return json.loads(content)
+    return _extract_json(content)
 
 
 def _majority_vote(results: list[dict]) -> dict:
     """Pick the most common (plant, disease) pair and merge best fields."""
-    # Count (plant, disease) combinations
-    combos = [(r.get("plant", ""), r.get("disease", "")) for r in results]
+    combos = [(str(r.get("plant") or "").strip(), str(r.get("disease") or "").strip()) for r in results]
     most_common = Counter(combos).most_common(1)[0][0]
 
     # Filter results matching the winning combo
-    winners = [r for r in results if (r.get("plant", ""), r.get("disease", "")) == most_common]
+    winners = [r for r in results if (str(r.get("plant") or "").strip(), str(r.get("disease") or "").strip()) == most_common]
+
+    def _safe_conf(r):
+        try:
+            return int(float(str(r.get("confidence", 0)).replace('%', '').strip()))
+        except Exception:
+            return 0
 
     # Pick the result with highest confidence among winners
-    best = max(winners, key=lambda r: r.get("confidence", 0))
+    best = max(winners, key=_safe_conf)
 
     # Average confidence across ALL results that match the winning combo
-    avg_conf = round(sum(r.get("confidence", 0) for r in winners) / len(winners))
+    avg_conf = round(sum(_safe_conf(r) for r in winners) / len(winners))
 
     best["confidence"] = avg_conf
     return best
@@ -277,8 +320,21 @@ def _majority_vote(results: list[dict]) -> dict:
 
 def _format_result(result: dict, lang: str, voting_used: bool = False) -> dict:
     """Format parsed VLM result into prediction response."""
-    is_healthy = result.get("disease", "").lower() in ("healthy", "khỏe mạnh")
-    medicines = result.get("medicines", []) if not is_healthy else []
+    disease_str = str(result.get("disease") or "Unknown").strip()
+    is_healthy = disease_str.lower() in ("healthy", "khỏe mạnh")
+
+    medicines = result.get("medicines", [])
+    if not isinstance(medicines, list) or is_healthy:
+        medicines = []
+    else:
+        medicines = [str(m).strip() for m in medicines if m]
+
+    try:
+        conf_val = int(float(str(result.get("confidence", 0)).replace('%', '').strip()))
+    except Exception:
+        conf_val = 0
+
+    plant_str = str(result.get("plant") or "").strip()
 
     # Match medicines against pesticide database
     medicine_match = match_medicines(medicines) if medicines else {"matched_products": [], "banned_warning": []}
@@ -287,15 +343,17 @@ def _format_result(result: dict, lang: str, voting_used: bool = False) -> dict:
     image_quality_warnings = result.get("image_quality_warnings", [])
     if not isinstance(image_quality_warnings, list):
         image_quality_warnings = []
+    else:
+        image_quality_warnings = [str(w).strip() for w in image_quality_warnings if w]
 
     predictions = [{
-        "label": result.get("disease", "Unknown"),
-        "confidence": result.get("confidence", 0),
-        "name": f"{result.get('plant', '')} - {result.get('disease', '')}",
-        "description": result.get("description", ""),
-        "treatment": result.get("treatment", "") if not is_healthy else "",
+        "label": disease_str,
+        "confidence": conf_val,
+        "name": f"{plant_str} - {disease_str}" if plant_str else disease_str,
+        "description": str(result.get("description") or ""),
+        "treatment": str(result.get("treatment") or "") if not is_healthy else "",
         "medicines": medicines,
-        "severity": result.get("severity", ""),
+        "severity": str(result.get("severity") or ""),
         "matched_products": medicine_match["matched_products"],
         "banned_warning": medicine_match["banned_warning"],
     }]
@@ -358,7 +416,13 @@ def predict_vlm(image: Image.Image, lang: str = "vi", db = None) -> Optional[dic
     try:
         # Round 1: deterministic call
         result = _call_vlm_once(b64, lang, temperature=0, seed=42, db=db)
-        confidence = result.get("confidence", 0)
+        if not result or not isinstance(result, dict):
+            raise ValueError(f"Invalid result from VLM round 1: {result}")
+
+        try:
+            confidence = int(float(str(result.get("confidence", 0)).replace('%', '').strip()))
+        except Exception:
+            confidence = 0
 
         # Fast path: high confidence → return immediately
         if confidence >= VOTING_CONFIDENCE_THRESHOLD:
@@ -375,8 +439,9 @@ def predict_vlm(image: Image.Image, lang: str = "vi", db = None) -> Optional[dic
         for i in range(1, VOTING_ROUNDS):
             try:
                 extra = _call_vlm_once(b64, lang, temperature=0.3, seed=42 + i * 17, db=db)
-                all_results.append(extra)
-                logger.info("Voting round %d: %s (confidence=%d%%)", i + 1, extra.get("disease"), extra.get("confidence", 0))
+                if extra and isinstance(extra, dict):
+                    all_results.append(extra)
+                    logger.info("Voting round %d: %s (confidence=%s)", i + 1, extra.get("disease"), extra.get("confidence", 0))
             except Exception as e:
                 logger.warning("Voting round %d failed: %s", i + 1, e)
 
@@ -389,7 +454,7 @@ def predict_vlm(image: Image.Image, lang: str = "vi", db = None) -> Optional[dic
                     if r.get("image_quality_warnings"):
                         final["image_quality_warnings"] = r["image_quality_warnings"]
                         break
-            logger.info("Voting result: %s (averaged confidence=%d%%)", final.get("disease"), final.get("confidence", 0))
+            logger.info("Voting result: %s (averaged confidence=%s)", final.get("disease"), final.get("confidence", 0))
             formatted = _format_result(final, lang, voting_used=True)
         else:
             formatted = _format_result(result, lang, voting_used=False)
@@ -399,5 +464,6 @@ def predict_vlm(image: Image.Image, lang: str = "vi", db = None) -> Optional[dic
         return formatted
 
     except Exception as e:
-        logger.error("VLM prediction failed: %s", e)
+        import traceback
+        logger.error("VLM prediction failed: %s\n%s", e, traceback.format_exc())
         return None

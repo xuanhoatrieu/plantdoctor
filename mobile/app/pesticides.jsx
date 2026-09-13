@@ -14,10 +14,19 @@ export default function PesticidesScreen() {
   const [filtered, setFiltered] = useState([]);
 
   useEffect(() => {
-    axios.get(`${API_BASE}/pesticides.json`).then(r => {
-      setData(r.data);
-      setFiltered(r.data.slice(0, 50));
-    }).catch(() => {});
+    axios.get(`${API_BASE}/pesticides.json`)
+      .then(r => {
+        setData(r.data);
+        setFiltered(r.data.slice(0, 50));
+      })
+      .catch(() => {
+        axios.get('https://benhcay.tuaf.edu.vn/pesticides.json')
+          .then(r => {
+            setData(r.data);
+            setFiltered(r.data.slice(0, 50));
+          })
+          .catch(() => {});
+      });
   }, []);
 
   useEffect(() => {

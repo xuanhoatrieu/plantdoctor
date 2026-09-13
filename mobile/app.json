@@ -2,7 +2,7 @@
   "expo": {
     "name": "PlantDoctor",
     "slug": "plantdoctor",
-    "version": "1.0.0",
+    "version": "1.0.2",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -19,7 +19,10 @@
         "NSCameraUsageDescription": "PlantDoctor cần truy cập camera để chụp ảnh lá cây chẩn đoán bệnh",
         "NSPhotoLibraryUsageDescription": "PlantDoctor cần truy cập thư viện ảnh để chọn ảnh lá cây",
         "NSLocationWhenInUseUsageDescription": "PlantDoctor cần vị trí của bạn để hiển thị thời tiết địa phương, hỗ trợ đánh giá nguy cơ phát bệnh",
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true
+        }
       }
     },
     "android": {
@@ -28,7 +31,8 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.trieuxuanhoa.plantdoctor",
-      "versionCode": 4,
+      "versionCode": 7,
+      "usesCleartextTraffic": true,
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.READ_EXTERNAL_STORAGE",
