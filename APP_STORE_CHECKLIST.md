@@ -35,15 +35,16 @@
 
 | # | Hạng mục | Chi tiết | Trạng thái |
 |---|----------|----------|------------|
-| 3.1 | Chính sách quyền riêng tư (Privacy Policy) | Trang web công khai, mô tả dữ liệu thu thập/sử dụng | ☐ |
-| 3.2 | Apple: Privacy Nutrition Labels | Khai báo trong App Store Connect: camera, photos, location | ☐ |
-| 3.3 | Google: Data Safety Section | Khai báo trong Play Console: dữ liệu thu thập, chia sẻ, bảo mật | ☐ |
-| 3.4 | Quyền truy cập (Permissions) | Camera, Photo Library, Location — chỉ yêu cầu khi cần, có mô tả rõ ràng | ☐ |
-| 3.5 | iOS: NSCameraUsageDescription | Mô tả lý do cần camera trong Info.plist | ☐ |
-| 3.6 | iOS: NSPhotoLibraryUsageDescription | Mô tả lý do cần truy cập thư viện ảnh | ☐ |
-| 3.7 | iOS: NSLocationWhenInUseUsageDescription | Mô tả lý do cần vị trí (thời tiết) | ☐ |
-| 3.8 | Mã hóa dữ liệu | HTTPS cho mọi API call, không lưu ảnh người dùng trên server | ☐ |
-| 3.9 | Apple: App Tracking Transparency | Nếu tracking user → cần ATT framework. Nếu không → khai báo "không track" | ☐ |
+| 3.1 | Chính sách quyền riêng tư (Privacy Policy) | Trang web công khai, mô tả dữ liệu thu thập/sử dụng (`/privacy`) | ☑ Đã xong |
+| 3.2 | Tự xóa tài khoản trong app (Account Deletion) | Apple Guideline 5.1.1(v) & Google Play Data Safety: Nút xóa tài khoản trong app | ☑ Đã xong |
+| 3.3 | URL Web yêu cầu xóa tài khoản (Data Deletion URL) | Google Play requirement: Form yêu cầu xóa tài khoản trên Web công khai | ☑ Đã xong |
+| 3.4 | Quyền truy cập (Permissions) | Chỉ giữ Camera + Location, đã gỡ bỏ hoàn toàn `READ_EXTERNAL_STORAGE` | ☑ Đã xong |
+| 3.5 | Chặn Cleartext / ATS | Đã tắt `usesCleartextTraffic` và `NSAllowsArbitraryLoads`, chạy HTTPS 100% | ☑ Đã xong |
+| 3.6 | iOS: NSCameraUsageDescription | Mô tả lý do cần camera trong Info.plist | ☑ Đã xong |
+| 3.7 | iOS: NSPhotoLibraryUsageDescription | Mô tả lý do cần truy cập thư viện ảnh | ☑ Đã xong |
+| 3.8 | iOS: NSLocationWhenInUseUsageDescription | Mô tả lý do cần vị trí (thời tiết) | ☑ Đã xong |
+| 3.9 | Mã hóa dữ liệu | HTTPS cho mọi API call, không lưu ảnh người dùng trên server | ☑ Đã xong |
+| 3.10 | Apple: Sign in with Apple | Hỗ trợ đăng nhập Apple trên iOS theo chuẩn Apple Human Interface | ☑ Đã xong |
 
 ---
 

@@ -260,78 +260,395 @@ function PesticideForm({ data, onSave, onCancel }) {
 function UsersAdmin({ token, lang }) {
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(false)
+  const [search, setSearch] = useState('')
+  const [filterRole, setFilterRole] = useState('')
+
+  // Modals state
   const [adding, setAdding] = useState(false)
-  const [newUser, setNewUser] = useState({ phone: '', password: '', name: '', role: 'user' })
+  const [newUser, setNewUser] = useState({ phone: '', password: '', name: '', email: '', role: 'user' })
+
+  const [editingUser, setEditingUser] = useState(null)
+  const [editForm, setEditForm] = useState({ name: '', phone: '', email: '', role: 'user', is_active: true })
+
+  const [resettingUser, setResettingUser] = useState(null)
+  const [newPassword, setNewPassword] = useState('')
 
   const fetch_ = () => {
     setLoading(true)
-    api(token).get('/api/v1/admin/users').then(r => setUsers(r.data)).finally(() => setLoading(false))
+    const params = {}
+    if (search.trim()) params.q = search.trim()
+    if (filterRole) params.role = filterRole
+    api(token)
+      .get('/api/v1/admin/users', { params })
+      .then(r => setUsers(r.data))
+      .catch(err => console.error(err))
+      .finally(() => setLoading(false))
   }
-  useEffect(fetch_, [])
 
-  const setRole = async (userId, role) => {
-    await api(token).put(`/api/v1/admin/users/${userId}/role`, { role })
-    fetch_()
-  }
-
-  const deleteUser = async (userId) => {
-    if (!confirm('Xác nhận xóa user này?')) return
-    await api(token).delete(`/api/v1/admin/users/${userId}`)
-    fetch_()
-  }
+  useEffect(fetch_, [search, filterRole])
 
   const createUser = async () => {
-    if (newUser.phone.length < 9 || newUser.password.length < 6) return
+    if (newUser.phone.length < 9 || newUser.password.length < 6) {
+      alert('Số điện thoại (tối thiểu 9 số) và mật khẩu (tối thiểu 6 ký tự) không hợp lệ')
+      return
+    }
     try {
       await api(token).post('/api/v1/admin/users', newUser)
       setAdding(false)
-      setNewUser({ phone: '', password: '', name: '', role: 'user' })
+      setNewUser({ phone: '', password: '', name: '', email: '', role: 'user' })
       fetch_()
     } catch (e) {
-      alert(e.response?.data?.detail || 'Error')
+      alert(e.response?.data?.detail || 'Lỗi tạo người dùng')
+    }
+  }
+
+  const openEdit = (u) => {
+    setEditingUser(u)
+    setEditForm({
+      name: u.name || '',
+      phone: u.phone || '',
+      email: u.email || '',
+      role: u.role || 'user',
+      is_active: u.is_active !== false,
+    })
+  }
+
+  const saveEdit = async () => {
+    if (!editingUser) return
+    try {
+      await api(token).put(`/api/v1/admin/users/${editingUser.id}`, editForm)
+      setEditingUser(null)
+      fetch_()
+    } catch (e) {
+      alert(e.response?.data?.detail || 'Lỗi cập nhật')
+    }
+  }
+
+  const toggleActive = async (u) => {
+    const act = u.is_active ? 'khóa' : 'mở khóa'
+    if (!confirm(`Bạn có chắc muốn ${act} tài khoản ${u.phone}?`)) return
+    try {
+      await api(token).put(`/api/v1/admin/users/${u.id}/toggle-active`, {})
+      fetch_()
+    } catch (e) {
+      alert(e.response?.data?.detail || 'Lỗi thay đổi trạng thái')
+    }
+  }
+
+  const handleResetPassword = async () => {
+    if (!resettingUser || newPassword.length < 6) {
+      alert('Mật khẩu mới phải có tối thiểu 6 ký tự')
+      return
+    }
+    try {
+      await api(token).post(`/api/v1/admin/users/${resettingUser.id}/reset-password`, {
+        new_password: newPassword,
+      })
+      alert(`Đã cấp mật khẩu mới cho ${resettingUser.phone}`)
+      setResettingUser(null)
+      setNewPassword('')
+    } catch (e) {
+      alert(e.response?.data?.detail || 'Lỗi đặt lại mật khẩu')
+    }
+  }
+
+  const deleteUser = async (userId, phone) => {
+    if (!confirm(`Xác nhận xóa vĩnh viễn user ${phone}? Hành động này không thể hoàn tác.`)) return
+    try {
+      await api(token).delete(`/api/v1/admin/users/${userId}`)
+      fetch_()
+    } catch (e) {
+      alert(e.response?.data?.detail || 'Lỗi xóa')
     }
   }
 
   return (
-    <div className="space-y-3">
-      <div className="flex justify-between items-center">
-        <p className="text-sm text-gray-500">{users.length} người dùng</p>
-        <button onClick={() => setAdding(!adding)} className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium">+ Thêm user</button>
+    <div className="space-y-4">
+      {/* Header with Search and Add Button */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-3 flex-1">
+          <input
+            type="text"
+            placeholder="🔍 Tìm kiếm SĐT, họ tên, email..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="px-3 py-2 border rounded-lg text-sm w-full max-w-xs focus:outline-none focus:ring-2 focus:ring-green-400"
+          />
+          <select
+            value={filterRole}
+            onChange={e => setFilterRole(e.target.value)}
+            className="px-3 py-2 border rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-green-400"
+          >
+            <option value="">Tất cả vai trò</option>
+            <option value="admin">Quản trị viên</option>
+            <option value="user">Người dùng</option>
+          </select>
+        </div>
+        <div className="flex items-center gap-3">
+          <p className="text-sm text-gray-500 whitespace-nowrap">{users.length} tài khoản</p>
+          <button
+            onClick={() => setAdding(!adding)}
+            className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition shadow-sm"
+          >
+            + Thêm user
+          </button>
+        </div>
       </div>
 
+      {/* Add User Modal / Form */}
       {adding && (
-        <div className="bg-gray-50 border rounded-lg p-4 space-y-2">
-          <div className="grid grid-cols-2 gap-2">
-            <input type="text" value={newUser.name} onChange={e => setNewUser({...newUser, name: e.target.value})} placeholder="Họ tên" className="px-3 py-2 border rounded-lg text-sm" />
-            <input type="tel" value={newUser.phone} onChange={e => setNewUser({...newUser, phone: e.target.value})} placeholder="Số điện thoại" className="px-3 py-2 border rounded-lg text-sm" />
-            <input type="text" value={newUser.password} onChange={e => setNewUser({...newUser, password: e.target.value})} placeholder="Mật khẩu" className="px-3 py-2 border rounded-lg text-sm" />
-            <select value={newUser.role} onChange={e => setNewUser({...newUser, role: e.target.value})} className="px-3 py-2 border rounded-lg text-sm bg-white">
-              <option value="user">User</option>
-              <option value="admin">Admin</option>
-            </select>
+        <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 space-y-3">
+          <h4 className="font-semibold text-emerald-800 text-sm">Thêm người dùng mới</h4>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2">
+            <input
+              type="text"
+              value={newUser.name}
+              onChange={e => setNewUser({ ...newUser, name: e.target.value })}
+              placeholder="Họ tên"
+              className="px-3 py-2 border rounded-lg text-sm bg-white"
+            />
+            <input
+              type="tel"
+              value={newUser.phone}
+              onChange={e => setNewUser({ ...newUser, phone: e.target.value })}
+              placeholder="Số điện thoại (*)"
+              className="px-3 py-2 border rounded-lg text-sm bg-white"
+            />
+            <input
+              type="text"
+              value={newUser.password}
+              onChange={e => setNewUser({ ...newUser, password: e.target.value })}
+              placeholder="Mật khẩu (* min 6 ký tự)"
+              className="px-3 py-2 border rounded-lg text-sm bg-white"
+            />
+            <input
+              type="email"
+              value={newUser.email}
+              onChange={e => setNewUser({ ...newUser, email: e.target.value })}
+              placeholder="Email (tùy chọn)"
+              className="px-3 py-2 border rounded-lg text-sm bg-white"
+            />
           </div>
-          <button onClick={createUser} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm">Tạo</button>
+          <div className="flex items-center gap-2">
+            <select
+              value={newUser.role}
+              onChange={e => setNewUser({ ...newUser, role: e.target.value })}
+              className="px-3 py-2 border rounded-lg text-sm bg-white"
+            >
+              <option value="user">Người dùng (User)</option>
+              <option value="admin">Quản trị viên (Admin)</option>
+            </select>
+            <button
+              onClick={createUser}
+              className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-medium transition"
+            >
+              Tạo tài khoản
+            </button>
+            <button
+              onClick={() => setAdding(false)}
+              className="px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg text-sm transition"
+            >
+              Hủy
+            </button>
+          </div>
         </div>
       )}
 
-      {loading ? <p className="text-gray-400">Loading...</p> : (
-        <div className="space-y-2">
-          {users.map(u => (
-            <div key={u.id} className="bg-white border rounded-lg p-3 flex items-center justify-between">
+      {/* Users Table / List */}
+      {loading ? (
+        <div className="py-8 text-center text-gray-400">Đang tải danh sách người dùng...</div>
+      ) : (
+        <div className="bg-white border rounded-xl overflow-hidden shadow-sm">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm text-gray-600">
+              <thead className="bg-gray-50 border-b text-xs uppercase text-gray-500 font-semibold">
+                <tr>
+                  <th className="px-4 py-3">Họ tên & SĐT</th>
+                  <th className="px-4 py-3">Email</th>
+                  <th className="px-4 py-3">Vai trò</th>
+                  <th className="px-4 py-3">Trạng thái</th>
+                  <th className="px-4 py-3">Ngày tạo</th>
+                  <th className="px-4 py-3 text-right">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {users.map(u => (
+                  <tr key={u.id} className={`hover:bg-gray-50 ${!u.is_active ? 'bg-red-50/50' : ''}`}>
+                    <td className="px-4 py-3">
+                      <p className="font-semibold text-gray-900">{u.name || '—'}</p>
+                      <p className="text-xs text-gray-500 font-mono">{u.phone}</p>
+                    </td>
+                    <td className="px-4 py-3 text-xs text-gray-500">{u.email || '—'}</td>
+                    <td className="px-4 py-3">
+                      <span
+                        className={`inline-block px-2.5 py-1 rounded-full text-xs font-semibold ${
+                          u.role === 'admin'
+                            ? 'bg-purple-100 text-purple-700 border border-purple-200'
+                            : 'bg-blue-50 text-blue-700 border border-blue-200'
+                        }`}
+                      >
+                        {u.role === 'admin' ? 'Quản trị viên' : 'Người dùng'}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <button
+                        onClick={() => toggleActive(u)}
+                        title="Bấm để chuyển trạng thái khóa / mở khóa"
+                        className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium cursor-pointer transition ${
+                          u.is_active
+                            ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                            : 'bg-red-100 text-red-700 hover:bg-red-200'
+                        }`}
+                      >
+                        <span className={`w-1.5 h-1.5 rounded-full ${u.is_active ? 'bg-green-500' : 'bg-red-500'}`} />
+                        {u.is_active ? 'Hoạt động' : 'Đã khóa'}
+                      </button>
+                    </td>
+                    <td className="px-4 py-3 text-xs text-gray-400">
+                      {u.created_at ? u.created_at.slice(0, 10) : '—'}
+                    </td>
+                    <td className="px-4 py-3 text-right space-x-1.5 whitespace-nowrap">
+                      <button
+                        onClick={() => openEdit(u)}
+                        className="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded text-xs font-medium transition"
+                      >
+                        ✏️ Sửa
+                      </button>
+                      {!u.phone?.startsWith('apple_') && (
+                        <button
+                          onClick={() => {
+                            setResettingUser(u)
+                            setNewPassword('')
+                          }}
+                          className="px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 rounded text-xs font-medium transition"
+                        >
+                          🔑 Đổi pass
+                        </button>
+                      )}
+                      <button
+                        onClick={() => deleteUser(u.id, u.phone)}
+                        className="px-2.5 py-1 bg-red-50 hover:bg-red-100 text-red-600 rounded text-xs font-medium transition"
+                      >
+                        🗑️
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Edit User Modal */}
+      {editingUser && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl max-w-md w-full p-5 space-y-4 shadow-xl">
+            <h3 className="font-bold text-gray-900 text-lg">✏️ Chỉnh sửa người dùng</h3>
+            <div className="space-y-3">
               <div>
-                <p className="font-medium text-gray-900">{u.name || u.phone}</p>
-                <p className="text-xs text-gray-500">{u.phone} • {u.created_at?.slice(0, 10)}</p>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Họ tên</label>
+                <input
+                  type="text"
+                  value={editForm.name}
+                  onChange={e => setEditForm({ ...editForm, name: e.target.value })}
+                  className="w-full px-3 py-2 border rounded-lg text-sm"
+                />
               </div>
-              <div className="flex items-center gap-2">
-                <select value={u.role} onChange={e => setRole(u.id, e.target.value)}
-                  className={`px-3 py-1 rounded-lg text-sm font-medium border ${u.role === 'admin' ? 'bg-purple-50 text-purple-700 border-purple-200' : 'bg-gray-50 text-gray-700 border-gray-200'}`}>
-                  <option value="user">User</option>
-                  <option value="admin">Admin</option>
-                </select>
-                <button onClick={() => deleteUser(u.id)} className="text-red-500 text-xs hover:text-red-700">🗑️</button>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Số điện thoại</label>
+                <input
+                  type="text"
+                  value={editForm.phone}
+                  onChange={e => setEditForm({ ...editForm, phone: e.target.value })}
+                  className="w-full px-3 py-2 border rounded-lg text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Email</label>
+                <input
+                  type="email"
+                  value={editForm.email}
+                  onChange={e => setEditForm({ ...editForm, email: e.target.value })}
+                  className="w-full px-3 py-2 border rounded-lg text-sm"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Vai trò</label>
+                  <select
+                    value={editForm.role}
+                    onChange={e => setEditForm({ ...editForm, role: e.target.value })}
+                    className="w-full px-3 py-2 border rounded-lg text-sm bg-white"
+                  >
+                    <option value="user">Người dùng (User)</option>
+                    <option value="admin">Quản trị viên (Admin)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Trạng thái</label>
+                  <select
+                    value={editForm.is_active ? '1' : '0'}
+                    onChange={e => setEditForm({ ...editForm, is_active: e.target.value === '1' })}
+                    className="w-full px-3 py-2 border rounded-lg text-sm bg-white"
+                  >
+                    <option value="1">Đang hoạt động</option>
+                    <option value="0">Tạm khóa</option>
+                  </select>
+                </div>
               </div>
             </div>
-          ))}
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                onClick={() => setEditingUser(null)}
+                className="px-4 py-2 border rounded-lg text-sm hover:bg-gray-50"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={saveEdit}
+                className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium"
+              >
+                Lưu thay đổi
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reset Password Modal */}
+      {resettingUser && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl max-w-sm w-full p-5 space-y-4 shadow-xl">
+            <h3 className="font-bold text-gray-900 text-lg">🔑 Cấp lại mật khẩu</h3>
+            <p className="text-xs text-gray-500">
+              Tài khoản: <span className="font-mono font-semibold text-gray-800">{resettingUser.phone}</span>
+            </p>
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Mật khẩu mới (tối thiểu 6 ký tự)</label>
+              <input
+                type="text"
+                value={newPassword}
+                onChange={e => setNewPassword(e.target.value)}
+                placeholder="Nhập mật khẩu mới"
+                className="w-full px-3 py-2 border rounded-lg text-sm"
+              />
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                onClick={() => setResettingUser(null)}
+                className="px-4 py-2 border rounded-lg text-sm hover:bg-gray-50"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={handleResetPassword}
+                className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-sm font-medium"
+              >
+                Cập nhật mật khẩu
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

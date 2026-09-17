@@ -35,8 +35,11 @@ class User(Base):
     password_hash = Column(String(200), default="")
     firebase_uid = Column(String(128), unique=True, nullable=True)
     name = Column(String(100), default="")
+    email = Column(String(120), nullable=True)
+    avatar_url = Column(String(500), default="")
     role = Column(String(20), default="user")  # guest, user, admin
     created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     is_active = Column(Boolean, default=True)
 
 
@@ -89,6 +92,23 @@ def get_db():
 
 def init_db():
     Base.metadata.create_all(bind=engine)
+    # Ensure newly added columns exist in existing users table
+    try:
+        from sqlalchemy import inspect, text
+        inspector = inspect(engine)
+        columns = [c["name"] for c in inspector.get_columns("users")]
+        with engine.connect() as conn:
+            for col_name, col_type in [("email", "VARCHAR(120)"), ("avatar_url", "VARCHAR(500)"), ("updated_at", "TIMESTAMP")]:
+                if col_name not in columns:
+                    try:
+                        conn.execute(text(f"ALTER TABLE users ADD COLUMN {col_name} {col_type}"))
+                        conn.commit()
+                        logger.info(f"Added column {col_name} to users table")
+                    except Exception as ce:
+                        logger.warning(f"Could not add column {col_name}: {ce}")
+    except Exception as e:
+        logger.warning(f"Error checking user table columns: {e}")
+
     db = SessionLocal()
     try:
         from ..auth import hash_password

@@ -97,31 +97,112 @@ def delete_pesticide(pid: int, db: Session = Depends(get_db), admin: User = Depe
 
 # --- Users ---
 @router.get("/users")
-def list_users(db: Session = Depends(get_db), admin: User = Depends(require_admin)):
-    return db.query(User).order_by(User.created_at.desc()).all()
+def list_users(
+    q: Optional[str] = None,
+    role: Optional[str] = None,
+    is_active: Optional[bool] = None,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_admin),
+):
+    query = db.query(User)
+    if q:
+        search = f"%{q}%"
+        query = query.filter(User.phone.ilike(search) | User.name.ilike(search) | User.email.ilike(search))
+    if role:
+        query = query.filter(User.role == role)
+    if is_active is not None:
+        query = query.filter(User.is_active == is_active)
+    return query.order_by(User.created_at.desc()).all()
 
 
 @router.post("/users")
 def create_user(data: dict, db: Session = Depends(get_db), admin: User = Depends(require_admin)):
     from ..auth import hash_password
-    phone = data.get("phone", "")
+    phone = (data.get("phone") or "").strip()
     password = data.get("password", "")
     if len(phone) < 9 or len(password) < 6:
-        raise HTTPException(status_code=400, detail="Invalid phone or password")
+        raise HTTPException(status_code=400, detail="Số điện thoại (tối thiểu 9 số) hoặc mật khẩu (tối thiểu 6 ký tự) không hợp lệ")
     if db.query(User).filter(User.phone == phone).first():
-        raise HTTPException(status_code=400, detail="Phone already exists")
-    user = User(phone=phone, password_hash=hash_password(password), name=data.get("name", ""), role=data.get("role", "user"))
+        raise HTTPException(status_code=400, detail="Số điện thoại này đã tồn tại")
+    user = User(
+        phone=phone,
+        password_hash=hash_password(password),
+        name=(data.get("name") or "").strip(),
+        email=(data.get("email") or "").strip() or None,
+        role=data.get("role", "user"),
+        is_active=data.get("is_active", True),
+    )
     db.add(user)
     db.commit()
     db.refresh(user)
     return user
 
 
+@router.put("/users/{user_id}")
+def update_user(user_id: int, data: dict, db: Session = Depends(get_db), admin: User = Depends(require_admin)):
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Không tìm thấy người dùng")
+
+    if "name" in data:
+        user.name = (data["name"] or "").strip()
+    if "email" in data:
+        user.email = (data["email"] or "").strip() or None
+    if "role" in data:
+        # Cannot demote yourself if you are the only active admin
+        if user.id == admin.id and data["role"] != "admin":
+            raise HTTPException(status_code=400, detail="Bạn không thể tự hạ quyền admin của chính mình")
+        user.role = data["role"]
+    if "is_active" in data:
+        if user.id == admin.id and data["is_active"] is False:
+            raise HTTPException(status_code=400, detail="Không thể tự khóa tài khoản của chính mình")
+        user.is_active = bool(data["is_active"])
+    if "phone" in data:
+        new_phone = (data["phone"] or "").strip()
+        if new_phone and new_phone != user.phone:
+            if db.query(User).filter(User.phone == new_phone, User.id != user_id).first():
+                raise HTTPException(status_code=400, detail="Số điện thoại này đã được sử dụng bởi tài khoản khác")
+            user.phone = new_phone
+
+    db.commit()
+    db.refresh(user)
+    return user
+
+
+@router.post("/users/{user_id}/reset-password")
+def admin_reset_password(user_id: int, data: dict, db: Session = Depends(get_db), admin: User = Depends(require_admin)):
+    from ..auth import hash_password
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Không tìm thấy người dùng")
+    new_password = data.get("new_password", "")
+    if len(new_password) < 6:
+        raise HTTPException(status_code=400, detail="Mật khẩu mới phải có tối thiểu 6 ký tự")
+    user.password_hash = hash_password(new_password)
+    db.commit()
+    return {"ok": True, "message": f"Đã đặt lại mật khẩu cho tài khoản {user.phone}"}
+
+
+@router.put("/users/{user_id}/toggle-active")
+def toggle_user_active(user_id: int, db: Session = Depends(get_db), admin: User = Depends(require_admin)):
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Không tìm thấy người dùng")
+    if user.id == admin.id:
+        raise HTTPException(status_code=400, detail="Không thể tự khóa tài khoản của chính mình")
+    user.is_active = not user.is_active
+    db.commit()
+    db.refresh(user)
+    return {"ok": True, "is_active": user.is_active, "message": "Đã kích hoạt" if user.is_active else "Đã khóa tài khoản"}
+
+
 @router.put("/users/{user_id}/role")
 def set_role(user_id: int, data: dict, db: Session = Depends(get_db), admin: User = Depends(require_admin)):
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
-        raise HTTPException(status_code=404, detail="Not found")
+        raise HTTPException(status_code=404, detail="Không tìm thấy người dùng")
+    if user.id == admin.id and data.get("role") != "admin":
+        raise HTTPException(status_code=400, detail="Không thể tự hạ quyền của chính mình")
     user.role = data.get("role", "user")
     db.commit()
     return user
@@ -131,12 +212,12 @@ def set_role(user_id: int, data: dict, db: Session = Depends(get_db), admin: Use
 def delete_user(user_id: int, db: Session = Depends(get_db), admin: User = Depends(require_admin)):
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
-        raise HTTPException(status_code=404, detail="Not found")
+        raise HTTPException(status_code=404, detail="Không tìm thấy người dùng")
     if user.id == admin.id:
-        raise HTTPException(status_code=400, detail="Cannot delete yourself")
+        raise HTTPException(status_code=400, detail="Không thể xóa tài khoản của chính mình")
     db.delete(user)
     db.commit()
-    return {"ok": True}
+    return {"ok": True, "message": f"Đã xóa tài khoản {user.phone}"}
 
 
 # --- Settings ---

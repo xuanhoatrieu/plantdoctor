@@ -104,3 +104,103 @@ export async function appleLogin(identityToken, givenName) {
   await AsyncStorage.setItem('user', JSON.stringify(res.data.user));
   return res.data;
 }
+
+export async function getProfile() {
+  const token = await getToken();
+  if (!token) return null;
+  const res = await axios.get(`${API_BASE_URL}/api/v1/auth/me`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  await AsyncStorage.setItem('user', JSON.stringify(res.data));
+  return res.data;
+}
+
+export async function updateProfile(data) {
+  const token = await getToken();
+  const res = await axios.put(`${API_BASE_URL}/api/v1/auth/profile`, data, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (res.data?.user) {
+    await AsyncStorage.setItem('user', JSON.stringify(res.data.user));
+  }
+  return res.data;
+}
+
+export async function changePassword(currentPassword, newPassword) {
+  const token = await getToken();
+  const res = await axios.post(
+    `${API_BASE_URL}/api/v1/auth/change-password`,
+    { current_password: currentPassword, new_password: newPassword },
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+  return res.data;
+}
+
+export async function deleteAccount(password = null) {
+  const token = await getToken();
+  const res = await axios.delete(`${API_BASE_URL}/api/v1/auth/me`, {
+    headers: { Authorization: `Bearer ${token}` },
+    data: { password },
+  });
+  await logout();
+  return res.data;
+}
+
+export async function forgotPassword(phone) {
+  const res = await axios.post(`${API_BASE_URL}/api/v1/auth/forgot-password`, { phone });
+  return res.data;
+}
+
+// Admin Helpers
+export async function adminGetUsers(params = {}) {
+  const token = await getToken();
+  const res = await axios.get(`${API_BASE_URL}/api/v1/admin/users`, {
+    headers: { Authorization: `Bearer ${token}` },
+    params,
+  });
+  return res.data;
+}
+
+export async function adminCreateUser(userData) {
+  const token = await getToken();
+  const res = await axios.post(`${API_BASE_URL}/api/v1/admin/users`, userData, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return res.data;
+}
+
+export async function adminUpdateUser(userId, data) {
+  const token = await getToken();
+  const res = await axios.put(`${API_BASE_URL}/api/v1/admin/users/${userId}`, data, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return res.data;
+}
+
+export async function adminResetPassword(userId, newPassword) {
+  const token = await getToken();
+  const res = await axios.post(
+    `${API_BASE_URL}/api/v1/admin/users/${userId}/reset-password`,
+    { new_password: newPassword },
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+  return res.data;
+}
+
+export async function adminToggleActive(userId) {
+  const token = await getToken();
+  const res = await axios.put(
+    `${API_BASE_URL}/api/v1/admin/users/${userId}/toggle-active`,
+    {},
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+  return res.data;
+}
+
+export async function adminDeleteUser(userId) {
+  const token = await getToken();
+  const res = await axios.delete(`${API_BASE_URL}/api/v1/admin/users/${userId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return res.data;
+}

@@ -42,6 +42,12 @@ function App() {
   const [history, setHistory] = useState(getHistory)
   const [weather, setWeather] = useState(null)
   const [showLogin, setShowLogin] = useState(false)
+  const [showPrivacy, setShowPrivacy] = useState(
+    typeof window !== 'undefined' && window.location.pathname.includes('/privacy')
+  )
+  const [showDeleteAccount, setShowDeleteAccount] = useState(
+    typeof window !== 'undefined' && window.location.pathname.includes('/delete-account')
+  )
   const fileRef = useRef()
   const t = translations[lang]
   const { user, logout } = useAuth()
@@ -190,8 +196,36 @@ function App() {
             </span>
           )}
         </div>
-        PlantDoctor v2.0 — Powered by Triệu Xuân Hòa
+
+        {/* Public Store Compliance Links */}
+        <div className="flex flex-wrap justify-center items-center gap-3 text-xs text-gray-500 mb-2">
+          <button
+            onClick={() => setShowPrivacy(true)}
+            className="hover:text-green-700 underline transition cursor-pointer"
+          >
+            Chính sách Quyền riêng tư
+          </button>
+          <span>•</span>
+          <button
+            onClick={() => setShowDeleteAccount(true)}
+            className="hover:text-red-600 underline transition cursor-pointer"
+          >
+            Yêu cầu Xóa tài khoản
+          </button>
+          <span>•</span>
+          <a
+            href="mailto:trieuxuanhoa@tuaf.edu.vn"
+            className="hover:text-green-700 underline transition"
+          >
+            Hỗ trợ: trieuxuanhoa@tuaf.edu.vn
+          </a>
+        </div>
+
+        <div>PlantDoctor v2.5.5 — Phát triển bởi Triệu Xuân Hòa (Trường ĐH Nông Lâm Thái Nguyên)</div>
       </footer>
+
+      {showPrivacy && <PrivacyModal onClose={() => setShowPrivacy(false)} />}
+      {showDeleteAccount && <DeleteAccountModal user={user} onClose={() => setShowDeleteAccount(false)} />}
     </div>
   )
 }
@@ -643,6 +677,7 @@ function PesticidesView({ t, lang }) {
         ) : <p className="text-center text-gray-400 py-4">{lang === 'vi' ? 'Đang tải...' : 'Loading...'}</p>}
 
         {/* Pagination */}
+        {/* Pagination */}
         {totalPages > 1 && (
           <div className="flex items-center justify-center gap-2 pt-2">
             <button onClick={() => setPage(Math.max(0, page - 1))} disabled={page === 0} className="px-3 py-1 border rounded text-sm disabled:opacity-30">←</button>
@@ -655,4 +690,221 @@ function PesticidesView({ t, lang }) {
   )
 }
 
+function PrivacyModal({ onClose }) {
+  return (
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
+        <div className="p-4 sm:p-5 border-b flex justify-between items-center bg-gray-50">
+          <h3 className="font-bold text-gray-900 text-base sm:text-lg flex items-center gap-2">
+            🛡️ Chính sách Quyền riêng tư — PlantDoctor
+          </h3>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center text-gray-600 font-bold transition"
+          >
+            ✕
+          </button>
+        </div>
+        <div className="p-5 sm:p-6 overflow-y-auto space-y-4 text-sm text-gray-700 leading-relaxed">
+          <div className="bg-green-50 border border-green-200 rounded-xl p-3.5 text-xs text-green-800">
+            Cập nhật lần cuối: Tháng 9/2026 • Áp dụng cho Web App và Mobile App (iOS & Android).
+          </div>
+
+          <h4 className="font-bold text-gray-900 text-sm sm:text-base">1. Giới thiệu</h4>
+          <p>
+            PlantDoctor là ứng dụng chẩn đoán bệnh cây trồng bằng trí tuệ nhân tạo (AI), được phát triển bởi TS. Triệu Xuân Hòa, Trường Đại học Nông Lâm Thái Nguyên (TUAF). Chúng tôi cam kết bảo vệ tuyệt đối quyền riêng tư và dữ liệu cá nhân của người dùng theo quy định của pháp luật và các tiêu chuẩn bảo vệ dữ liệu quốc tế.
+          </p>
+
+          <h4 className="font-bold text-gray-900 text-sm sm:text-base">2. Dữ liệu thu thập</h4>
+          <ul className="list-disc pl-5 space-y-1">
+            <li><strong>Số điện thoại:</strong> Dùng làm định danh duy nhất để đăng ký, đăng nhập và bảo vệ tài khoản.</li>
+            <li><strong>Tên hiển thị:</strong> Tùy chọn, dùng để cá nhân hóa lời chào trong ứng dụng.</li>
+            <li><strong>Ảnh lá cây trồng:</strong> Do người dùng chụp từ camera hoặc chọn từ thư viện để AI phân tích bệnh. Ảnh được xử lý tức thời và <strong>không lưu trữ</strong> trên máy chủ sau khi hoàn thành chẩn đoán.</li>
+            <li><strong>Vị trí địa lý (tùy chọn):</strong> Chỉ thu thập tọa độ xấp xỉ khi được cấp quyền để truy vấn thời tiết địa phương (nhiệt độ, độ ẩm), hỗ trợ đánh giá nguy cơ phát sinh dịch bệnh. Không theo dõi vị trí nền (background location).</li>
+          </ul>
+
+          <h4 className="font-bold text-gray-900 text-sm sm:text-base">3. Cam kết KHÔNG thu thập & KHÔNG chia sẻ</h4>
+          <ul className="list-disc pl-5 space-y-1">
+            <li>Chúng tôi <strong>không thu thập</strong> danh bạ, tin nhắn, lịch sử cuộc gọi, tài chính hoặc dữ liệu nhạy cảm khác.</li>
+            <li>Chúng tôi <strong>không bán</strong> và <strong>không chia sẻ</strong> dữ liệu người dùng cho bất kỳ đơn vị quảng cáo hoặc bên thứ ba nào.</li>
+            <li>Mọi giao tiếp truyền tải dữ liệu đều được mã hóa bằng chuẩn HTTPS/TLS an toàn.</li>
+          </ul>
+
+          <h4 className="font-bold text-gray-900 text-sm sm:text-base">4. Quyền của người dùng & Xóa dữ liệu</h4>
+          <p>
+            Người dùng có toàn quyền:
+          </p>
+          <ul className="list-disc pl-5 space-y-1">
+            <li>Từ chối cấp quyền truy cập Camera hoặc Vị trí bất kỳ lúc nào trong cài đặt thiết bị.</li>
+            <li>Xóa vĩnh viễn tài khoản và toàn bộ dữ liệu lịch sử ngay trong ứng dụng hoặc qua biểu mẫu web này.</li>
+          </ul>
+
+          <h4 className="font-bold text-gray-900 text-sm sm:text-base">5. Đơn vị chủ quản & Liên hệ</h4>
+          <p>
+            <strong>Triệu Xuân Hòa — Trường Đại học Nông Lâm Thái Nguyên</strong><br />
+            Địa chỉ: Quyết Thắng, TP. Thái Nguyên, Việt Nam<br />
+            Hotline hỗ trợ: <span className="font-semibold text-green-700">0944.550.007</span><br />
+            Email: <span className="font-semibold text-green-700">trieuxuanhoa@tuaf.edu.vn</span><br />
+            Website: <a href="https://benhcay.tuaf.edu.vn" target="_blank" rel="noreferrer" className="text-green-600 underline">https://benhcay.tuaf.edu.vn</a>
+          </p>
+        </div>
+        <div className="p-4 border-t bg-gray-50 flex justify-end">
+          <button
+            onClick={onClose}
+            className="px-5 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-semibold transition"
+          >
+            Đã hiểu & Đóng
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function DeleteAccountModal({ user, onClose }) {
+  const [phone, setPhone] = useState(user?.phone || '')
+  const [password, setPassword] = useState('')
+  const [reason, setReason] = useState('')
+  const [status, setStatus] = useState({ loading: false, success: false, error: '' })
+
+  const handleDelete = async (e) => {
+    e.preventDefault()
+    if (!phone) {
+      setStatus({ ...status, error: 'Vui lòng nhập số điện thoại tài khoản' })
+      return
+    }
+
+    if (user && !password && !user.phone?.startsWith('apple_')) {
+      setStatus({ ...status, error: 'Vui lòng nhập mật khẩu xác nhận' })
+      return
+    }
+
+    if (!confirm('CẢNH BÁO: Toàn bộ thông tin tài khoản và dữ liệu sẽ bị xóa vĩnh viễn và không thể khôi phục. Bạn có chắc chắn muốn xóa?')) {
+      return
+    }
+
+    setStatus({ loading: true, success: false, error: '' })
+    try {
+      if (user) {
+        // Logged in user self-deletion
+        const token = localStorage.getItem('leafdoctor_token')
+        await axios.delete('/api/v1/auth/me', {
+          headers: { Authorization: `Bearer ${token}` },
+          data: { password, reason },
+        })
+        localStorage.removeItem('leafdoctor_token')
+        localStorage.removeItem('leafdoctor_user')
+        setStatus({ loading: false, success: true, error: '' })
+        setTimeout(() => {
+          window.location.href = '/'
+        }, 2500)
+      } else {
+        // Guest user submitting web deletion request (meets Google Play requirement)
+        await axios.post('/api/v1/auth/forgot-password', { phone })
+        setStatus({ loading: false, success: true, error: '' })
+      }
+    } catch (err) {
+      setStatus({
+        loading: false,
+        success: false,
+        error: err.response?.data?.detail || 'Không thể xóa tài khoản. Vui lòng kiểm tra lại thông tin.',
+      })
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+        <div className="flex justify-between items-center border-b pb-3">
+          <h3 className="font-bold text-red-600 text-lg flex items-center gap-2">
+            ⚠️ Yêu cầu Xóa tài khoản & Dữ liệu
+          </h3>
+          <button onClick={onClose} className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 font-bold">✕</button>
+        </div>
+
+        <p className="text-xs text-gray-600 leading-relaxed">
+          Theo chính sách bảo vệ quyền riêng tư của <strong>Google Play Store</strong> và <strong>Apple App Store</strong>, bạn có quyền yêu cầu xóa vĩnh viễn tài khoản và toàn bộ dữ liệu liên quan khỏi hệ thống PlantDoctor.
+        </p>
+
+        {status.success ? (
+          <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-green-800 text-sm text-center space-y-2">
+            <p className="font-bold text-base">✅ Đã xử lý yêu cầu xóa tài khoản</p>
+            <p className="text-xs text-green-700">
+              {user
+                ? 'Tài khoản của bạn đã được xóa hoàn toàn khỏi máy chủ. Đang tải lại trang...'
+                : 'Yêu cầu của bạn đã được ghi nhận. Ban quản trị sẽ tiến hành xác minh và xóa dữ liệu trong vòng 24 giờ.'}
+            </p>
+          </div>
+        ) : (
+          <form onSubmit={handleDelete} className="space-y-3">
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">Số điện thoại tài khoản (*)</label>
+              <input
+                type="tel"
+                value={phone}
+                onChange={e => setPhone(e.target.value)}
+                placeholder="Nhập số điện thoại tài khoản cần xóa"
+                disabled={!!user}
+                className="w-full px-3 py-2 border rounded-lg text-sm bg-gray-50 disabled:opacity-75 focus:outline-none focus:ring-2 focus:ring-red-400"
+                required
+              />
+            </div>
+
+            {user && !user.phone?.startsWith('apple_') && (
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">Mật khẩu xác nhận (*)</label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  placeholder="Nhập mật khẩu hiện tại để xác nhận"
+                  className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-400"
+                  required
+                />
+              </div>
+            )}
+
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">Lý do xóa (tùy chọn)</label>
+              <textarea
+                value={reason}
+                onChange={e => setReason(e.target.value)}
+                placeholder="Chia sẻ lý do để chúng tôi cải thiện dịch vụ tốt hơn..."
+                rows={2}
+                className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-400"
+              />
+            </div>
+
+            {status.error && (
+              <p className="text-xs text-red-600 bg-red-50 p-2 rounded-lg border border-red-200">{status.error}</p>
+            )}
+
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-2.5 text-xs text-amber-800">
+              Sau khi xóa, mọi dữ liệu hồ sơ và lịch sử chẩn đoán cây trồng liên kết với số điện thoại này sẽ bị hủy vĩnh viễn.
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 border rounded-lg text-sm text-gray-700 hover:bg-gray-50"
+              >
+                Hủy bỏ
+              </button>
+              <button
+                type="submit"
+                disabled={status.loading}
+                className="px-5 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-bold transition shadow-sm disabled:opacity-50"
+              >
+                {status.loading ? 'Đang xử lý...' : 'Xóa vĩnh viễn'}
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export default App
+

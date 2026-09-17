@@ -18,8 +18,16 @@ def verify_password(password: str, hashed: str) -> bool:
     return hash_password(password) == hashed
 
 
+import datetime as dt
+
+
 def create_token(user_id: int, role: str) -> str:
-    return jwt.encode({"user_id": user_id, "role": role}, SECRET_KEY, algorithm="HS256")
+    payload = {
+        "user_id": user_id,
+        "role": role,
+        "exp": dt.datetime.utcnow() + dt.timedelta(days=30),
+    }
+    return jwt.encode(payload, SECRET_KEY, algorithm="HS256")
 
 
 def decode_token(token: str) -> dict:
@@ -38,6 +46,8 @@ async def get_current_user(
     token = authorization[7:]
     data = decode_token(token)
     user = db.query(User).filter(User.id == data["user_id"]).first()
+    if user and not user.is_active:
+        raise HTTPException(status_code=403, detail="Tài khoản đã bị tạm khóa")
     return user
 
 
