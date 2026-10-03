@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "PlantDoctor",
+    "name": "TUAF PlantDoctor",
     "slug": "plantdoctor",
-    "version": "1.0.2",
+    "version": "1.1.2",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -14,6 +14,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.trieuxuanhoa.plantdoctor",
+      "buildNumber": "11",
       "usesAppleSignIn": true,
       "infoPlist": {
         "NSCameraUsageDescription": "PlantDoctor cần truy cập camera để chụp ảnh lá cây chẩn đoán bệnh",
@@ -28,7 +29,7 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.trieuxuanhoa.plantdoctor",
-      "versionCode": 9,
+      "versionCode": 11,
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.ACCESS_COARSE_LOCATION",

@@ -1,0 +1,57 @@
+[
+  {
+    "id": "citrus_canker_001",
+    "image_path": "benchmark_data/samples/citrus_canker_001.jpg",
+    "group": "standard_leaf",
+    "expected_plant": "Cam",
+    "expected_plant_aliases": ["cam", "citrus", "chanh", "quýt", "bưởi"],
+    "expected_disease": "Bệnh loét cam",
+    "expected_disease_aliases": ["loét cam", "bệnh loét", "loét do vi khuẩn", "citrus canker", "loét lá"],
+    "is_healthy": false,
+    "recommended_actives": ["Đồng Hydroxide", "Đồng Oxychloride", "Kasugamycin", "Streptomycin"]
+  },
+  {
+    "id": "rice_blast_002",
+    "image_path": "benchmark_data/samples/rice_blast_002.jpg",
+    "group": "field_condition",
+    "expected_plant": "Lúa",
+    "expected_plant_aliases": ["lúa", "rice"],
+    "expected_disease": "Bệnh đạo ôn lá",
+    "expected_disease_aliases": ["đạo ôn", "đạo ôn lá", "cháy lá", "rice blast", "magnaporthe oryzae"],
+    "is_healthy": false,
+    "recommended_actives": ["Tricyclazole", "Isoprothiolane", "Kasugamycin", "Fenoxanil"]
+  },
+  {
+    "id": "tea_blister_003",
+    "image_path": "benchmark_data/samples/tea_blister_003.jpg",
+    "group": "field_condition",
+    "expected_plant": "Chè",
+    "expected_plant_aliases": ["chè", "trà", "tea"],
+    "expected_disease": "Bệnh phồng lá chè",
+    "expected_disease_aliases": ["phồng lá", "phồng lá chè", "blister blight", "chè phồng lá"],
+    "is_healthy": false,
+    "recommended_actives": ["Hexaconazole", "Difenoconazole", "Đồng Hydroxide"]
+  },
+  {
+    "id": "coffee_rust_004",
+    "image_path": "benchmark_data/samples/coffee_rust_004.jpg",
+    "group": "standard_leaf",
+    "expected_plant": "Cà phê",
+    "expected_plant_aliases": ["cà phê", "coffee"],
+    "expected_disease": "Bệnh rỉ sắt cà phê",
+    "expected_disease_aliases": ["rỉ sắt", "gỉ sắt", "coffee rust", "hemileia vastatrix"],
+    "is_healthy": false,
+    "recommended_actives": ["Cyproconazole", "Hexaconazole", "Difenoconazole"]
+  },
+  {
+    "id": "stem_canker_005",
+    "image_path": "benchmark_data/samples/stem_canker_005.jpg",
+    "group": "trunk_syndrome",
+    "expected_plant": "Thân gỗ / Cây có múi",
+    "expected_plant_aliases": ["thân", "thân gỗ", "bưởi", "cam", "sầu riêng"],
+    "expected_disease": "Hội chứng xì mủ nứt thân",
+    "expected_disease_aliases": ["xì mủ", "nứt thân", "loét thân", "thối thân", "phytophthora"],
+    "is_healthy": false,
+    "recommended_actives": ["Metalaxyl", "Fosetyl-aluminium", "Mancozeb", "Đồng Hydroxide"]
+  }
+]

@@ -38,6 +38,7 @@ function App() {
   const [preview, setPreview] = useState(null)
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState(null)
+  const [selectedPlant, setSelectedPlant] = useState(null)
   const [error, setError] = useState('')
   const [history, setHistory] = useState(getHistory)
   const [weather, setWeather] = useState(null)
@@ -102,12 +103,38 @@ function App() {
       form.append('file', file)
       form.append('model_id', 'gpt55_vision')
       form.append('lang', lang)
+      if (selectedPlant) {
+        form.append('plant_hint', selectedPlant)
+      }
       const res = await axios.post('/api/v1/predict', form)
       setResult(res.data)
-      const entry = { date: new Date().toISOString(), preview, result: res.data }
-      const h = [entry, ...history].slice(0, 20)
-      setHistory(h)
-      saveHistory(h)
+      if (res.data?.status === 'success') {
+        const entry = { date: new Date().toISOString(), preview, result: res.data }
+        const h = [entry, ...history].slice(0, 20)
+        setHistory(h)
+        saveHistory(h)
+      }
+    } catch { setError(t.error) }
+    finally { setLoading(false) }
+  }
+
+  const handleClarify = async (candidateName) => {
+    if (!result?.session_token) return
+    setLoading(true)
+    setError('')
+    try {
+      const res = await axios.post('/api/v1/predict/clarify', {
+        session_token: result.session_token,
+        selected_plant: candidateName,
+        lang,
+      })
+      setResult(res.data)
+      if (res.data?.status === 'success') {
+        const entry = { date: new Date().toISOString(), preview, result: res.data }
+        const h = [entry, ...history].slice(0, 20)
+        setHistory(h)
+        saveHistory(h)
+      }
     } catch { setError(t.error) }
     finally { setLoading(false) }
   }
@@ -161,7 +188,7 @@ function App() {
       </nav>
 
       <main className="flex-1 max-w-6xl mx-auto w-full px-3 sm:px-4 py-4 sm:py-6">
-        {tab === 'diagnose' && <DiagnoseView {...{t, file, preview, loading, result, error, topPrediction, isHealthy, fileRef, handleFile, handlePredict, handleReset, weather, lang, user}} />}
+        {tab === 'diagnose' && <DiagnoseView {...{t, file, preview, loading, result, error, topPrediction, isHealthy, fileRef, handleFile, handlePredict, handleReset, weather, lang, user, selectedPlant, setSelectedPlant, handleClarify}} />}
         {tab === 'history' && user && <HistoryView {...{t, history, setHistory}} />}
         {tab === 'library' && user && <LibraryView {...{t, lang}} />}
         {tab === 'pesticides' && user && <PesticidesView {...{t, lang}} />}
@@ -263,11 +290,45 @@ function WeatherWidget({ weather, t }) {
   )
 }
 
-function DiagnoseView({ t, file, preview, loading, result, error, topPrediction, isHealthy, fileRef, handleFile, handlePredict, handleReset, weather, lang, user }) {
+function DiagnoseView({ t, file, preview, loading, result, error, topPrediction, isHealthy, fileRef, handleFile, handlePredict, handleReset, weather, lang, user, selectedPlant, setSelectedPlant, handleClarify }) {
   return (
     <div className="grid md:grid-cols-2 gap-4 sm:gap-6">
       {/* Left column */}
       <div className="space-y-3 sm:space-y-4">
+        {/* Plant Selector Chips */}
+        <div className="bg-white rounded-xl border p-3">
+          <label className="block text-xs font-semibold text-gray-700 mb-2">
+            🌾 {lang === 'vi' ? 'Chọn loại cây trồng (Tùy chọn — giúp AI chẩn đoán siêu chuẩn):' : 'Select crop (Optional — speeds up diagnosis):'}
+          </label>
+          <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-thin">
+            {[
+              { id: null, label: lang === 'vi' ? 'Tất cả' : 'All', icon: '🌱' },
+              { id: 'Cam/Bưởi', label: 'Cam/Bưởi', icon: '🍊' },
+              { id: 'Lúa', label: 'Lúa', icon: '🌾' },
+              { id: 'Chè', label: 'Chè', icon: '🍵' },
+              { id: 'Cà phê', label: 'Cà phê', icon: '☕' },
+              { id: 'Sầu riêng', label: 'Sầu riêng', icon: '🍈' },
+              { id: 'Hồ tiêu/Ớt', label: 'Tiêu/Ớt', icon: '🌶️' },
+              { id: 'Cà chua', label: 'Cà chua', icon: '🍅' },
+              { id: 'Chuối', label: 'Chuối', icon: '🍌' },
+              { id: 'Ngô', label: 'Ngô', icon: '🌽' },
+            ].map((item) => (
+              <button
+                key={String(item.id)}
+                type="button"
+                onClick={() => setSelectedPlant(item.id)}
+                className={`px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap transition flex items-center gap-1 ${
+                  selectedPlant === item.id
+                    ? 'bg-green-700 text-white shadow-sm'
+                    : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                }`}
+              >
+                <span>{item.icon}</span>
+                <span>{item.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
         {/* Steps guide */}
         {!preview && !result && (
           <div className="bg-white rounded-xl border p-3 sm:p-4">

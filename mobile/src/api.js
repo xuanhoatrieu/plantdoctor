@@ -30,21 +30,40 @@ export async function getToken() {
   return await AsyncStorage.getItem('token');
 }
 
-export async function predict(imageUri, lang = 'vi') {
+export async function predict(imageInput, lang = 'vi', plantHint = null) {
   const token = await getToken();
   const form = new FormData();
   
-  const filename = imageUri.split('/').pop() || 'photo.jpg';
-  const match = /\.(\w+)$/.exec(filename);
-  const type = match ? `image/${match[1].toLowerCase() === 'jpg' ? 'jpeg' : match[1].toLowerCase()}` : 'image/jpeg';
+  const uris = Array.isArray(imageInput) ? imageInput.filter(Boolean) : [imageInput];
+  if (uris.length === 0) {
+    throw new Error('Vui lòng chọn ít nhất một hình ảnh');
+  }
 
-  form.append('file', {
-    uri: imageUri,
-    name: filename,
-    type: type,
+  uris.forEach((uri, idx) => {
+    const filename = uri.split('/').pop() || `photo_${idx}.jpg`;
+    const match = /\.(\w+)$/.exec(filename);
+    const type = match ? `image/${match[1].toLowerCase() === 'jpg' ? 'jpeg' : match[1].toLowerCase()}` : 'image/jpeg';
+
+    if (uris.length === 1) {
+      form.append('file', {
+        uri: uri,
+        name: filename,
+        type: type,
+      });
+    } else {
+      form.append('files', {
+        uri: uri,
+        name: filename,
+        type: type,
+      });
+    }
   });
+
   form.append('model_id', 'gpt55_vision');
   form.append('lang', lang);
+  if (plantHint && plantHint.trim()) {
+    form.append('plant_hint', plantHint.trim());
+  }
 
   const headers = {
     Accept: 'application/json',
@@ -93,6 +112,42 @@ export async function predict(imageUri, lang = 'vi') {
     }
     throw e;
   }
+}
+
+export async function clarifyPrediction(sessionToken, selectedPlant, lang = 'vi') {
+  const token = await getToken();
+  const headers = {
+    'Content-Type': 'application/json',
+    Accept: 'application/json',
+  };
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${API_BASE_URL}/api/v1/predict/clarify`, {
+    method: 'POST',
+    body: JSON.stringify({
+      session_token: sessionToken,
+      selected_plant: selectedPlant,
+      lang,
+    }),
+    headers,
+  });
+
+  const responseText = await res.text();
+  let data;
+  try {
+    data = JSON.parse(responseText);
+  } catch {
+    throw new Error(`Phản hồi không hợp lệ (${res.status})`);
+  }
+
+  if (!res.ok) {
+    const detail = data?.detail || 'Lỗi khi xác nhận làm rõ loại cây';
+    throw new Error(typeof detail === 'string' ? detail : JSON.stringify(detail));
+  }
+
+  return data;
 }
 
 export async function appleLogin(identityToken, givenName) {
