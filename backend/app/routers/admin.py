@@ -232,8 +232,8 @@ def get_settings(db: Session = Depends(get_db), admin: User = Depends(require_ad
         "llm_api_url": "http://152.67.112.145:8317/v1/chat/completions",
         "llm_api_key": "ai-teaching-assistant-prod",
         "llm_model_name": "gpt-5.5",
-        "app_ios_url": "https://apps.apple.com/app/plantdoctor",
-        "app_android_url": "https://benhcay.tuaf.edu.vn/plantdoctor.apk",
+        "app_ios_url": "https://apps.apple.com/vn/app/tuaf-plantdoctor/id6773555310",
+        "app_android_url": "https://play.google.com/store/apps/details?id=com.trieuxuanhoa.plantdoctor&pcampaignid=web_share",
     }
     for k, v in defaults.items():
         if k not in settings_dict:

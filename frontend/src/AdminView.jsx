@@ -958,8 +958,8 @@ function MobileAppsAdmin({ token, lang, onConfigUpdated }) {
   }
 
   const resetToDefaults = () => {
-    setIosUrl('https://apps.apple.com/app/plantdoctor')
-    setAndroidUrl('https://benhcay.tuaf.edu.vn/plantdoctor.apk')
+    setIosUrl('https://apps.apple.com/vn/app/tuaf-plantdoctor/id6773555310')
+    setAndroidUrl('https://play.google.com/store/apps/details?id=com.trieuxuanhoa.plantdoctor&pcampaignid=web_share')
   }
 
   const testOpenLink = (url) => {
@@ -1017,7 +1017,7 @@ function MobileAppsAdmin({ token, lang, onConfigUpdated }) {
               type="text"
               value={iosUrl}
               onChange={e => setIosUrl(e.target.value)}
-              placeholder="https://apps.apple.com/app/plantdoctor"
+              placeholder="https://apps.apple.com/vn/app/tuaf-plantdoctor/id6773555310"
               className="flex-1 px-3 py-2 border rounded-lg text-sm bg-white focus:ring-2 focus:ring-green-500 focus:outline-none"
             />
             <button
@@ -1050,7 +1050,7 @@ function MobileAppsAdmin({ token, lang, onConfigUpdated }) {
               type="text"
               value={androidUrl}
               onChange={e => setAndroidUrl(e.target.value)}
-              placeholder="https://benhcay.tuaf.edu.vn/plantdoctor.apk"
+              placeholder="https://play.google.com/store/apps/details?id=com.trieuxuanhoa.plantdoctor&pcampaignid=web_share"
               className="flex-1 px-3 py-2 border rounded-lg text-sm bg-white focus:ring-2 focus:ring-green-500 focus:outline-none"
             />
             <button

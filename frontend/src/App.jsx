@@ -55,8 +55,8 @@ function App() {
   const isAdmin = user?.role === 'admin'
 
   const [appLinks, setAppLinks] = useState({
-    ios: 'https://apps.apple.com/app/plantdoctor',
-    android: 'https://benhcay.tuaf.edu.vn/plantdoctor.apk',
+    ios: 'https://apps.apple.com/vn/app/tuaf-plantdoctor/id6773555310',
+    android: 'https://play.google.com/store/apps/details?id=com.trieuxuanhoa.plantdoctor&pcampaignid=web_share',
   })
 
   const fetchPublicConfig = () => {
