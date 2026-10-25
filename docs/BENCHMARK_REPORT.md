@@ -1,34 +1,41 @@
-# Báo cáo Đánh giá Độ chính xác AI (PlantDoctor Benchmark Report)
+# Báo cáo Đánh giá Độ chính xác AI — PlantDoctor
 
-> **Đơn vị thực hiện:** Trường Đại học Nông Lâm Thái Nguyên  
-> **Thời gian tạo:** 2026-10-03 08:02:48  
-> **Mô hình AI:** GPT-5.5 Vision (kết hợp pHash caching & self-consistency voting)
+> **Trạng thái (cập nhật 2026-10-03, US-021): CHƯA CÓ KẾT QUẢ ĐO THẬT.**
 
----
+## Vì sao file này không còn số liệu?
 
-## 1. Kết quả tổng quan (Tổng số mẫu: 5)
+Phiên bản trước của file này hiển thị 100% / 100% / 100% và độ trễ 1.2s cho 5 mẫu.
+Đó là **dữ liệu mô phỏng** do script `eval_benchmark.py` cũ tự sinh khi
+không tìm thấy ảnh mẫu (thư mục `backend/benchmark_data/samples/` trống) —
+**không phải** kết quả AI chẩn đoán trên ảnh thật. Số liệu đó đã bị gỡ bỏ để tránh hiểu nhầm.
 
-| Chỉ số đánh giá | Điểm đạt được | Đánh giá chất lượng |
-| :--- | :--- | :--- |
-| **Cấp 1: Độ chính xác cây trồng (Plant Accuracy)** | **100.0%** (5/5) | Xuất sắc |
-| **Cấp 2: Phát hiện bệnh vs Khỏe (Detection Rate)** | **100.0%** (5/5) | Tuyệt đối |
-| **Cấp 3: Độ chính xác bệnh cụ thể (Disease Accuracy)** | **100.0%** (5/5) | Rất cao |
-| **Thời gian phản hồi trung bình (Latency)** | **1.2s** | Đạt chuẩn trải nghiệm người dùng (< 5s) |
+## Cách đo độ chính xác thật
 
----
+1. Thu thập ảnh thực địa, đặt vào `backend/benchmark_data/samples/`.
+2. Chuyên gia BVTV gán nhãn trong `backend/benchmark_data/ground_truth.json`
+   (xem hướng dẫn ở `backend/benchmark_data/README.md`).
+3. Chạy (từ thư mục `backend/`, backend AI phải truy cập được):
 
-## 2. Chi tiết từng mẫu kiểm thử
+   ```bash
+   venv/bin/python scripts/eval_benchmark.py
+   ```
 
-| Mã ca | Nhóm ảnh | Kỳ vọng (Chuẩn) | Kết quả AI | Độ tin cậy | Đúng cây? | Đúng bệnh? | Thời gian |
-| :--- | :--- | :--- | :--- | :--- | :---: | :---: | :---: |
-| `citrus_canker_001` | standard_leaf | Cam - Bệnh loét cam | Cam - Bệnh loét cam | 88% | ✅ | ✅ | 1.2s |
-| `rice_blast_002` | field_condition | Lúa - Bệnh đạo ôn lá | Lúa - Bệnh đạo ôn lá | 88% | ✅ | ✅ | 1.2s |
-| `tea_blister_003` | field_condition | Chè - Bệnh phồng lá chè | Chè - Bệnh phồng lá chè | 88% | ✅ | ✅ | 1.2s |
-| `coffee_rust_004` | standard_leaf | Cà phê - Bệnh rỉ sắt cà phê | Cà phê - Bệnh rỉ sắt cà phê | 88% | ✅ | ✅ | 1.2s |
-| `stem_canker_005` | trunk_syndrome | Thân gỗ / Cây có múi - Hội chứng xì mủ nứt thân | Thân gỗ / Cây có múi - Hội chứng xì mủ nứt thân | 88% | ✅ | ✅ | 1.2s |
+4. Báo cáo được ghi vào `backend/benchmark_data/reports/benchmark_<thời-gian>.md` và `.json`.
 
----
+Script mới:
+- **Bỏ qua** (và liệt kê) các ca thiếu ảnh — không bao giờ tự bịa kết quả.
+- Báo cáo 4 cấp: đúng cây, phát hiện bệnh/khỏe, đúng bệnh, an toàn thuốc
+  (không chứa hoạt chất cấm + trùng với hoạt chất khuyến nghị).
+- Kèm khoảng tin cậy Wilson 95%, độ trễ p50/p90, cảnh báo khi mẫu nhỏ.
+- Chế độ `--dry-run` chỉ để kiểm tra pipeline; báo cáo sinh ra có hậu tố
+  `_MO_PHONG` và banner "MÔ PHỎNG — KHÔNG PHẢI KẾT QUẢ THẬT".
 
-## 3. Khuyến nghị & Bước tiếp theo
-1. **Mở rộng tập mẫu:** Tiếp tục thu thập thêm 100 ảnh ngoài đồng ruộng tại các hợp tác xã nông nghiệp tỉnh Thái Nguyên.
-2. **Ảnh chụp cận cảnh vết bệnh:** Khuyến khích người dùng sử dụng tính năng chụp 2 ảnh (Slot 1 vết bệnh + Slot 2 cành lá) để giữ độ chính xác trên 95%.
+> [!IMPORTANT]
+> Với dưới ~30 ảnh mỗi nhóm, khoảng tin cậy rất rộng — không nên công bố một con số
+> "độ chính xác X%" duy nhất cho tới khi có tập mẫu đủ lớn (khuyến nghị ≥ 100 ảnh thực địa).
+
+## Nguồn dữ liệu bổ sung
+
+Phản hồi đúng/sai của người dùng (tab **💬 Phản hồi chẩn đoán** trong Admin) là
+nguồn ước lượng thực tế, nhưng có thiên lệch tự chọn (người gặp kết quả sai dễ phản hồi hơn).
+Các ca được chuyên gia xác nhận nên được đưa vào `ground_truth.json`.

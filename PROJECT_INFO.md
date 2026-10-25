@@ -9,7 +9,7 @@
 ## Tech Stack
 
 ### Web (đã hoàn thành)
-- **Backend:** FastAPI + GPT-5.5 Vision API (qua proxy 152.67.112.145:8317)
+- **Backend:** FastAPI + GPT-5.5 Vision API (qua LLM proxy nội bộ)
 - **Frontend:** React + Vite + TailwindCSS
 - **AI:** GPT-5.5 Vision (primary), ResNet50 + MobileNetV2 + SigLIP2 (offline backup)
 - **Deploy:** VPS (sẽ production)
@@ -30,8 +30,7 @@
 7. 🌐 Đa ngôn ngữ (Việt/Anh)
 
 ## API
-- **Proxy:** 152.67.112.145:8317
-- **API Key:** ai-teaching-assistant-prod
+- **LLM proxy / API key:** cấu hình trong Admin > Cấu hình AI Model hoặc biến môi trường `LLM_API_URL`, `LLM_API_KEY` (KHÔNG ghi vào tài liệu/mã nguồn)
 - **Model:** gpt-5.5
 - **Endpoint:** POST /api/v1/predict (multipart: file, model_id=gpt55_vision, lang)
 

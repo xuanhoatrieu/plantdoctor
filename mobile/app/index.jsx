@@ -13,7 +13,12 @@ import {
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { predict, clarifyPrediction } from '../src/api';
+import { predict, clarifyPrediction, submitFeedback } from '../src/api';
+import SmartCamera from '../src/components/SmartCamera';
+import { FeedbackModal, CustomPlantModal } from '../src/components/DiagnosisModals';
+
+// Keep in sync with backend QUALITY_MIN_SIDE_PX (backend/app/models/vlm.py)
+const MIN_SIDE_PX = 300;
 
 const POPULAR_PLANTS = [
   { id: null, label: 'Tất cả cây', icon: '🌱' },
@@ -56,12 +61,16 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(false);
   const [clarifying, setClarifying] = useState(false);
   const [result, setResult] = useState(null);
-  const [feedbackGiven, setFeedbackGiven] = useState(null); // 'yes' | 'no'
+  const [cameraSlot, setCameraSlot] = useState(null); // null | 1 | 2 -> SmartCamera open for that slot
+  const [wasClarified, setWasClarified] = useState(false);
+  const [feedbackState, setFeedbackState] = useState('idle'); // idle | sending | sent
+  const [feedbackModal, setFeedbackModal] = useState(false);
+  const [customPlantOpen, setCustomPlantOpen] = useState(false);
 
-  // Load saved plant filter on start
+  // Load saved plant filter on start (only accept a known value)
   useEffect(() => {
     AsyncStorage.getItem('last_selected_plant').then((val) => {
-      if (val) setSelectedPlant(val);
+      if (val && POPULAR_PLANTS.some((p) => p.id === val)) setSelectedPlant(val);
     });
   }, []);
 
@@ -74,44 +83,82 @@ export default function HomeScreen() {
     }
   };
 
+  const clearResult = () => {
+    setResult(null);
+    setFeedbackState('idle');
+    setWasClarified(false);
+  };
+
+  const setSlotImage = (slotIndex, asset) => {
+    if (slotIndex === 1) setImage1(asset);
+    else setImage2(asset);
+    clearResult();
+  };
+
+  // Resolution is the only check we can do on-device without extra native libraries.
+  // Darkness/blur are checked by the server before the AI is called (quality gate).
+  const acceptAsset = (slotIndex, asset, fromCamera) => {
+    const w = asset?.width || 0;
+    const h = asset?.height || 0;
+    if (w > 0 && h > 0 && Math.min(w, h) < MIN_SIDE_PX) {
+      Alert.alert(
+        'Ảnh độ phân giải thấp',
+        `Ảnh chỉ có ${w}x${h}px nên AI khó nhìn rõ vết bệnh. Nên chụp gần hơn hoặc dùng ảnh gốc từ camera.`,
+        [
+          { text: 'Chọn lại', onPress: () => pickImage(slotIndex, fromCamera) },
+          { text: 'Vẫn dùng', onPress: () => setSlotImage(slotIndex, asset) },
+        ]
+      );
+      return;
+    }
+    setSlotImage(slotIndex, asset);
+  };
+
   const pickImage = async (slotIndex, useCamera) => {
     if (useCamera) {
-      const { status } = await ImagePicker.requestCameraPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert('Cần quyền camera', 'Vui lòng cấp quyền camera trong Cài đặt');
-        return;
-      }
-    } else {
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert('Cần quyền thư viện ảnh', 'Vui lòng cấp quyền trong Cài đặt');
-        return;
-      }
+      // SmartCamera handles its own permission flow
+      setCameraSlot(slotIndex);
+      return;
     }
-
-    const method = useCamera ? ImagePicker.launchCameraAsync : ImagePicker.launchImageLibraryAsync;
-    const res = await method({ mediaTypes: ['images'], quality: 0.8 });
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Cần quyền thư viện ảnh', 'Vui lòng cấp quyền trong Cài đặt');
+      return;
+    }
+    const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.8 });
     if (!res.canceled && res.assets?.[0]) {
-      const asset = res.assets[0];
-      if (slotIndex === 1) {
-        setImage1(asset);
-      } else {
-        setImage2(asset);
-      }
-      setResult(null);
-      setFeedbackGiven(null);
+      acceptAsset(slotIndex, res.assets[0], false);
     }
   };
 
-  const diagnose = async () => {
+  const onCameraCapture = (asset) => {
+    const slot = cameraSlot || 1;
+    setCameraSlot(null);
+    // Wait for the camera modal to finish closing: iOS cannot present an Alert during dismissal.
+    setTimeout(() => acceptAsset(slot, asset, true), 400);
+  };
+
+  const saveHistory = async (data, plantHint) => {
+    const history = JSON.parse((await AsyncStorage.getItem('history')) || '[]');
+    history.unshift({
+      date: new Date().toISOString(),
+      result: data,
+      imageUri: image1.uri,
+      imageUri2: image2?.uri || null,
+      plantHint,
+    });
+    await AsyncStorage.setItem('history', JSON.stringify(history.slice(0, 30)));
+  };
+
+  // force=true: user chose "Vẫn chẩn đoán" after a low_quality response -> skip the quality gate
+  const diagnose = async (force = false) => {
     if (!image1) {
       Alert.alert('Thiếu ảnh', 'Vui lòng chụp hoặc chọn ít nhất 1 ảnh vết bệnh');
       return;
     }
 
     setLoading(true);
-    setResult(null);
-    setFeedbackGiven(null);
+    clearResult();
 
     const imageUris = [image1.uri];
     if (image2) {
@@ -119,20 +166,10 @@ export default function HomeScreen() {
     }
 
     try {
-      const data = await predict(imageUris, 'vi', selectedPlant);
+      const data = await predict(imageUris, 'vi', selectedPlant, { qualityGate: !force });
       setResult(data);
-
-      // Save to history if diagnosis is complete
       if (data.status === 'success') {
-        const history = JSON.parse((await AsyncStorage.getItem('history')) || '[]');
-        history.unshift({
-          date: new Date().toISOString(),
-          result: data,
-          imageUri: image1.uri,
-          imageUri2: image2?.uri || null,
-          plantHint: selectedPlant,
-        });
-        await AsyncStorage.setItem('history', JSON.stringify(history.slice(0, 30)));
+        await saveHistory(data, selectedPlant);
       }
     } catch (e) {
       console.error('Diagnosis error:', e);
@@ -154,17 +191,9 @@ export default function HomeScreen() {
     try {
       const clarifiedData = await clarifyPrediction(result.session_token, candidatePlantName, 'vi');
       setResult(clarifiedData);
-
-      // Save resolved diagnosis to history
-      const history = JSON.parse((await AsyncStorage.getItem('history')) || '[]');
-      history.unshift({
-        date: new Date().toISOString(),
-        result: clarifiedData,
-        imageUri: image1.uri,
-        imageUri2: image2?.uri || null,
-        plantHint: candidatePlantName,
-      });
-      await AsyncStorage.setItem('history', JSON.stringify(history.slice(0, 30)));
+      setWasClarified(true);
+      setFeedbackState('idle');
+      await saveHistory(clarifiedData, candidatePlantName);
     } catch (e) {
       Alert.alert('Lỗi xác nhận', e.message || 'Không thể xác nhận loại cây');
     } finally {
@@ -172,39 +201,51 @@ export default function HomeScreen() {
     }
   };
 
-  const handleFeedback = (isCorrect) => {
-    setFeedbackGiven(isCorrect ? 'yes' : 'no');
-    if (!isCorrect) {
-      Alert.prompt
-        ? Alert.prompt(
-            'Phản hồi chẩn đoán',
-            'Cây hoặc bệnh thực tế của bạn là gì để chúng tôi cải thiện AI?',
-            [
-              { text: 'Bỏ qua', style: 'cancel' },
-              { text: 'Gửi', onPress: () => Alert.alert('Cảm ơn', 'Đã ghi nhận ý kiến đóng góp của bạn!') },
-            ]
-          )
-        : Alert.alert('Cảm ơn', 'Đã ghi nhận phản hồi để hoàn thiện mô hình AI!');
-    } else {
-      Alert.alert('Cảm ơn', 'Phản hồi tích cực của bạn giúp AI ngày càng chuẩn xác hơn!');
+  const sendFeedback = async (isCorrect, details = {}) => {
+    await submitFeedback({
+      isCorrect,
+      ...details,
+      prediction: result?.predictions?.[0],
+      plantHint: selectedPlant || '',
+      imageCount: image2 ? 2 : 1,
+      wasClarified,
+    });
+    setFeedbackState('sent');
+  };
+
+  const handleThumbUp = async () => {
+    if (feedbackState !== 'idle') return;
+    setFeedbackState('sending');
+    try {
+      await sendFeedback(true);
+    } catch (e) {
+      setFeedbackState('idle');
+      Alert.alert('Chưa gửi được', e.message || 'Vui lòng thử lại sau.');
     }
+  };
+
+  const handleFeedbackSubmit = async (details) => {
+    await sendFeedback(false, details); // errors are shown inside the modal
+    setFeedbackModal(false);
   };
 
   const reset = () => {
     setImage1(null);
     setImage2(null);
-    setResult(null);
-    setFeedbackGiven(null);
+    clearResult();
   };
 
   const qualityWarnings = result?.image_quality_warnings || [];
   const votingUsed = result?.voting_used || false;
   const isCached = result?.cached || false;
   const isClarification = result?.status === 'needs_clarification';
+  const isLowQuality = result?.status === 'low_quality';
 
   const p = result?.predictions?.[0];
   const isHealthy = p?.label?.toLowerCase().includes('healthy') || p?.label?.includes('Khỏe mạnh');
   const hasQualityWarnings = qualityWarnings.length > 0;
+  // Stay on the input view unless we have a real diagnosis to show
+  const showInputView = !result || isClarification || isLowQuality || !p;
 
   return (
     <SafeAreaView style={s.container}>
@@ -228,7 +269,7 @@ export default function HomeScreen() {
         {/* Phase 1.3: Plant Selector Chips */}
         <View style={{ marginBottom: 14 }}>
           <Text style={{ fontSize: 13, fontWeight: '600', color: '#374151', marginBottom: 6 }}>
-            🌾 Chọn loại cây trồng (Tùy chọn — giúp AI chẩn đoán cực nhanh):
+            🌾 Chọn loại cây trồng (Tùy chọn — giúp AI không nhầm loại cây):
           </Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingVertical: 2 }}>
             {POPULAR_PLANTS.map((item) => {
@@ -247,7 +288,7 @@ export default function HomeScreen() {
           </ScrollView>
         </View>
 
-        {!result || isClarification ? (
+        {showInputView ? (
           <>
             {/* Phase 2.1: Mode Switcher & Smart Viewfinder Tips */}
             <View style={s.modeContainer}>
@@ -292,7 +333,7 @@ export default function HomeScreen() {
                 <View style={s.slotHeader}>
                   <Text style={s.slotBadge}>Ảnh 1: Vết bệnh (*)</Text>
                   {image1 && (
-                    <TouchableOpacity onPress={() => setImage1(null)}>
+                    <TouchableOpacity onPress={() => setSlotImage(1, null)}>
                       <Text style={{ color: '#ef4444', fontSize: 12, fontWeight: '700' }}>Xóa</Text>
                     </TouchableOpacity>
                   )}
@@ -324,7 +365,7 @@ export default function HomeScreen() {
                 <View style={s.slotHeader}>
                   <Text style={[s.slotBadge, { backgroundColor: '#f0fdf4', color: '#166534' }]}>Ảnh 2: Toàn cành lá</Text>
                   {image2 && (
-                    <TouchableOpacity onPress={() => setImage2(null)}>
+                    <TouchableOpacity onPress={() => setSlotImage(2, null)}>
                       <Text style={{ color: '#ef4444', fontSize: 12, fontWeight: '700' }}>Xóa</Text>
                     </TouchableOpacity>
                   )}
@@ -383,7 +424,7 @@ export default function HomeScreen() {
                     <TouchableOpacity
                       key={cand.id}
                       style={s.candBtn}
-                      onPress={() => handleClarify(cand.name)}
+                      onPress={() => (cand.id === 'other' ? setCustomPlantOpen(true) : handleClarify(cand.name))}
                       disabled={clarifying}
                     >
                       <Text style={{ fontSize: 18 }}>{cand.icon}</Text>
@@ -410,11 +451,37 @@ export default function HomeScreen() {
               </View>
             )}
 
+            {/* Quality gate: server rejected the photo BEFORE calling the AI (no AI cost) */}
+            {isLowQuality && (
+              <View style={s.lowqBox}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                  <Text style={{ fontSize: 22 }}>📸</Text>
+                  <Text style={{ fontSize: 15, fontWeight: 'bold', color: '#92400e', flex: 1 }}>
+                    Ảnh chưa đủ tốt để chẩn đoán chính xác
+                  </Text>
+                </View>
+                {qualityWarnings.map((w, i) => (
+                  <Text key={i} style={{ fontSize: 13, color: '#92400e', lineHeight: 19, marginTop: 2 }}>• {w}</Text>
+                ))}
+                <Text style={{ fontSize: 11, color: '#b45309', marginTop: 8 }}>
+                  Ảnh chưa được gửi cho AI nên không tốn lượt chẩn đoán. Chụp lại sẽ cho kết quả đáng tin hơn.
+                </Text>
+                <View style={{ flexDirection: 'row', gap: 10, marginTop: 12 }}>
+                  <TouchableOpacity style={[s.lowqBtn, { backgroundColor: '#166534' }]} onPress={() => pickImage(1, true)} disabled={loading}>
+                    <Text style={{ color: '#fff', fontWeight: '700' }}>📷 Chụp lại</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={[s.lowqBtn, { borderWidth: 1.5, borderColor: '#d97706' }]} onPress={() => diagnose(true)} disabled={loading}>
+                    {loading ? <ActivityIndicator color="#b45309" /> : <Text style={{ color: '#b45309', fontWeight: '700' }}>Vẫn chẩn đoán</Text>}
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
+
             {/* Diagnose Button */}
-            {!isClarification && (
+            {!isClarification && !isLowQuality && (
               <TouchableOpacity
                 style={[s.btnPrimary, !image1 && s.btnDisabled]}
-                onPress={diagnose}
+                onPress={() => diagnose(false)}
                 disabled={!image1 || loading}
               >
                 {loading ? (
@@ -430,7 +497,7 @@ export default function HomeScreen() {
 
             <View style={s.noteBox}>
               <Text style={s.noteText}>
-                💡 Gợi ý: Gửi cùng lúc 2 ảnh (ảnh 1 vết bệnh + ảnh 2 cành lá) giúp AI đạt độ chính xác cao nhất (trên 95%).
+                💡 Gợi ý: Gửi cùng lúc 2 ảnh (ảnh 1 vết bệnh + ảnh 2 cành lá) giúp AI nhận đúng loại cây, giảm nhầm lẫn khi ảnh 1 chỉ chụp cận vết bệnh.
               </Text>
             </View>
           </>
@@ -477,7 +544,7 @@ export default function HomeScreen() {
             {isCached && (
               <View style={[s.badgeRow, { backgroundColor: '#f0fdf4', borderColor: '#86efac' }]}>
                 <Text>⚡</Text>
-                <Text style={[s.badgeText, { color: '#166534' }]}>Kết quả từ bộ nhớ đệm (nhất quán 100%)</Text>
+                <Text style={[s.badgeText, { color: '#166534' }]}>Kết quả lấy lại từ lần chẩn đoán trước với ảnh gần giống hệt</Text>
               </View>
             )}
 
@@ -544,23 +611,33 @@ export default function HomeScreen() {
               </View>
             ) : null}
 
-            {/* Phase 3.3: User Feedback Loop */}
+            {/* User feedback: stored on the server for expert review */}
             <View style={s.feedbackCard}>
-              <Text style={s.feedbackTitle}>Chẩn đoán này có chuẩn xác không?</Text>
-              <View style={s.feedbackRow}>
-                <TouchableOpacity
-                  style={[s.feedbackBtn, feedbackGiven === 'yes' && s.feedbackBtnActive]}
-                  onPress={() => handleFeedback(true)}
-                >
-                  <Text style={s.feedbackBtnText}>👍 Chuẩn xác</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[s.feedbackBtn, feedbackGiven === 'no' && s.feedbackBtnNoActive]}
-                  onPress={() => handleFeedback(false)}
-                >
-                  <Text style={s.feedbackBtnText}>👎 Chưa đúng</Text>
-                </TouchableOpacity>
-              </View>
+              {feedbackState === 'sent' ? (
+                <Text style={{ fontSize: 13, color: '#166534', textAlign: 'center', lineHeight: 19 }}>
+                  🙏 Cảm ơn bạn! Phản hồi đã được ghi nhận và sẽ được chuyên gia xem xét để cải thiện độ chính xác.
+                </Text>
+              ) : (
+                <>
+                  <Text style={s.feedbackTitle}>Chẩn đoán này có đúng không?</Text>
+                  <View style={s.feedbackRow}>
+                    <TouchableOpacity
+                      style={[s.feedbackBtn, { borderColor: '#86efac' }]}
+                      onPress={handleThumbUp}
+                      disabled={feedbackState !== 'idle'}
+                    >
+                      {feedbackState === 'sending' ? <ActivityIndicator color="#166534" /> : <Text style={s.feedbackBtnText}>👍 Đúng</Text>}
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[s.feedbackBtn, { borderColor: '#fca5a5' }]}
+                      onPress={() => setFeedbackModal(true)}
+                      disabled={feedbackState !== 'idle'}
+                    >
+                      <Text style={s.feedbackBtnText}>👎 Chưa đúng</Text>
+                    </TouchableOpacity>
+                  </View>
+                </>
+              )}
             </View>
 
             <TouchableOpacity style={s.btnOutline} onPress={reset}>
@@ -569,6 +646,29 @@ export default function HomeScreen() {
           </>
         )}
       </ScrollView>
+
+      <SmartCamera
+        visible={cameraSlot !== null}
+        slot={cameraSlot || 1}
+        mode={cameraSlot === 2 ? 'overview' : captureMode}
+        onModeChange={(m) => cameraSlot !== 2 && setCaptureMode(m)}
+        onClose={() => setCameraSlot(null)}
+        onCapture={onCameraCapture}
+      />
+      <FeedbackModal
+        visible={feedbackModal}
+        predictionName={p?.name}
+        onClose={() => setFeedbackModal(false)}
+        onSubmit={handleFeedbackSubmit}
+      />
+      <CustomPlantModal
+        visible={customPlantOpen}
+        onClose={() => setCustomPlantOpen(false)}
+        onConfirm={(name) => {
+          setCustomPlantOpen(false);
+          handleClarify(name);
+        }}
+      />
     </SafeAreaView>
   );
 }
@@ -694,6 +794,22 @@ const s = StyleSheet.create({
   miniBtnOutlineText: { color: '#166534', fontSize: 11, fontWeight: '600' },
 
   // Clarification Box
+  lowqBox: {
+    backgroundColor: '#fffbeb',
+    borderWidth: 1.5,
+    borderColor: '#fcd34d',
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 14,
+  },
+  lowqBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#ffffff',
+  },
   clarifyBox: {
     backgroundColor: '#eff6ff',
     borderWidth: 1.5,

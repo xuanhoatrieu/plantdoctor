@@ -24,7 +24,9 @@ services:
         condition: service_healthy
     environment:
       DATABASE_URL: postgresql://plantdoctor:${DB_PASSWORD:-plantdoctor123}@postgres:5432/plantdoctor
-      SECRET_KEY: ${SECRET_KEY:-dev-secret-key}
+      SECRET_KEY: ${SECRET_KEY:?Set SECRET_KEY in .env (python -c "import secrets; print(secrets.token_urlsafe(48))")}
+      LLM_API_URL: ${LLM_API_URL:-}
+      LLM_API_KEY: ${LLM_API_KEY:-}
     ports:
       - "8090:8090"
 

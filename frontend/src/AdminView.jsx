@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from './AuthContext'
 import axios from 'axios'
+import FeedbackAdmin from './FeedbackAdmin'
 
 function api(token) {
   return axios.create({ headers: { Authorization: `Bearer ${token}` } })
@@ -19,6 +20,7 @@ export default function AdminView({ lang, onConfigUpdated }) {
           { id: 'users', label: lang === 'vi' ? '👥 Người dùng' : '👥 Users' },
           { id: 'settings', label: lang === 'vi' ? '⚙️ Cấu hình AI Model' : '⚙️ AI Model Config' },
           { id: 'mobile', label: lang === 'vi' ? '📱 Link tải App Mobile' : '📱 Mobile App Links' },
+          { id: 'feedback', label: lang === 'vi' ? '💬 Phản hồi chẩn đoán' : '💬 Diagnosis Feedback' },
         ].map(t => (
           <button key={t.id} onClick={() => setTab(t.id)}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition ${tab === t.id ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
@@ -31,6 +33,7 @@ export default function AdminView({ lang, onConfigUpdated }) {
       {tab === 'users' && <UsersAdmin token={token} lang={lang} />}
       {tab === 'settings' && <SettingsAdmin token={token} lang={lang} />}
       {tab === 'mobile' && <MobileAppsAdmin token={token} lang={lang} onConfigUpdated={onConfigUpdated} />}
+      {tab === 'feedback' && <FeedbackAdmin token={token} lang={lang} />}
     </div>
   )
 }
@@ -64,13 +67,31 @@ function DiseasesAdmin({ token, lang }) {
     fetch_()
   }
 
+  const seedStandardKB = async () => {
+    setLoading(true)
+    try {
+      const r = await api(token).post('/api/v1/admin/diseases/seed?overwrite=true')
+      alert(`Đã đồng bộ kho tri thức chuẩn (${r.data.total} bệnh cây Việt Nam).`)
+      fetch_()
+    } catch (e) {
+      alert(e.response?.data?.detail || 'Lỗi đồng bộ kho tri thức')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   if (editing !== null) return <DiseaseForm data={editing} onSave={save} onCancel={() => setEditing(null)} lang={lang} />
 
   return (
     <div className="space-y-3">
-      <div className="flex justify-between items-center">
-        <p className="text-sm text-gray-500">{items.length} bệnh</p>
-        <button onClick={() => setEditing({})} className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700">+ Thêm bệnh</button>
+      <div className="flex justify-between items-center flex-wrap gap-2">
+        <p className="text-sm text-gray-500">{items.length} bệnh trong Kho tri thức AI (RAG)</p>
+        <div className="flex gap-2">
+          <button onClick={seedStandardKB} className="px-3 py-2 bg-blue-50 border border-blue-200 text-blue-700 rounded-lg text-sm font-medium hover:bg-blue-100">
+            📥 Nạp / Cập nhật Kho tri thức chuẩn VN
+          </button>
+          <button onClick={() => setEditing({})} className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700">+ Thêm bệnh</button>
+        </div>
       </div>
       {loading ? <p className="text-gray-400">Loading...</p> : (
         <div className="space-y-2">
@@ -689,17 +710,22 @@ function SettingsAdmin({ token, lang }) {
   const [availableModels, setAvailableModels] = useState([])
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
+  // Last values loaded from the server: used to restore the stored cliproxy URL when switching providers,
+  // so the private proxy address never has to be hardcoded in this public JS bundle.
+  const [savedSettings, setSavedSettings] = useState(null)
 
   const fetchSettings = () => {
     setLoading(true)
     api(token).get('/api/v1/admin/settings')
       .then(r => {
-        setSettings({
+        const loaded = {
           llm_provider: r.data.llm_provider || 'cliproxy',
           llm_api_url: r.data.llm_api_url || '',
           llm_api_key: r.data.llm_api_key || '',
           llm_model_name: r.data.llm_model_name || '',
-        })
+        }
+        setSettings(loaded)
+        setSavedSettings(loaded)
       })
       .catch(e => setError(e.response?.data?.detail || 'Failed to fetch settings'))
       .finally(() => setLoading(false))
@@ -785,8 +811,8 @@ function SettingsAdmin({ token, lang }) {
               set('llm_provider', p)
               setAvailableModels([]) // Reset list on provider change
               if (p === 'cliproxy') {
-                set('llm_api_url', 'http://152.67.112.145:8317/v1/chat/completions')
-                set('llm_model_name', 'gpt-5.5')
+                set('llm_api_url', savedSettings?.llm_provider === 'cliproxy' ? savedSettings.llm_api_url : '')
+                set('llm_model_name', savedSettings?.llm_provider === 'cliproxy' && savedSettings?.llm_model_name ? savedSettings.llm_model_name : 'gemini-3.8-flash-high')
               } else if (p === 'openai') {
                 set('llm_api_url', 'https://api.openai.com/v1/chat/completions')
                 set('llm_model_name', 'gpt-4o')
@@ -816,7 +842,7 @@ function SettingsAdmin({ token, lang }) {
                 set('llm_api_url', e.target.value)
                 setAvailableModels([])
               }}
-              placeholder="https://..."
+              placeholder={settings.llm_provider === 'cliproxy' ? 'http://<dia-chi-cliproxy>:8317/v1/chat/completions' : 'https://...'}
               className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:outline-none"
             />
           </div>
@@ -881,7 +907,7 @@ function SettingsAdmin({ token, lang }) {
               required
               value={settings.llm_model_name || ''}
               onChange={e => set('llm_model_name', e.target.value)}
-              placeholder={settings.llm_provider === 'google' ? 'gemini-1.5-flash' : 'gpt-5.5'}
+              placeholder={settings.llm_provider === 'google' ? 'gemini-1.5-flash' : 'gemini-3.8-flash-high'}
               className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:outline-none"
             />
           )}

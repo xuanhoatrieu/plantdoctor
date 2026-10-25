@@ -9,6 +9,7 @@ Tài liệu hướng dẫn cán bộ, giảng viên và sinh viên Trường Đ�
 benchmark_data/
 ├── ground_truth.json      # File nhãn chuẩn do chuyên gia thẩm định
 ├── samples/               # Thư mục chứa các tệp ảnh kiểm thử (.jpg, .png)
+├── reports/               # Báo cáo do eval_benchmark.py sinh ra (.md + .json)
 └── README.md              # File hướng dẫn này
 ```
 
@@ -24,6 +25,7 @@ benchmark_data/
 Mỗi mẫu ảnh bao gồm:
 - `id`: Mã định danh duy nhất (ví dụ: `citrus_canker_001`).
 - `image_path`: Đường dẫn tương đối tới file ảnh trong `samples/`.
+- `image_paths` *(tuỳ chọn)*: Danh sách tối đa 2 ảnh cho cùng một ca (ảnh 1 cận vết bệnh, ảnh 2 toàn cành/cây). Nếu có, trường này được ưu tiên hơn `image_path`.
 - `expected_plant`: Tên cây trồng chính xác theo tiếng Việt.
 - `expected_plant_aliases`: Các tên gọi đồng nghĩa hoặc nhóm cây liên quan.
 - `expected_disease`: Tên bệnh chính xác.
@@ -31,8 +33,20 @@ Mỗi mẫu ảnh bao gồm:
 - `recommended_actives`: Danh sách hoạt chất khuyến nghị theo tài liệu của Cục BVTV Việt Nam.
 
 ## 4. Chạy script đánh giá tự động
-Chạy lệnh từ thư mục `backend/`:
+Chạy lệnh từ thư mục `backend/` (cần truy cập được dịch vụ AI):
 ```bash
-python3 scripts/eval_benchmark.py
+venv/bin/python scripts/eval_benchmark.py                 # chạy thật toàn bộ
+venv/bin/python scripts/eval_benchmark.py --limit 5       # chỉ 5 ca đầu
+venv/bin/python scripts/eval_benchmark.py --no-clarify    # không tự trả lời câu hỏi làm rõ loại cây
+venv/bin/python scripts/eval_benchmark.py --dry-run       # MÔ PHỎNG, không gọi AI
 ```
-Báo cáo đo lường độ chính xác sẽ tự động xuất ra file `docs/BENCHMARK_REPORT.md`.
+Báo cáo được ghi vào `benchmark_data/reports/benchmark_<thời-gian>.md` và `.json`
+(đổi thư mục bằng `--output-dir`, đổi file nhãn bằng `--ground-truth`).
+
+Lưu ý quan trọng:
+- Ca **thiếu ảnh sẽ bị bỏ qua và liệt kê** trong báo cáo — script không bao giờ tự sinh kết quả.
+- `--dry-run` chỉ để kiểm tra pipeline; file báo cáo có hậu tố `_MO_PHONG` và banner
+  "MÔ PHỎNG — KHÔNG PHẢI KẾT QUẢ THẬT". Không dùng số liệu này để công bố.
+- Khi AI hỏi làm rõ loại cây, script mặc định tự trả lời bằng `expected_plant` (mô phỏng người dùng
+  chọn đúng cây) và đánh dấu ca đó là "có làm rõ".
+- Báo cáo kèm khoảng tin cậy Wilson 95% — với mẫu nhỏ (< 30 ca), khoảng này rất rộng.

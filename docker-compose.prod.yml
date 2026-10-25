@@ -5,7 +5,17 @@ services:
     restart: unless-stopped
     environment:
       DATABASE_URL: ${DATABASE_URL}
-      SECRET_KEY: ${SECRET_KEY}
+      # Required. Compose refuses to start instead of silently passing an empty signing key.
+      SECRET_KEY: ${SECRET_KEY:?SECRET_KEY must be set in the server .env file}
+      # Optional: only if SECRET_KEY was rotated, put the OLD value here so legacy password hashes still verify.
+      LEGACY_SECRET_KEY: ${LEGACY_SECRET_KEY:-}
+      # Optional fallbacks when the LLM connection is not configured in Admin > Settings.
+      LLM_API_URL: ${LLM_API_URL:-}
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      # Optional: extra trusted browser origins (comma-separated) and /predict rate limits.
+      CORS_ORIGINS: ${CORS_ORIGINS:-}
+      PREDICT_RATE_LIMIT_USER: ${PREDICT_RATE_LIMIT_USER:-40}
+      PREDICT_RATE_LIMIT_GUEST: ${PREDICT_RATE_LIMIT_GUEST:-60}
     networks:
       - tuaf-ai-network
     healthcheck:

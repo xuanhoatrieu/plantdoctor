@@ -1,5 +1,11 @@
 # Kế hoạch chi tiết: Cải thiện độ chính xác và Trải nghiệm chẩn đoán (PlantDoctor)
 
+> [!WARNING]
+> **Đính chính (2026-10-03):** Một số mục `[x]` trong plan này đã bị đánh dấu xong khi chưa hoàn thiện
+> (khung ngắm camera thật, web 2 ảnh/hỏi lại, lưu feedback lên server, kiểm tra chất lượng ảnh,
+> benchmark thật, build mobile). Báo cáo benchmark 100% trước đây là dữ liệu mô phỏng.
+> Phần hoàn thiện có bằng chứng kiểm thử nằm ở plan US-021: `docs/plans/active/hoan-thien-us020.md`.
+
 ## Mục tiêu
 Nâng cao độ chính xác chẩn đoán bệnh cây từ ảnh thực tế, khắc phục triệt để tình trạng ảnh thiếu ngữ cảnh (ảnh cận cảnh vết bệnh, ảnh thân cây, ảnh thiếu cành lá), đồng thời tạo ra trải nghiệm người dùng (UX) thông minh, tương tác hai chiều và quy trình đo lường định lượng chuẩn hóa cho Trường ĐH Nông Lâm Thái Nguyên.
 

@@ -4,7 +4,10 @@ from typing import Optional
 from sqlalchemy.orm import Session
 
 from ..database.models import get_db, User
-from ..auth import hash_password, verify_password, create_token, get_current_user, require_user
+from ..auth import hash_password, verify_password, needs_rehash, create_token, get_current_user, require_user
+
+# TODO(security): password policy is still min 6 chars (mobile/web clients validate the same rule).
+# Raise to >= 8 together with the client apps; also consider leaked-password checks and MFA for admins.
 
 router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
 
@@ -89,6 +92,10 @@ def login(req: LoginRequest, db: Session = Depends(get_db)):
         raise HTTPException(status_code=401, detail="Số điện thoại hoặc mật khẩu không chính xác")
     if not user.is_active:
         raise HTTPException(status_code=403, detail="Tài khoản đã bị khóa bởi quản trị viên. Vui lòng liên hệ hỗ trợ.")
+    if needs_rehash(user.password_hash):
+        # Transparent upgrade of legacy sha256 hashes to scrypt (we only know the plaintext right now)
+        user.password_hash = hash_password(req.password)
+        db.commit()
     token = create_token(user.id, user.role)
     return {
         "token": token,
@@ -187,6 +194,10 @@ def apple_login(req: AppleLoginRequest, db: Session = Depends(get_db)):
     import jwt as pyjwt
 
     try:
+        # TODO(security): CRITICAL — the Apple identity token signature is NOT verified, so anyone can forge
+        # a token with any 'sub' and log in as that Apple user. Verify against Apple's JWKS
+        # (https://appleid.apple.com/auth/keys, RS256, iss=https://appleid.apple.com, aud=<bundle id>).
+        # Needs the 'cryptography' package for RS256 -> tracked separately because it adds a dependency.
         # Decode without verification to get the subject (Apple user ID)
         payload = pyjwt.decode(req.identity_token, options={"verify_signature": False})
         apple_sub = payload.get("sub")

@@ -5,10 +5,33 @@ import { diseaseLibrary } from './diseaseLibrary'
 import { useAuth } from './AuthContext'
 import LoginModal from './LoginModal'
 import AdminView from './AdminView'
+import { checkImageInBrowser, issueText, LowQualityCard, ClarificationCard, FeedbackWidget } from './DiagnosisExtras'
 
 const HISTORY_KEY = 'leafdoctor_history'
 function getHistory() { try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]') } catch { return [] } }
 function saveHistory(h) { localStorage.setItem(HISTORY_KEY, JSON.stringify(h.slice(0, 20))) }
+
+const PLANT_CHOICES = [
+  { id: 'Chè', label: 'Chè', icon: '🍵' },
+  { id: 'Cam/Bưởi', label: 'Cam/Bưởi', icon: '🍊' },
+  { id: 'Lúa', label: 'Lúa', icon: '🌾' },
+  { id: 'Ngô', label: 'Ngô', icon: '🌽' },
+  { id: 'Cà phê', label: 'Cà phê', icon: '☕' },
+  { id: 'Sầu riêng', label: 'Sầu riêng', icon: '🍈' },
+  { id: 'Hồ tiêu/Ớt', label: 'Tiêu/Ớt', icon: '🌶️' },
+  { id: 'Cà chua', label: 'Cà chua', icon: '🍅' },
+  { id: 'Khoai tây', label: 'Khoai tây', icon: '🥔' },
+  { id: 'Chuối', label: 'Chuối', icon: '🍌' },
+  { id: 'Nhãn/Vải', label: 'Nhãn/Vải', icon: '🍒' },
+]
+const PLANT_KEY = 'last_selected_plant'
+function getSavedPlant() {
+  try {
+    const v = (localStorage.getItem(PLANT_KEY) || '').trim()
+    if (!v || v.length > 60) return null
+    return v
+  } catch { return null }
+}
 
 function ConfidenceBar({ value }) {
   const color = value >= 80 ? 'bg-green-500' : value >= 50 ? 'bg-yellow-500' : 'bg-red-400'
@@ -36,9 +59,15 @@ function App() {
   const [tab, setTab] = useState('diagnose')
   const [file, setFile] = useState(null)
   const [preview, setPreview] = useState(null)
+  // Optional 2nd photo: overview of the branch / whole plant (helps the AI identify the crop)
+  const [file2, setFile2] = useState(null)
+  const [preview2, setPreview2] = useState(null)
+  const [clientChecks, setClientChecks] = useState({ 1: null, 2: null })
+  const [wasClarified, setWasClarified] = useState(false)
+  const [resultSeq, setResultSeq] = useState(0)
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState(null)
-  const [selectedPlant, setSelectedPlant] = useState(null)
+  const [selectedPlant, setSelectedPlantState] = useState(getSavedPlant)
   const [error, setError] = useState('')
   const [history, setHistory] = useState(getHistory)
   const [weather, setWeather] = useState(null)
@@ -50,9 +79,18 @@ function App() {
     typeof window !== 'undefined' && window.location.pathname.includes('/delete-account')
   )
   const fileRef = useRef()
+  const fileRef2 = useRef()
   const t = translations[lang]
-  const { user, logout } = useAuth()
+  const { user, logout, token } = useAuth()
   const isAdmin = user?.role === 'admin'
+
+  const setSelectedPlant = (id) => {
+    setSelectedPlantState(id)
+    try {
+      if (id) localStorage.setItem(PLANT_KEY, id)
+      else localStorage.removeItem(PLANT_KEY)
+    } catch { /* storage disabled: just don't remember */ }
+  }
 
   const [appLinks, setAppLinks] = useState({
     ios: 'https://apps.apple.com/vn/app/tuaf-plantdoctor/id6773555310',
@@ -85,35 +123,57 @@ function App() {
     fetchPublicConfig()
   }, [])
 
-  const handleFile = (f) => {
+  const handleFile = async (f, slot = 1) => {
     if (!f) return
+    if (!f.type?.startsWith('image/')) { setError(lang === 'vi' ? 'Vui lòng chọn tệp ảnh.' : 'Please choose an image file.'); return }
     if (f.size > 10 * 1024 * 1024) { setError(t.maxSize); return }
-    setFile(f)
-    setPreview(URL.createObjectURL(f))
+    const url = URL.createObjectURL(f)
+    if (slot === 2) { setFile2(f); setPreview2(url) } else { setFile(f); setPreview(url) }
     setResult(null)
     setError('')
+    setClientChecks(c => ({ ...c, [slot]: null }))
+    const check = await checkImageInBrowser(f)
+    setClientChecks(c => ({ ...c, [slot]: check }))
   }
 
-  const handlePredict = async () => {
+  const removeSecond = () => {
+    setFile2(null); setPreview2(null); setResult(null)
+    setClientChecks(c => ({ ...c, 2: null }))
+    if (fileRef2.current) fileRef2.current.value = ''
+  }
+
+  const pushHistory = (data) => {
+    const entry = { date: new Date().toISOString(), preview, result: data }
+    const h = [entry, ...history].slice(0, 20)
+    setHistory(h)
+    saveHistory(h)
+  }
+
+  // force=true re-sends the same photos with the quality gate off (user chose "Diagnose anyway")
+  const handlePredict = async (force = false) => {
     if (!file) return
     setLoading(true)
     setError('')
+    setWasClarified(false)
     try {
       const form = new FormData()
-      form.append('file', file)
+      if (file2) {
+        // Order matters: the server labels image 1 as close-up and image 2 as overview
+        form.append('files', file)
+        form.append('files', file2)
+      } else {
+        form.append('file', file)
+      }
       form.append('model_id', 'gpt55_vision')
       form.append('lang', lang)
+      form.append('quality_gate', force ? 'false' : 'true')
       if (selectedPlant) {
         form.append('plant_hint', selectedPlant)
       }
       const res = await axios.post('/api/v1/predict', form)
       setResult(res.data)
-      if (res.data?.status === 'success') {
-        const entry = { date: new Date().toISOString(), preview, result: res.data }
-        const h = [entry, ...history].slice(0, 20)
-        setHistory(h)
-        saveHistory(h)
-      }
+      setResultSeq(s => s + 1)
+      if (res.data?.status === 'success') pushHistory(res.data)
     } catch { setError(t.error) }
     finally { setLoading(false) }
   }
@@ -129,17 +189,30 @@ function App() {
         lang,
       })
       setResult(res.data)
-      if (res.data?.status === 'success') {
-        const entry = { date: new Date().toISOString(), preview, result: res.data }
-        const h = [entry, ...history].slice(0, 20)
-        setHistory(h)
-        saveHistory(h)
-      }
-    } catch { setError(t.error) }
+      setResultSeq(s => s + 1)
+      setWasClarified(true)
+      if (res.data?.status === 'success') pushHistory(res.data)
+    } catch (err) {
+      setError(err?.response?.status === 404
+        ? (lang === 'vi' ? 'Phiên xác nhận đã hết hạn (30 phút). Vui lòng bấm chẩn đoán lại.' : 'The confirmation session expired. Please diagnose again.')
+        : t.error)
+    }
     finally { setLoading(false) }
   }
 
-  const handleReset = () => { setFile(null); setPreview(null); setResult(null); setError('') }
+  const handleReset = () => {
+    setFile(null); setPreview(null); setFile2(null); setPreview2(null)
+    setClientChecks({ 1: null, 2: null })
+    setResult(null); setError(''); setWasClarified(false)
+    if (fileRef.current) fileRef.current.value = ''
+    if (fileRef2.current) fileRef2.current.value = ''
+  }
+
+  const handleRetake = () => {
+    handleReset()
+    // Let React clear state first, then open the picker
+    setTimeout(() => fileRef.current?.click(), 0)
+  }
 
   const topPrediction = result?.predictions?.[0]
   const isHealthy = topPrediction?.label?.toLowerCase().includes('healthy') || topPrediction?.label?.includes('Khỏe mạnh')
@@ -188,7 +261,7 @@ function App() {
       </nav>
 
       <main className="flex-1 max-w-6xl mx-auto w-full px-3 sm:px-4 py-4 sm:py-6">
-        {tab === 'diagnose' && <DiagnoseView {...{t, file, preview, loading, result, error, topPrediction, isHealthy, fileRef, handleFile, handlePredict, handleReset, weather, lang, user, selectedPlant, setSelectedPlant, handleClarify}} />}
+        {tab === 'diagnose' && <DiagnoseView {...{t, file, preview, file2, preview2, clientChecks, loading, result, resultSeq, error, topPrediction, isHealthy, fileRef, fileRef2, handleFile, removeSecond, handlePredict, handleReset, handleRetake, weather, lang, user, token, selectedPlant, setSelectedPlant, handleClarify, wasClarified}} />}
         {tab === 'history' && user && <HistoryView {...{t, history, setHistory}} />}
         {tab === 'library' && user && <LibraryView {...{t, lang}} />}
         {tab === 'pesticides' && user && <PesticidesView {...{t, lang}} />}
@@ -248,7 +321,7 @@ function App() {
           </a>
         </div>
 
-        <div>PlantDoctor v2.5.5 — Phát triển bởi Triệu Xuân Hòa (Trường ĐH Nông Lâm Thái Nguyên)</div>
+        <div>PlantDoctor v2.6.0 — Phát triển bởi Triệu Xuân Hòa (Trường ĐH Nông Lâm Thái Nguyên)</div>
       </footer>
 
       {showPrivacy && <PrivacyModal onClose={() => setShowPrivacy(false)} />}
@@ -290,28 +363,44 @@ function WeatherWidget({ weather, t }) {
   )
 }
 
-function DiagnoseView({ t, file, preview, loading, result, error, topPrediction, isHealthy, fileRef, handleFile, handlePredict, handleReset, weather, lang, user, selectedPlant, setSelectedPlant, handleClarify }) {
+function ClientCheckHint({ check, lang }) {
+  if (!check || !check.issues?.length) return null
+  return (
+    <div className="mt-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-left" onClick={(e) => e.stopPropagation()}>
+      {check.issues.map((code) => (
+        <p key={code} className="text-[11px] sm:text-xs text-amber-800">⚠️ {issueText(code, lang, check)}</p>
+      ))}
+    </div>
+  )
+}
+
+function DiagnoseView({ t, file, preview, file2, preview2, clientChecks, loading, result, resultSeq, error, topPrediction, isHealthy, fileRef, fileRef2, handleFile, removeSecond, handlePredict, handleReset, handleRetake, weather, lang, user, token, selectedPlant, setSelectedPlant, handleClarify, wasClarified }) {
+  const vi = lang === 'vi'
+  const status = result?.status || 'success'
   return (
     <div className="grid md:grid-cols-2 gap-4 sm:gap-6">
       {/* Left column */}
       <div className="space-y-3 sm:space-y-4">
         {/* Plant Selector Chips */}
-        <div className="bg-white rounded-xl border p-3">
-          <label className="block text-xs font-semibold text-gray-700 mb-2">
-            🌾 {lang === 'vi' ? 'Chọn loại cây trồng (Tùy chọn — giúp AI chẩn đoán siêu chuẩn):' : 'Select crop (Optional — speeds up diagnosis):'}
-          </label>
-          <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-thin">
+        <div className="bg-white rounded-xl border p-3 space-y-2">
+          <div className="flex items-center justify-between gap-2">
+            <label className="block text-xs font-semibold text-gray-700">
+              🌾 {vi ? 'Chọn loại cây trồng (Giúp AI khoanh vùng đúng kho bệnh của cây):' : 'Select crop (Locks AI to the exact crop disease catalog):'}
+            </label>
+            {selectedPlant && (
+              <button
+                type="button"
+                onClick={() => setSelectedPlant(null)}
+                className="text-[11px] text-red-600 hover:underline font-medium shrink-0"
+              >
+                ✕ {vi ? 'Đặt lại Tự động' : 'Reset to Auto'}
+              </button>
+            )}
+          </div>
+          <div className="flex gap-1.5 flex-wrap">
             {[
-              { id: null, label: lang === 'vi' ? 'Tất cả' : 'All', icon: '🌱' },
-              { id: 'Cam/Bưởi', label: 'Cam/Bưởi', icon: '🍊' },
-              { id: 'Lúa', label: 'Lúa', icon: '🌾' },
-              { id: 'Chè', label: 'Chè', icon: '🍵' },
-              { id: 'Cà phê', label: 'Cà phê', icon: '☕' },
-              { id: 'Sầu riêng', label: 'Sầu riêng', icon: '🍈' },
-              { id: 'Hồ tiêu/Ớt', label: 'Tiêu/Ớt', icon: '🌶️' },
-              { id: 'Cà chua', label: 'Cà chua', icon: '🍅' },
-              { id: 'Chuối', label: 'Chuối', icon: '🍌' },
-              { id: 'Ngô', label: 'Ngô', icon: '🌽' },
+              { id: null, label: vi ? 'Tự động nhận diện' : 'Auto-detect', icon: '🌱' },
+              ...PLANT_CHOICES,
             ].map((item) => (
               <button
                 key={String(item.id)}
@@ -319,7 +408,7 @@ function DiagnoseView({ t, file, preview, loading, result, error, topPrediction,
                 onClick={() => setSelectedPlant(item.id)}
                 className={`px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap transition flex items-center gap-1 ${
                   selectedPlant === item.id
-                    ? 'bg-green-700 text-white shadow-sm'
+                    ? 'bg-green-700 text-white shadow-sm ring-2 ring-green-300'
                     : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
                 }`}
               >
@@ -327,7 +416,41 @@ function DiagnoseView({ t, file, preview, loading, result, error, topPrediction,
                 <span>{item.label}</span>
               </button>
             ))}
+            <button
+              type="button"
+              onClick={() => {
+                const custom = window.prompt(
+                  vi ? 'Nhập tên cây trồng (VD: Xoài, Ổi, Dưa lưới, Hoa hồng...):' : 'Enter crop name (e.g., Mango, Guava, Rose...):',
+                  selectedPlant && !PLANT_CHOICES.some(p => p.id === selectedPlant) ? selectedPlant : ''
+                )
+                if (custom && custom.trim()) {
+                  setSelectedPlant(custom.trim().slice(0, 60))
+                }
+              }}
+              className={`px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap transition flex items-center gap-1 ${
+                selectedPlant && !PLANT_CHOICES.some(p => p.id === selectedPlant)
+                  ? 'bg-green-700 text-white shadow-sm ring-2 ring-green-300'
+                  : 'bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200'
+              }`}
+            >
+              <span>✏️</span>
+              <span>
+                {selectedPlant && !PLANT_CHOICES.some(p => p.id === selectedPlant)
+                  ? selectedPlant
+                  : (vi ? 'Cây khác...' : 'Other crop...')}
+              </span>
+            </button>
           </div>
+          {selectedPlant && (
+            <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-lg px-2.5 py-1.5 text-xs text-green-800">
+              <span>
+                🎯 {vi ? 'Đang khóa chẩn đoán theo cây:' : 'Locked to crop:'} <strong>{selectedPlant}</strong>
+              </span>
+              <span className="text-[11px] text-green-700">
+                {vi ? '(Đổi cây nếu chụp sang lá cây khác)' : '(Change if uploading another crop)'}
+              </span>
+            </div>
+          )}
         </div>
         {/* Steps guide */}
         {!preview && !result && (
@@ -350,15 +473,19 @@ function DiagnoseView({ t, file, preview, loading, result, error, topPrediction,
           </div>
         )}
 
-        {/* Upload */}
+        {/* Upload slot 1: close-up of the lesion (required) */}
         <div
-          onDrop={(e) => { e.preventDefault(); handleFile(e.dataTransfer.files[0]) }}
+          id="upload-slot-1"
+          onDrop={(e) => { e.preventDefault(); handleFile(e.dataTransfer.files[0], 1) }}
           onDragOver={(e) => e.preventDefault()}
           onClick={() => fileRef.current.click()}
-          className="relative border-2 border-dashed border-green-300 rounded-xl p-4 sm:p-6 text-center cursor-pointer hover:border-green-500 hover:bg-green-50/50 transition min-h-[160px] sm:min-h-[220px] flex items-center justify-center"
+          className="relative border-2 border-dashed border-green-300 rounded-xl p-4 sm:p-6 text-center cursor-pointer hover:border-green-500 hover:bg-green-50/50 transition min-h-[160px] sm:min-h-[220px] flex flex-col items-center justify-center"
         >
+          <span className="absolute top-2 left-2 text-[10px] sm:text-xs font-semibold bg-green-100 text-green-800 px-2 py-0.5 rounded-full">
+            {vi ? 'Ảnh 1 · Cận cảnh vết bệnh' : 'Photo 1 · Lesion close-up'}
+          </span>
           {preview ? (
-            <div className="relative">
+            <div className="relative mt-4">
               <img src={preview} alt="preview" className="max-h-48 sm:max-h-64 mx-auto rounded-lg shadow-sm" />
               {loading && (
                 <div className="absolute inset-0 bg-black/30 rounded-lg flex items-center justify-center">
@@ -375,18 +502,54 @@ function DiagnoseView({ t, file, preview, loading, result, error, topPrediction,
               <p className="text-[10px] sm:text-xs text-gray-400">{t.maxSize}</p>
             </div>
           )}
-          <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => handleFile(e.target.files[0])} />
+          <ClientCheckHint check={clientChecks?.[1]} lang={lang} />
+          <input ref={fileRef} id="file-input-1" type="file" accept="image/*" className="hidden" onChange={(e) => handleFile(e.target.files[0], 1)} />
         </div>
 
+        {/* Upload slot 2: overview of branch / plant (optional) */}
+        {file && (
+          <div
+            id="upload-slot-2"
+            onDrop={(e) => { e.preventDefault(); handleFile(e.dataTransfer.files[0], 2) }}
+            onDragOver={(e) => e.preventDefault()}
+            onClick={() => !preview2 && fileRef2.current.click()}
+            className={`relative border-2 border-dashed rounded-xl p-3 transition ${preview2 ? 'border-green-300' : 'border-gray-300 hover:border-green-400 hover:bg-green-50/40 cursor-pointer'}`}
+          >
+            {preview2 ? (
+              <div className="flex items-center gap-3">
+                <img src={preview2} alt="overview" className="w-20 h-20 object-cover rounded-lg shadow-sm" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold text-green-800">{vi ? 'Ảnh 2 · Toàn cảnh cành/cây' : 'Photo 2 · Branch/plant overview'}</p>
+                  <p className="text-[11px] text-gray-500">{vi ? 'AI sẽ kết hợp 2 ảnh để nhận đúng loại cây.' : 'The AI combines both photos to identify the crop.'}</p>
+                  <div className="flex gap-3 mt-1">
+                    <button id="replace-photo-2" type="button" onClick={(e) => { e.stopPropagation(); fileRef2.current.click() }} className="text-xs text-green-700 hover:underline">{vi ? 'Đổi ảnh' : 'Replace'}</button>
+                    <button id="remove-photo-2" type="button" onClick={(e) => { e.stopPropagation(); removeSecond() }} className="text-xs text-red-600 hover:underline">{vi ? 'Bỏ ảnh' : 'Remove'}</button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3 text-left">
+                <span className="text-3xl">🌳</span>
+                <div>
+                  <p className="text-xs sm:text-sm font-semibold text-gray-700">+ {vi ? 'Thêm ảnh 2: toàn cảnh cành/cây (khuyên dùng)' : 'Add photo 2: branch/plant overview (recommended)'}</p>
+                  <p className="text-[11px] text-gray-500">{vi ? 'Khi ảnh 1 chỉ chụp cận vết bệnh, ảnh toàn cảnh giúp AI không nhầm loại cây.' : 'If photo 1 is a tight close-up, an overview stops crop mix-ups.'}</p>
+                </div>
+              </div>
+            )}
+            <ClientCheckHint check={clientChecks?.[2]} lang={lang} />
+            <input ref={fileRef2} id="file-input-2" type="file" accept="image/*" className="hidden" onChange={(e) => handleFile(e.target.files[0], 2)} />
+          </div>
+        )}
+
         {/* Predict button */}
-        <button onClick={handlePredict} disabled={!file || loading}
+        <button id="predict-btn" onClick={() => handlePredict(false)} disabled={!file || loading}
           className="w-full py-3 sm:py-3.5 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition text-base sm:text-lg shadow-sm">
           {loading ? (
             <span className="flex items-center justify-center gap-2">
               <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
               {t.predicting}
             </span>
-          ) : t.predict}
+          ) : selectedPlant ? `${t.predict} (${selectedPlant})` : t.predict}
         </button>
 
         {result && (
@@ -414,6 +577,13 @@ function DiagnoseView({ t, file, preview, loading, result, error, topPrediction,
           <h2 className="text-base sm:text-lg font-bold text-gray-800 mb-3 sm:mb-4">{t.results}</h2>
           {!result ? (
             <p className="text-gray-400 text-center py-12">{t.noResults}</p>
+          ) : status === 'low_quality' ? (
+            <LowQualityCard result={result} lang={lang} loading={loading}
+              onForce={() => handlePredict(true)} onRetake={handleRetake} />
+          ) : status === 'needs_clarification' ? (
+            <ClarificationCard key={resultSeq} result={result} lang={lang} loading={loading} onSelect={handleClarify} />
+          ) : !topPrediction ? (
+            <p className="text-gray-400 text-center py-12">{t.error}</p>
           ) : (
             <div className="space-y-4">
               {/* Image quality warnings */}
@@ -446,7 +616,7 @@ function DiagnoseView({ t, file, preview, loading, result, error, topPrediction,
               {result.cached && (
                 <div className="bg-green-50 border border-green-200 rounded-lg p-2.5 flex items-center gap-2">
                   <span>⚡</span>
-                  <p className="text-xs text-green-800">{lang === 'vi' ? 'Kết quả từ bộ nhớ đệm (nhất quán 100%)' : 'Cached result (100% consistent)'}</p>
+                  <p className="text-xs text-green-800">{lang === 'vi' ? 'Kết quả lấy lại từ lần chẩn đoán trước với ảnh gần giống hệt' : 'Reused result from an earlier diagnosis of a near-identical photo'}</p>
                 </div>
               )}
 
@@ -526,6 +696,10 @@ function DiagnoseView({ t, file, preview, loading, result, error, topPrediction,
                   ))}
                 </div>
               )}
+
+              {/* User feedback (stored server-side for expert review) */}
+              <FeedbackWidget key={resultSeq} result={result} lang={lang} token={token}
+                plantHint={selectedPlant} imageCount={file2 ? 2 : 1} wasClarified={wasClarified} />
             </div>
           )}
         </div>
@@ -560,12 +734,87 @@ function HistoryView({ t, history, setHistory }) {
 
 function LibraryView({ t, lang }) {
   const [expanded, setExpanded] = useState(null)
+  const [dbDiseases, setDbDiseases] = useState([])
+  const [search, setSearch] = useState('')
+  const [cropFilter, setCropFilter] = useState('')
   const toggle = (key) => setExpanded(expanded === key ? null : key)
   const severityLabel = { high: { vi: 'Nguy hiểm cao', en: 'High risk', color: 'bg-red-100 text-red-700' }, medium: { vi: 'Trung bình', en: 'Medium', color: 'bg-yellow-100 text-yellow-700' }, low: { vi: 'Thấp', en: 'Low', color: 'bg-green-100 text-green-700' } }
 
+  useEffect(() => {
+    axios.get('/api/v1/diseases').then(r => {
+      if (Array.isArray(r.data) && r.data.length > 0) setDbDiseases(r.data)
+    }).catch(() => {})
+  }, [])
+
+  // Build unified groups from DB knowledge base (or fallback to static diseaseLibrary)
+  const groups = (() => {
+    if (!dbDiseases.length) return diseaseLibrary
+    const byCrop = new Map()
+    for (const d of dbDiseases) {
+      const c = d.crop || 'Khác'
+      if (!byCrop.has(c)) byCrop.set(c, [])
+      const splitLines = (txt) => (txt || '').split(/\n|;\s*/).map(s => s.trim()).filter(Boolean)
+      byCrop.get(c).push({
+        name: { vi: d.name_vi || d.name_en, en: d.name_en || d.name_vi },
+        scientific: d.scientific_name || '',
+        severity: d.severity || 'medium',
+        image: d.image_url || '',
+        symptoms: { vi: d.symptoms_vi || '', en: d.symptoms_en || d.symptoms_vi || '' },
+        conditions: { vi: d.conditions_vi || '', en: d.conditions_en || d.conditions_vi || '' },
+        prevention: { vi: splitLines(d.prevention_vi), en: splitLines(d.prevention_en || d.prevention_vi) },
+        treatment: { vi: splitLines(d.treatment_vi), en: splitLines(d.treatment_en || d.treatment_vi) },
+      })
+    }
+    return Array.from(byCrop.entries()).map(([cropName, list]) => {
+      const iconMatch = PLANT_CHOICES.find(p => p.id.toLowerCase() === cropName.toLowerCase() || cropName.toLowerCase().includes(p.label.toLowerCase()))
+      const icon = iconMatch ? iconMatch.icon : '🌿'
+      return {
+        cropKey: cropName,
+        crop: { vi: `${icon} ${cropName}`, en: `${icon} ${cropName}` },
+        diseases: list,
+      }
+    })
+  })()
+
+  const filteredGroups = groups.map(g => ({
+    ...g,
+    diseases: g.diseases.filter(d => {
+      if (cropFilter && g.cropKey && g.cropKey !== cropFilter) return false
+      if (!search.trim()) return true
+      const q = search.toLowerCase()
+      return (
+        (d.name[lang] || '').toLowerCase().includes(q) ||
+        (d.scientific || '').toLowerCase().includes(q) ||
+        (d.symptoms[lang] || '').toLowerCase().includes(q)
+      )
+    })
+  })).filter(g => g.diseases.length > 0)
+
   return (
-    <div className="space-y-6">
-      {diseaseLibrary.map((group, gi) => (
+    <div className="space-y-5">
+      <div className="bg-white p-3 sm:p-4 rounded-xl border flex flex-col sm:flex-row gap-2">
+        <input
+          type="text"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          placeholder={lang === 'vi' ? '🔍 Tìm tên bệnh, tên khoa học, triệu chứng...' : '🔍 Search disease name, scientific name, symptoms...'}
+          className="flex-1 px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+        />
+        {dbDiseases.length > 0 && (
+          <select
+            value={cropFilter}
+            onChange={e => setCropFilter(e.target.value)}
+            className="px-3 py-2 border rounded-lg text-sm bg-white"
+          >
+            <option value="">{lang === 'vi' ? 'Tất cả cây trồng' : 'All crops'}</option>
+            {groups.map((g, i) => (
+              <option key={i} value={g.cropKey}>{g.crop[lang]} ({g.diseases.length})</option>
+            ))}
+          </select>
+        )}
+      </div>
+
+      {filteredGroups.map((group, gi) => (
         <div key={gi}>
           <h3 className="font-bold text-gray-800 mb-3 text-lg">{group.crop[lang]}</h3>
           <div className="space-y-2">
@@ -589,7 +838,7 @@ function LibraryView({ t, lang }) {
                     <div className="px-3 sm:px-4 pb-3 sm:pb-4 space-y-3 sm:space-y-4 border-t">
                       {/* Image + basic info */}
                       <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-3 sm:pt-4">
-                        <img src={d.image} alt={d.name[lang]} className="w-full sm:w-32 h-32 sm:h-24 object-cover rounded-lg bg-gray-100" onError={(e) => { e.target.style.display = 'none' }} />
+                        {d.image && <img src={d.image} alt={d.name[lang]} className="w-full sm:w-32 h-32 sm:h-24 object-cover rounded-lg bg-gray-100" onError={(e) => { e.target.style.display = 'none' }} />}
                         <div className="flex-1">
                           <p className="text-xs text-gray-500 italic mb-1">{d.scientific}</p>
                           <p className="text-sm text-gray-700 leading-relaxed">{d.symptoms[lang]}</p>
@@ -597,26 +846,32 @@ function LibraryView({ t, lang }) {
                       </div>
 
                       {/* Conditions */}
-                      <div className="bg-amber-50 p-3 rounded-lg">
-                        <h5 className="font-semibold text-amber-800 text-sm mb-1">⚠️ {lang === 'vi' ? 'Điều kiện phát bệnh' : 'Disease conditions'}</h5>
-                        <p className="text-sm text-amber-700">{d.conditions[lang]}</p>
-                      </div>
+                      {d.conditions[lang] && (
+                        <div className="bg-amber-50 p-3 rounded-lg">
+                          <h5 className="font-semibold text-amber-800 text-sm mb-1">⚠️ {lang === 'vi' ? 'Điều kiện phát bệnh' : 'Disease conditions'}</h5>
+                          <p className="text-sm text-amber-700">{d.conditions[lang]}</p>
+                        </div>
+                      )}
 
                       {/* Prevention */}
-                      <div className="bg-green-50 p-3 rounded-lg">
-                        <h5 className="font-semibold text-green-800 text-sm mb-1">🛡️ {lang === 'vi' ? 'Phòng tránh' : 'Prevention'}</h5>
-                        <ul className="list-disc list-inside text-sm text-green-700 space-y-0.5">
-                          {d.prevention[lang].map((item, i) => <li key={i}>{item}</li>)}
-                        </ul>
-                      </div>
+                      {d.prevention[lang]?.length > 0 && (
+                        <div className="bg-green-50 p-3 rounded-lg">
+                          <h5 className="font-semibold text-green-800 text-sm mb-1">🛡️ {lang === 'vi' ? 'Phòng tránh' : 'Prevention'}</h5>
+                          <ul className="list-disc list-inside text-sm text-green-700 space-y-0.5">
+                            {d.prevention[lang].map((item, i) => <li key={i}>{item}</li>)}
+                          </ul>
+                        </div>
+                      )}
 
                       {/* Treatment */}
-                      <div className="bg-blue-50 p-3 rounded-lg">
-                        <h5 className="font-semibold text-blue-800 text-sm mb-1">💊 {lang === 'vi' ? 'Điều trị' : 'Treatment'}</h5>
-                        <ul className="list-disc list-inside text-sm text-blue-700 space-y-0.5">
-                          {d.treatment[lang].map((item, i) => <li key={i}>{item}</li>)}
-                        </ul>
-                      </div>
+                      {d.treatment[lang]?.length > 0 && (
+                        <div className="bg-blue-50 p-3 rounded-lg">
+                          <h5 className="font-semibold text-blue-800 text-sm mb-1">💊 {lang === 'vi' ? 'Hoạt chất / Điều trị' : 'Treatment'}</h5>
+                          <ul className="list-disc list-inside text-sm text-blue-700 space-y-0.5">
+                            {d.treatment[lang].map((item, i) => <li key={i}>{item}</li>)}
+                          </ul>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

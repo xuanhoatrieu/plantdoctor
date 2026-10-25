@@ -1,5 +1,6 @@
 import json
 import logging
+import re
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
@@ -12,6 +13,28 @@ BANNED_SUBSTANCES = [
     'trichlorfon', 'chlorophos', 'arsenic', 'captan', 'captafol', 'hexachlorobenzene',
     'mercury', 'selenium', 'talium', '2,4,5-t',
 ]
+
+
+def _normalize(text: str) -> str:
+    # "Methyl-Parathion", "methyl_parathion" and "methyl  parathion" all become "methyl parathion"
+    return re.sub(r"[\s\-_]+", " ", text.lower()).strip()
+
+
+# Whole-word patterns: a banned term must not be glued to other letters/digits, so "lead" does not match
+# inside a longer unrelated word, while "Lead arsenate" or "chì (lead)" still match.
+_BANNED_PATTERNS = [
+    (term, re.compile(r"(?<!\w)" + re.escape(_normalize(term)) + r"(?!\w)")) for term in BANNED_SUBSTANCES
+]
+
+
+def find_banned_substances(text: str) -> list:
+    """Return the banned terms that appear as whole words in `text`."""
+    norm = _normalize(text or "")
+    return [term for term, pattern in _BANNED_PATTERNS if pattern.search(norm)]
+
+
+def is_banned_substance(text: str) -> bool:
+    return bool(find_banned_substances(text))
 
 _pesticides_data = None
 
@@ -50,8 +73,8 @@ def match_medicines(medicines: list[str]) -> dict:
     for med in medicines:
         med_lower = med.lower().strip()
         
-        # Check if banned
-        is_banned = any(b in med_lower for b in BANNED_SUBSTANCES)
+        # Check if banned (whole-word match: "lead" must not match inside an unrelated ingredient name)
+        is_banned = is_banned_substance(med_lower)
         if is_banned:
             banned_warning.append(med)
             matched_products.append({"active": med, "products": [], "banned": True})

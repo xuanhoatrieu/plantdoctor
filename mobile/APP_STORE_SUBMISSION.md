@@ -101,7 +101,7 @@ iPhone 5.5" (1242 x 2208):
 
 ## Review Notes (for Apple reviewer)
 
-Demo account: 0944550007 / Hoa@123
+Demo account: <a dedicated NON-admin demo account — enter it in App Store Connect only, never in this repo>
 The app uses AI to analyze plant leaf images for disease detection. 
 Camera permission is required for the core functionality.
 The app works without login (guest mode) for basic diagnosis.

@@ -3,7 +3,18 @@
 **Lane:** normal
 **Status:** done
 **Created:** 2026-10-03
-**Plan:** docs/plans/active/cai-thien-do-chinh-xac-va-ux-chan-doan.md
+**Plan:** docs/plans/completed/cai-thien-do-chinh-xac-va-ux-chan-doan.md
+
+> [!WARNING]
+> **Đính chính (2026-10-03, US-021):** Một số tiêu chí dưới đây từng được đánh dấu `[x]` khi thực tế chưa làm xong hoặc làm chưa đúng:
+> - "Smart Viewfinder" chỉ là lớp phủ trên ảnh đã chụp, không phải khung ngắm camera trực tiếp.
+> - Web chưa có 2 ảnh, chưa có giao diện hỏi lại, chưa lưu lựa chọn cây gần nhất.
+> - Feedback chỉ hiển thị cảm ơn, không lưu lên server.
+> - Chưa có kiểm tra chất lượng ảnh (mờ/tối/nhỏ).
+> - `docs/BENCHMARK_REPORT.md` (100%) là dữ liệu MÔ PHỎNG, không phải kết quả thật.
+> - App mobile chưa được biên dịch thử.
+>
+> Các phần này được hoàn thiện ở **US-021** — xem `docs/plans/active/hoan-thien-us020.md` (kèm bằng chứng kiểm thử).
 
 ## Context
 Người dùng và nông dân thực tế thường đưa ảnh chụp cận cảnh chỉ thấy một phần vết bệnh trên lá hoặc một phần thân cây bị nứt nẻ, thiếu các đặc trưng hình thái để AI phân biệt cây trồng. Story này triển khai giải pháp kết hợp:
@@ -12,7 +23,7 @@ Người dùng và nông dân thực tế thường đưa ảnh chụp cận c�
 3. Bộ benchmark kiểm thử tự động và cơ chế phản hồi thực tế (Feedback Loop).
 
 ## Acceptance Criteria
-- [x] Backend API `/api/v1/predict` nhận được 1 hoặc 2 ảnh và tham số `plant_hint` (tương thích ngược 100%).
+- [x] Backend API `/api/v1/predict` nhận được 1 hoặc 2 ảnh và tham số `plant_hint` (tương thích ngược với app cũ vẫn gửi trường `file`).
 - [x] VLM prompt và logic xử lý nạp đồng thời 2 ảnh (ảnh cận cảnh + ảnh toàn cây) vào mô hình thị giác.
 - [x] Mobile/Web có thanh chọn nhanh loại cây (Plant chips) lưu lại lựa chọn gần nhất.
 - [x] Mobile/Web có khung chọn 2 ảnh (vết bệnh + cành lá).

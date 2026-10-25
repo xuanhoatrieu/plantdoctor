@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import { Platform } from 'react-native';
 import { API_BASE_URL } from './config';
 
 export async function login(phone, password) {
@@ -30,7 +31,9 @@ export async function getToken() {
   return await AsyncStorage.getItem('token');
 }
 
-export async function predict(imageInput, lang = 'vi', plantHint = null) {
+// qualityGate=true asks the server to reject dark/blurry/tiny photos BEFORE calling the AI
+// (response status "low_quality", no AI cost). Pass false when the user chooses "diagnose anyway".
+export async function predict(imageInput, lang = 'vi', plantHint = null, { qualityGate = true } = {}) {
   const token = await getToken();
   const form = new FormData();
   
@@ -61,6 +64,7 @@ export async function predict(imageInput, lang = 'vi', plantHint = null) {
 
   form.append('model_id', 'gpt55_vision');
   form.append('lang', lang);
+  form.append('quality_gate', qualityGate ? 'true' : 'false');
   if (plantHint && plantHint.trim()) {
     form.append('plant_hint', plantHint.trim());
   }
@@ -148,6 +152,56 @@ export async function clarifyPrediction(sessionToken, selectedPlant, lang = 'vi'
   }
 
   return data;
+}
+
+/**
+ * Send 👍/👎 feedback on a diagnosis. Guests allowed; an expired token is treated as guest by the server.
+ * Field lengths mirror the server-side validation (FeedbackCreate) so we never get a 422 for long input.
+ */
+export async function submitFeedback({
+  isCorrect,
+  reason = '',
+  correctPlant = '',
+  correctDisease = '',
+  comment = '',
+  prediction = null,
+  plantHint = '',
+  imageCount = 1,
+  wasClarified = false,
+}) {
+  const token = await getToken();
+  const headers = { 'Content-Type': 'application/json', Accept: 'application/json' };
+  if (token) headers.Authorization = `Bearer ${token}`;
+  const clip = (v, n) => String(v || '').trim().slice(0, n);
+  const body = {
+    is_correct: !!isCorrect,
+    reason: isCorrect ? '' : reason,
+    correct_plant: isCorrect ? '' : clip(correctPlant, 100),
+    correct_disease: isCorrect ? '' : clip(correctDisease, 200),
+    comment: isCorrect ? '' : clip(comment, 1000),
+    platform: Platform.OS === 'ios' ? 'ios' : Platform.OS === 'android' ? 'android' : '',
+    predicted_name: clip(prediction?.name, 300),
+    predicted_label: clip(prediction?.label, 200),
+    predicted_confidence: Math.max(0, Math.min(100, Number(prediction?.confidence) || 0)),
+    plant_hint: clip(plantHint, 100),
+    image_count: Math.max(1, Math.min(3, imageCount || 1)),
+    was_clarified: !!wasClarified,
+  };
+  const res = await fetch(`${API_BASE_URL}/api/v1/feedback`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const err = new Error(
+      res.status === 429
+        ? 'Bạn gửi phản hồi quá nhanh. Vui lòng thử lại sau ít phút.'
+        : `Không gửi được phản hồi (${res.status})`
+    );
+    err.status = res.status;
+    throw err;
+  }
+  return res.json();
 }
 
 export async function appleLogin(identityToken, givenName) {

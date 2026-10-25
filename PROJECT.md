@@ -40,7 +40,7 @@
 - **Source:** HuggingFace
 - **Architecture:** ResNet50 (23.6M params, 91MB)
 - **Dataset:** PlantVillage (54,305 images)
-- **Accuracy:** 95%+
+- **Accuracy:** 95%+ *(số liệu của tác giả model card, đo trên tập PlantVillage ảnh phòng thí nghiệm — KHÔNG phải độ chính xác của PlantDoctor trên ảnh thực địa; xem `docs/BENCHMARK_REPORT.md`)*
 - **Input:** 224x224 RGB
 - **Inference:** < 100ms (CPU), nhanh hơn trên GPU
 - **License:** Apache 2.0
@@ -49,7 +49,7 @@
 - **Source:** HuggingFace
 - **Architecture:** MobileNetV2 (lightweight)
 - **Dataset:** PlantVillage augmented (~87,000 images)
-- **Accuracy:** 95%
+- **Accuracy:** 95% *(theo model card, tập PlantVillage augmented — chưa kiểm chứng trên ảnh thực địa)*
 - **Input:** 224x224 RGB
 - **Đặc điểm:** Nhẹ, phù hợp inference nhanh
 - **License:** Apache 2.0
