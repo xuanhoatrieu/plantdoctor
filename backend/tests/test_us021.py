@@ -369,7 +369,55 @@ check("RAG context for 'Chè' includes Exobasidium vexans & Pestalotiopsis theae
 check("RAG context includes expert feedback corrections from DiagnosisFeedback", "Đúng là ghẻ cam" in ctx_tea, ctx_tea[-300:])
 
 r_seed = client.post("/api/v1/admin/diseases/seed?overwrite=true", headers=AH)
-check("admin /diseases/seed endpoint succeeds", r_seed.status_code == 200 and r_seed.json().get("total", 0) >= 30, r_seed.text)
+check("admin /diseases/seed endpoint succeeds with >=50 CABI Vietnam entries", r_seed.status_code == 200 and r_seed.json().get("total", 0) >= 50, r_seed.text)
+
+print("\n[10] US-027 CABI Plantwise Vietnam KB images & 3-Stage Image-to-KB Matching Engine")
+from app.models.kb_matcher import match_kb_disease
+
+r_kb_all = client.get("/api/v1/diseases").json()
+with_images = [d for d in r_kb_all if d.get("image_url")]
+check("CABI Vietnam KB has >=45 diseases with verified reference image URLs", len(with_images) >= 45, len(with_images))
+
+ctx_global = vlm._load_db_disease_context(db, plant_hint=None, lang="vi")
+check("Stage 1: Pre-VLM Compact Index injects CABI catalog even when plant_hint is None", "CHỈ MỤC KHO TRI THỨC BỆNH CÂY CABI PLANTWISE VIỆT NAM" in ctx_global and "Colletotrichum gloeosporioides" in ctx_global, ctx_global[:250])
+
+kb_canker = match_kb_disease(
+    db,
+    plant="Cam",
+    disease="Bệnh loét cam (Xanthomonas citri)",
+    description="Vết bệnh nhô cao sần sùi hóa bần màu nâu, có quầng vàng sáng bao quanh",
+)
+check("Stage 2: match_kb_disease matches 'Cam' + 'Bệnh loét cam' to CABI Citrus Canker record with image_url", kb_canker is not None and "Xanthomonas" in kb_canker["scientific_name"] and bool(kb_canker["image_url"]), kb_canker)
+
+kb_cross_crop = match_kb_disease(
+    db,
+    plant="Lúa",
+    disease="Bệnh loét cam",
+    description="Vết loét trên lá",
+)
+check("Stage 2 negative proof: cross-crop mismatch ('Lúa' + 'Bệnh loét cam') is strictly rejected", kb_cross_crop is None, kb_cross_crop)
+
+kb_healthy = match_kb_disease(db, plant="Cam", disease="Khỏe mạnh", description="Lá xanh tốt")
+check("Stage 2 negative proof: healthy leaf returns kb_reference=None", kb_healthy is None, kb_healthy)
+
+# Stage 3: End-to-end /api/v1/predict attaches kb_reference to predictions[0]
+reset_vlm({
+    "is_leaf": True,
+    "plant": "Xoài",
+    "plant_confidence": 92,
+    "plant_candidates": [{"name": "Xoài", "confidence": 92}],
+    "disease": "Bệnh thán thư xoài",
+    "confidence": 90,
+    "severity": "nặng",
+    "description": "Đốm nâu đen góc cạnh trên lá non, chùm hoa bị cháy đen rụng hàng loạt",
+    "treatment": "Cắt tỉa cành thông thoáng, phun thuốc phòng trừ nấm Colletotrichum gloeosporioides",
+    "medicines": ["Azoxystrobin", "Difenoconazole"],
+    "image_quality_warnings": [],
+})
+r_mango = client.post("/api/v1/predict", files={"file": ("mango.jpg", to_bytes(SHARP), "image/jpeg")})
+j_mango = r_mango.json()
+kb_ref = (j_mango.get("predictions") or [{}])[0].get("kb_reference")
+check("Stage 3: /api/v1/predict attaches kb_reference with image_url & scientific_name for Mango Anthracnose", kb_ref is not None and kb_ref.get("crop") == "Xoài" and "Colletotrichum" in kb_ref.get("scientific_name", "") and bool(kb_ref.get("image_url")), kb_ref)
 
 db.close()
 client.__exit__(None, None, None)

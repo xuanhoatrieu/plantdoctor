@@ -23,6 +23,10 @@ const PLANT_CHOICES = [
   { id: 'Khoai tây', label: 'Khoai tây', icon: '🥔' },
   { id: 'Chuối', label: 'Chuối', icon: '🍌' },
   { id: 'Nhãn/Vải', label: 'Nhãn/Vải', icon: '🍒' },
+  { id: 'Xoài', label: 'Xoài', icon: '🥭' },
+  { id: 'Thanh long', label: 'Thanh long', icon: '🐉' },
+  { id: 'Rau màu/Bắp cải', label: 'Rau màu', icon: '🥬' },
+  { id: 'Lạc/Đậu tương', label: 'Lạc/Đậu', icon: '🥜' },
 ]
 const PLANT_KEY = 'last_selected_plant'
 function getSavedPlant() {
@@ -321,7 +325,7 @@ function App() {
           </a>
         </div>
 
-        <div>PlantDoctor v2.6.0 — Phát triển bởi Triệu Xuân Hòa (Trường ĐH Nông Lâm Thái Nguyên)</div>
+        <div>PlantDoctor v2.7.0 — Phát triển bởi Triệu Xuân Hòa (Trường ĐH Nông Lâm Thái Nguyên)</div>
       </footer>
 
       {showPrivacy && <PrivacyModal onClose={() => setShowPrivacy(false)} />}
@@ -646,6 +650,77 @@ function DiagnoseView({ t, file, preview, file2, preview2, clientChecks, loading
                 <div className="p-4 bg-gray-50 rounded-xl">
                   <h4 className="font-semibold text-gray-800 mb-1">🔍 {t.description}</h4>
                   <p className="text-gray-600 text-sm leading-relaxed">{topPrediction.description}</p>
+                </div>
+              )}
+
+              {/* CABI Plantwise Knowledge Base Reference Card (Visual & Agronomic Cross-Check) */}
+              {topPrediction.kb_reference && !isHealthy && (
+                <div className="p-4 bg-emerald-50/70 border border-emerald-200 rounded-xl space-y-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-base">📚</span>
+                      <h4 className="font-bold text-emerald-900 text-sm">
+                        {vi ? 'Đối chiếu Kho tri thức CABI Plantwise Vietnam' : 'CABI Plantwise Vietnam Knowledge Base Match'}
+                      </h4>
+                    </div>
+                    <span className="text-[11px] font-semibold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">
+                      {vi ? 'Độ khớp tri thức:' : 'KB Match:'} {Math.round((topPrediction.kb_reference.match_score || 0.85) * 100)}%
+                    </span>
+                  </div>
+
+                  <div className="text-xs text-emerald-900 space-y-0.5">
+                    <p className="font-semibold text-sm">
+                      {topPrediction.kb_reference.crop} — {vi ? topPrediction.kb_reference.name_vi : (topPrediction.kb_reference.name_en || topPrediction.kb_reference.name_vi)}
+                    </p>
+                    {topPrediction.kb_reference.scientific_name && (
+                      <p className="italic text-emerald-700">
+                        🧬 {vi ? 'Tác nhân khoa học:' : 'Scientific pathogen:'} {topPrediction.kb_reference.scientific_name}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Side-by-side visual comparison: User Photo vs Verified Reference Photo */}
+                  {topPrediction.kb_reference.image_url && (
+                    <div className="grid grid-cols-2 gap-2.5 pt-1">
+                      {preview && (
+                        <div className="bg-white p-2 rounded-lg border border-emerald-100 text-center">
+                          <img
+                            src={preview}
+                            alt="User leaf"
+                            className="w-full h-28 sm:h-32 object-cover rounded-md mb-1 bg-gray-100"
+                          />
+                          <p className="text-[11px] font-medium text-gray-600">
+                            📷 {vi ? 'Ảnh của bạn' : 'Your photo'}
+                          </p>
+                        </div>
+                      )}
+                      <div className={`bg-white p-2 rounded-lg border border-emerald-200 text-center ${!preview ? 'col-span-2' : ''}`}>
+                        <img
+                          src={topPrediction.kb_reference.image_url}
+                          alt={topPrediction.kb_reference.name_vi}
+                          className="w-full h-28 sm:h-32 object-cover rounded-md mb-1 bg-gray-100"
+                          onError={(e) => { e.currentTarget.parentElement.style.display = 'none' }}
+                        />
+                        <p className="text-[11px] font-medium text-emerald-800">
+                          🔬 {vi ? 'Ảnh mẫu chuẩn trong Kho tri thức' : 'Verified KB reference photo'}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {topPrediction.kb_reference.conditions_vi && (
+                    <div className="bg-amber-50/90 border border-amber-200 rounded-lg p-2.5 text-xs text-amber-900">
+                      <span className="font-semibold">🌦️ {vi ? 'Điều kiện phát sinh (CABI): ' : 'Outbreak conditions (CABI): '}</span>
+                      <span>{topPrediction.kb_reference.conditions_vi}</span>
+                    </div>
+                  )}
+
+                  {topPrediction.kb_reference.prevention_vi && (
+                    <div className="bg-white/90 border border-emerald-200 rounded-lg p-2.5 text-xs text-emerald-900">
+                      <span className="font-semibold">🛡️ {vi ? 'Quản lý dịch hại tổng hợp (IPM Xanh CABI): ' : 'CABI Green IPM Prevention: '}</span>
+                      <span>{topPrediction.kb_reference.prevention_vi}</span>
+                    </div>
+                  )}
                 </div>
               )}
 

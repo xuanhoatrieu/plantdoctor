@@ -12,6 +12,7 @@ class PredictionResult(BaseModel):
     severity: str = ""
     matched_products: list = []
     banned_warning: list = []
+    kb_reference: Optional[dict] = None
 
 
 class CandidatePlant(BaseModel):

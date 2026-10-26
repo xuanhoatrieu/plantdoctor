@@ -11,7 +11,9 @@
     "conditions_en": "Cool temperatures 15-22°C, relative humidity >85%, heavy fog, drizzle, shaded plantations.",
     "prevention_vi": "Đốn tỉa thông thoáng, thu hái kịp thời búp đủ tuổi, bón cân đối NPK (không bón thừa đạm), thoát nước tốt mùa mưa.",
     "prevention_en": "Prune for ventilation, timely plucking of tender shoots, balanced NPK fertilization, good drainage.",
-    "treatment_vi": "Hexaconazole, Copper Oxychloride, Copper Hydroxide, Kasugamycin, Validamycin"
+    "treatment_vi": "Hexaconazole, Copper Oxychloride, Copper Hydroxide, Kasugamycin, Validamycin",
+    "image_url": "/api/v1/kb_images/01_che_tea_blister_blight.jpg",
+    "source_image_url": "https://upload.wikimedia.org/wikipedia/commons/b/ba/Exobasidium_vexans2.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled"
   },
   {
     "crop": "Chè",
@@ -25,7 +27,9 @@
     "conditions_en": "Warm humid weather (25-30°C), plants weakened by sunscald, frost, or mechanical pruning wounds.",
     "prevention_vi": "Thu gom lá bệnh sau khi đốn chè, bón tăng cường phân hữu cơ và kali, tránh làm dập nát lá khi thu hái.",
     "prevention_en": "Remove diseased foliage after pruning, increase organic fertilizer and potassium.",
-    "treatment_vi": "Mancozeb, Carbendazim, Propiconazole, Difenoconazole, Copper Oxychloride"
+    "treatment_vi": "Mancozeb, Carbendazim, Propiconazole, Difenoconazole, Copper Oxychloride",
+    "image_url": "/api/v1/kb_images/02_che_tea_gray_blight.jpg",
+    "source_image_url": "https://inaturalist-open-data.s3.amazonaws.com/photos/172916627/medium.jpg"
   },
   {
     "crop": "Chè",
@@ -39,7 +43,9 @@
     "conditions_en": "Warm temperatures 25-28°C, prolonged rain, humidity >85%, excess nitrogen.",
     "prevention_vi": "Hái chạy các búp chớm bệnh, tỉa cành thông thoáng, bón phân cân đối.",
     "prevention_en": "Sanitary plucking of infected shoots, canopy ventilation, balanced fertilizer.",
-    "treatment_vi": "Azoxystrobin, Difenoconazole, Mancozeb, Chlorothalonil"
+    "treatment_vi": "Azoxystrobin, Difenoconazole, Mancozeb, Chlorothalonil",
+    "image_url": "/api/v1/kb_images/03_che_tea_brown_blight_anthracnose.jpg",
+    "source_image_url": "https://inaturalist-open-data.s3.amazonaws.com/photos/151908918/medium.jpg"
   },
   {
     "crop": "Chè",
@@ -53,7 +59,9 @@
     "conditions_en": "Warm weather with intermittent rain and sunshine during peak flushing periods.",
     "prevention_vi": "Hái búp kịp thời theo lứa để loại bỏ trứng rầy, bảo tồn thiên địch (nhện bắt mồi), dùng bẫy dính màu vàng.",
     "prevention_en": "Frequent plucking to remove eggs, conserve predatory spiders, use yellow sticky traps.",
-    "treatment_vi": "Imidacloprid, Thiamethoxam, Dinotefuran, Emamectin benzoate, Matrine"
+    "treatment_vi": "Imidacloprid, Thiamethoxam, Dinotefuran, Emamectin benzoate, Matrine",
+    "image_url": "/api/v1/kb_images/04_che_tea_green_leafhopper.jpg",
+    "source_image_url": "https://inaturalist-open-data.s3.amazonaws.com/photos/258155578/medium.jpg"
   },
   {
     "crop": "Chè",
@@ -67,7 +75,9 @@
     "conditions_en": "Dry, warm, low-rainfall periods.",
     "prevention_vi": "Tưới phun mưa giữ ẩm nương chè mùa khô, đốn tỉa cành la, trồng cây che bóng hợp lý.",
     "prevention_en": "Overhead sprinkler irrigation in dry spells, prune lower branches, maintain shade trees.",
-    "treatment_vi": "Abamectin, Propargite, Fenpyroximate, Pyridaben, Hexythiazox"
+    "treatment_vi": "Abamectin, Propargite, Fenpyroximate, Pyridaben, Hexythiazox",
+    "image_url": "/api/v1/kb_images/05_che_tea_red_spider_mite.jpg",
+    "source_image_url": "https://inaturalist-open-data.s3.amazonaws.com/photos/10381628/medium.jpg"
   },
   {
     "crop": "Chè",
@@ -81,7 +91,9 @@
     "conditions_en": "Shady, humid plantations with dense weeds or heavy intercropping.",
     "prevention_vi": "Làm sạch cỏ dại quanh vườn, tỉa thoáng tán cây che bóng, thu hái búp thường xuyên.",
     "prevention_en": "Weed management, prune shade trees, frequent harvesting.",
-    "treatment_vi": "Thiamethoxam, Cypermethrin, Lambda-cyhalothrin, Emamectin benzoate"
+    "treatment_vi": "Thiamethoxam, Cypermethrin, Lambda-cyhalothrin, Emamectin benzoate",
+    "image_url": "/api/v1/kb_images/06_che_tea_mosquito_bug.jpg",
+    "source_image_url": "https://static.inaturalist.org/photos/13981804/medium.jpeg"
   },
   {
     "crop": "Cam/Bưởi",
@@ -95,7 +107,9 @@
     "conditions_en": "Wind-driven rain at 25-32°C, leafminer galleries or thorn scratches facilitating bacterial entry.",
     "prevention_vi": "Trồng cây giống sạch bệnh, cắt tỉa tiêu hủy cành lá bệnh, phòng trừ sâu vẽ bùa ở mỗi đợt lộc non, trồng cây chắn gió.",
     "prevention_en": "Use disease-free nursery stock, prune infected twigs, control citrus leafminer on new flushes, plant windbreaks.",
-    "treatment_vi": "Copper Hydroxide, Copper Oxychloride, Kasugamycin, Streptomycin, Bismerthiazol"
+    "treatment_vi": "Copper Hydroxide, Copper Oxychloride, Kasugamycin, Streptomycin, Bismerthiazol",
+    "image_url": "/api/v1/kb_images/07_cam_buoi_citrus_canker.jpg",
+    "source_image_url": "https://static.inaturalist.org/photos/138986/medium.jpg"
   },
   {
     "crop": "Cam/Bưởi",
@@ -109,7 +123,9 @@
     "conditions_en": "Cool humid conditions (20-26°C) during spring flush and young fruit set.",
     "prevention_vi": "Tỉa cành thông thoáng sau thu hoạch, chăm sóc cho cây ra lộc tập trung đồng loạt.",
     "prevention_en": "Post-harvest pruning for airflow, synchronize new flush growth.",
-    "treatment_vi": "Difenoconazole, Mancozeb, Copper Oxychloride, Azoxystrobin, Carbendazim"
+    "treatment_vi": "Difenoconazole, Mancozeb, Copper Oxychloride, Azoxystrobin, Carbendazim",
+    "image_url": "/api/v1/kb_images/08_cam_buoi_citrus_scab.jpg",
+    "source_image_url": "https://inaturalist-open-data.s3.amazonaws.com/photos/7680922/medium.jpg"
   },
   {
     "crop": "Cam/Bưởi",
@@ -123,7 +139,9 @@
     "conditions_en": "Transmitted by Asian citrus psyllid (Diaphorina citri) and infected grafting budwood.",
     "prevention_vi": "Dùng cây giống sạch bệnh, tiêu hủy cây bệnh nặng, phun trừ rầy chổng cánh đồng loạt khi cây nhú lộc non, không trồng xen ổi quá rậm hoặc trồng ổi làm hàng rào xua rầy đúng kỹ thuật.",
     "prevention_en": "Certified disease-free seedlings, rogue infected trees, control psyllids on new flushes.",
-    "treatment_vi": "Imidacloprid, Thiamethoxam, Pymetrozine, Abamectin (diệt vector rầy chổng cánh; bệnh vi khuẩn mạch dẫn không có thuốc trị khỏi hoàn toàn)"
+    "treatment_vi": "Imidacloprid, Thiamethoxam, Pymetrozine, Abamectin (diệt vector rầy chổng cánh; bệnh vi khuẩn mạch dẫn không có thuốc trị khỏi hoàn toàn)",
+    "image_url": "/api/v1/kb_images/09_cam_buoi_citrus_greening_huanglongbing.jpg",
+    "source_image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/35/20200225-APHIS-VHY-IYPH_0034_%2849644705696%29.jpg/500px-20200225-APHIS-VHY-IYPH_0034_%2849644705696%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail"
   },
   {
     "crop": "Cam/Bưởi",
@@ -137,7 +155,9 @@
     "conditions_en": "Active whenever new flushes emerge, especially summer and autumn flushes.",
     "prevention_vi": "Điều khiển cây ra lộc tập trung bằng tỉa cành và bón phân đồng loạt để phun bảo vệ lộc.",
     "prevention_en": "Synchronize flush emergence through pruning and fertilization.",
-    "treatment_vi": "Abamectin, Emamectin benzoate, Imidacloprid, Spinetoram, Dầu khoáng (Mineral oil)"
+    "treatment_vi": "Abamectin, Emamectin benzoate, Imidacloprid, Spinetoram, Dầu khoáng (Mineral oil)",
+    "image_url": "/api/v1/kb_images/10_cam_buoi_citrus_leafminer.jpg",
+    "source_image_url": "https://static.inaturalist.org/photos/57485522/medium.jpg"
   },
   {
     "crop": "Cam/Bưởi",
@@ -151,7 +171,9 @@
     "conditions_en": "Poorly drained waterlogged soil, heavy rain, low grafting height.",
     "prevention_vi": "Trồng trên mô cao thoát nước tốt, bón vôi và nấm đối kháng Trichoderma kết hợp phân hữu cơ hoai mục.",
     "prevention_en": "Plant on raised mounds with good drainage, apply lime and Trichoderma bio-fungicide.",
-    "treatment_vi": "Fosetyl-aluminium, Metalaxyl + Mancozeb, Dimethomorph, Phosphorous acid"
+    "treatment_vi": "Fosetyl-aluminium, Metalaxyl + Mancozeb, Dimethomorph, Phosphorous acid",
+    "image_url": "/api/v1/kb_images/11_cam_buoi_citrus_phytophthora_foot_rot_gummosis.jpg",
+    "source_image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3c/Nicotiana_tabacum_with_Phytophthora_blight_%28Phytophthora_nicotianae%29_1436051-Clemson_University_-_USDA.jpg/500px-Nicotiana_tabacum_with_Phytophthora_blight_%28Phytophthora_nicotianae%29_1436051-Clemson_University_-_USDA.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail"
   },
   {
     "crop": "Lúa",
@@ -165,7 +187,9 @@
     "conditions_en": "Temperature 20-28°C, humidity >90%, heavy night dew/fog, excess nitrogen fertilization.",
     "prevention_vi": "Gieo trồng giống kháng, bón phân cân đối NPK (không bón thúc đạm muộn), giữ mực nước ruộng ổn định.",
     "prevention_en": "Use blast-resistant varieties, balanced NPK without late excess nitrogen, maintain field water.",
-    "treatment_vi": "Tricyclazole, Isoprothiolane, Fenoxanil, Azoxystrobin, Kasugamycin"
+    "treatment_vi": "Tricyclazole, Isoprothiolane, Fenoxanil, Azoxystrobin, Kasugamycin",
+    "image_url": "/api/v1/kb_images/12_lua_rice_blast.jpg",
+    "source_image_url": "https://inaturalist-open-data.s3.amazonaws.com/photos/263656072/medium.jpg"
   },
   {
     "crop": "Lúa",
@@ -179,7 +203,9 @@
     "conditions_en": "Typhoons, strong wind and rain causing leaf wounds, 26-32°C, high nitrogen.",
     "prevention_vi": "Chọn giống ít nhiễm bạc lá, bón đủ kali, ngừng phun phân bón lá chứa đạm khi bệnh chớm phát sinh.",
     "prevention_en": "Use resistant cultivars, apply adequate potassium, stop foliar nitrogen sprays when disease starts.",
-    "treatment_vi": "Bismerthiazol, Kasugamycin, Streptomycin, Oxolinic acid, Copper Hydroxide"
+    "treatment_vi": "Bismerthiazol, Kasugamycin, Streptomycin, Oxolinic acid, Copper Hydroxide",
+    "image_url": "/api/v1/kb_images/13_lua_rice_bacterial_leaf_blight.jpg",
+    "source_image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b1/Bacterial_blight_of_rice.jpeg/500px-Bacterial_blight_of_rice.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail"
   },
   {
     "crop": "Lúa",
@@ -193,7 +219,9 @@
     "conditions_en": "High temperature (28-32°C), dense canopy humidity >90%, high planting density and nitrogen.",
     "prevention_vi": "Cấy/sạ mật độ hợp lý, dọn sạch cỏ dại, tháo cạn nước phơi ruộng xen kẽ.",
     "prevention_en": "Optimal spacing, weed control, alternate wetting and drying irrigation.",
-    "treatment_vi": "Validamycin, Hexaconazole, Azoxystrobin + Difenoconazole, Propiconazole"
+    "treatment_vi": "Validamycin, Hexaconazole, Azoxystrobin + Difenoconazole, Propiconazole",
+    "image_url": "/api/v1/kb_images/14_lua_rice_sheath_blight.jpg",
+    "source_image_url": "https://inaturalist-open-data.s3.amazonaws.com/photos/2474934/medium.jpg"
   },
   {
     "crop": "Lúa",
@@ -207,7 +235,9 @@
     "conditions_en": "Nutrient-deficient acid sulfate or sandy soils lacking potassium, silicon, or zinc.",
     "prevention_vi": "Bón lót vôi, lân nung chảy và tăng cường kali, giữ đủ nước ruộng.",
     "prevention_en": "Apply lime, fused phosphate, and potassium; prevent drought stress.",
-    "treatment_vi": "Propiconazole, Difenoconazole, Mancozeb, Iprodione, Carbendazim"
+    "treatment_vi": "Propiconazole, Difenoconazole, Mancozeb, Iprodione, Carbendazim",
+    "image_url": "/api/v1/kb_images/15_lua_rice_brown_spot.jpg",
+    "source_image_url": "https://static.inaturalist.org/photos/579091368/medium.jpg"
   },
   {
     "crop": "Ngô",
@@ -221,7 +251,9 @@
     "conditions_en": "Cool humid weather (16-24°C) with heavy dew.",
     "prevention_vi": "Sử dụng giống ngô lai kháng bệnh, gieo trồng đúng khung thời vụ, mật độ hợp lý.",
     "prevention_en": "Plant resistant hybrids, proper sowing time and spacing.",
-    "treatment_vi": "Propiconazole, Azoxystrobin, Difenoconazole, Mancozeb, Tebuconazole"
+    "treatment_vi": "Propiconazole, Azoxystrobin, Difenoconazole, Mancozeb, Tebuconazole",
+    "image_url": "/api/v1/kb_images/16_ngo_corn_common_rust.jpg",
+    "source_image_url": "https://inaturalist-open-data.s3.amazonaws.com/photos/224464294/medium.jpeg"
   },
   {
     "crop": "Ngô",
@@ -235,7 +267,9 @@
     "conditions_en": "Moderate temperatures 18-27°C, high moisture, continuous corn monoculture.",
     "prevention_vi": "Luân canh với cây họ đậu/lúa, thu gom vùi sâu tàn dư cây ngô sau thu hoạch.",
     "prevention_en": "Crop rotation with legumes or rice, deep burial of infected crop residue.",
-    "treatment_vi": "Azoxystrobin + Propiconazole, Mancozeb, Tebuconazole"
+    "treatment_vi": "Azoxystrobin + Propiconazole, Mancozeb, Tebuconazole",
+    "image_url": "/api/v1/kb_images/17_ngo_corn_northern_leaf_blight.jpg",
+    "source_image_url": "https://inaturalist-open-data.s3.amazonaws.com/photos/96642712/medium.jpg"
   },
   {
     "crop": "Ngô",
@@ -249,7 +283,9 @@
     "conditions_en": "Most destructive from 3-leaf to whorl stages in warm weather.",
     "prevention_vi": "Kiểm tra đồng ruộng sớm giai đoạn 2-6 lá, dùng bẫy bả chua ngọt và bẫy pheromone bắt trưởng thành.",
     "prevention_en": "Early scouting at 2-6 leaf stage, pheromone traps for adult moths.",
-    "treatment_vi": "Emamectin benzoate, Spinetoram, Indoxacarb, Chlorantraniliprole, Lufenuron (phun trực tiếp vào nõn ngô)"
+    "treatment_vi": "Emamectin benzoate, Spinetoram, Indoxacarb, Chlorantraniliprole, Lufenuron (phun trực tiếp vào nõn ngô)",
+    "image_url": "/api/v1/kb_images/18_ngo_fall_armyworm_on_corn.jpg",
+    "source_image_url": "https://static.inaturalist.org/photos/160344068/medium.jpg"
   },
   {
     "crop": "Cà phê",
@@ -263,7 +299,9 @@
     "conditions_en": "Rainy season, temperatures 21-25°C, nutrient-stressed heavy-bearing trees.",
     "prevention_vi": "Trồng giống kháng gỉ sắt, tỉa cành tạo tán thông thoáng, bón phân cân đối đủ NPK và trung vi lượng.",
     "prevention_en": "Resistant varieties, canopy pruning, balanced fertilization.",
-    "treatment_vi": "Hexaconazole, Propiconazole, Triadimefon, Copper Oxychloride, Azoxystrobin"
+    "treatment_vi": "Hexaconazole, Propiconazole, Triadimefon, Copper Oxychloride, Azoxystrobin",
+    "image_url": "/api/v1/kb_images/19_ca_phe_coffee_leaf_rust.jpg",
+    "source_image_url": "https://inaturalist-open-data.s3.amazonaws.com/photos/3314420/medium.jpg"
   },
   {
     "crop": "Cà phê",
@@ -277,7 +315,9 @@
     "conditions_en": "Unshaded sunlit plantations, nitrogen/potassium deficiency, nursery seedlings.",
     "prevention_vi": "Trồng cây đai rừng/che bóng hợp lý, bón đủ phân hữu cơ, đạm và kali.",
     "prevention_en": "Provide adequate shade, balanced N and K fertilization.",
-    "treatment_vi": "Mancozeb, Carbendazim, Copper Hydroxide, Difenoconazole"
+    "treatment_vi": "Mancozeb, Carbendazim, Copper Hydroxide, Difenoconazole",
+    "image_url": "/api/v1/kb_images/20_ca_phe_coffee_brown_eye_spot.jpg",
+    "source_image_url": "https://inaturalist-open-data.s3.amazonaws.com/photos/258748358/medium.jpeg"
   },
   {
     "crop": "Cà phê",
@@ -291,7 +331,9 @@
     "conditions_en": "Prolonged heavy rains during berry development, high humidity.",
     "prevention_vi": "Cắt bỏ và đốt cành khô bệnh, thoát nước tốt, bón cân đối kali và canxi.",
     "prevention_en": "Prune and burn infected twigs, improve drainage, supply potassium and calcium.",
-    "treatment_vi": "Azoxystrobin + Difenoconazole, Carbendazim, Mancozeb, Copper Oxychloride"
+    "treatment_vi": "Azoxystrobin + Difenoconazole, Carbendazim, Mancozeb, Copper Oxychloride",
+    "image_url": "/api/v1/kb_images/21_ca_phe_coffee_anthracnose_berry_blotch.jpg",
+    "source_image_url": "https://inaturalist-open-data.s3.amazonaws.com/photos/111482357/medium.jpeg"
   },
   {
     "crop": "Hồ tiêu/Ớt",
@@ -305,7 +347,9 @@
     "conditions_en": "Mid-to-late rainy season in waterlogged soil with surface water runoff.",
     "prevention_vi": "Đào rãnh thoát nước sâu giữa các hàng tiêu, cắt tỉa cành lươn sát đất, bón nấm đối kháng Trichoderma và phân hữu cơ.",
     "prevention_en": "Deep drainage trenches, prune runner shoots near soil, apply Trichoderma and organic matter.",
-    "treatment_vi": "Fosetyl-aluminium, Metalaxyl + Mancozeb, Dimethomorph, Phosphorous acid"
+    "treatment_vi": "Fosetyl-aluminium, Metalaxyl + Mancozeb, Dimethomorph, Phosphorous acid",
+    "image_url": "/api/v1/kb_images/22_ho_tieu_ot_black_pepper_quick_wilt_foot_rot.jpg",
+    "source_image_url": "https://inaturalist-open-data.s3.amazonaws.com/photos/32036435/medium.jpeg"
   },
   {
     "crop": "Hồ tiêu/Ớt",
@@ -319,7 +363,9 @@
     "conditions_en": "Warm humid weather (27-32°C) with frequent rain and high plant density.",
     "prevention_vi": "Thu gom tiêu hủy quả/lá bệnh, trồng mật độ thông thoáng, bón tăng canxi và kali.",
     "prevention_en": "Remove infected fruits/leaves, wide spacing, supplement calcium and potassium.",
-    "treatment_vi": "Azoxystrobin, Difenoconazole, Mancozeb, Propineb, Chlorothalonil"
+    "treatment_vi": "Azoxystrobin, Difenoconazole, Mancozeb, Propineb, Chlorothalonil",
+    "image_url": "/api/v1/kb_images/23_ho_tieu_ot_pepper_chili_anthracnose.jpg",
+    "source_image_url": "https://inaturalist-open-data.s3.amazonaws.com/photos/18643082/medium.jpeg"
   },
   {
     "crop": "Sầu riêng",
@@ -333,7 +379,9 @@
     "conditions_en": "Rainy season, high humidity, dense unpruned canopies.",
     "prevention_vi": "Tỉa cành tạo tán thông thoáng, thu gom lá bệnh rụng dưới gốc, không bón thừa đạm.",
     "prevention_en": "Canopy pruning for aeration, collect fallen diseased leaves, avoid excess nitrogen.",
-    "treatment_vi": "Hexaconazole, Validamycin, Azoxystrobin + Difenoconazole, Propiconazole"
+    "treatment_vi": "Hexaconazole, Validamycin, Azoxystrobin + Difenoconazole, Propiconazole",
+    "image_url": "/api/v1/kb_images/24_sau_rieng_durian_rhizoctonia_leaf_blight.jpg",
+    "source_image_url": "https://inaturalist-open-data.s3.amazonaws.com/photos/2474934/medium.jpg"
   },
   {
     "crop": "Sầu riêng",
@@ -347,7 +395,9 @@
     "conditions_en": "Erratic rain and heat, post-harvest tree exhaustion or potassium deficiency.",
     "prevention_vi": "Cắt tỉa lá già bệnh, phục hồi bộ rễ và bổ sung phân hữu cơ, kali, trung vi lượng sau thu hoạch.",
     "prevention_en": "Prune diseased leaves, post-harvest root recovery and balanced nutrition.",
-    "treatment_vi": "Propineb, Mancozeb, Difenoconazole, Azoxystrobin, Copper Hydroxide"
+    "treatment_vi": "Propineb, Mancozeb, Difenoconazole, Azoxystrobin, Copper Hydroxide",
+    "image_url": "/api/v1/kb_images/25_sau_rieng_durian_leaf_anthracnose.jpg",
+    "source_image_url": "https://inaturalist-open-data.s3.amazonaws.com/photos/111482357/medium.jpeg"
   },
   {
     "crop": "Sầu riêng",
@@ -361,7 +411,9 @@
     "conditions_en": "Peaks during every new leaf flush emergence, especially in dry warm weather.",
     "prevention_vi": "Điều khiển cây ra đọt non đồng loạt, dùng bẫy dính màu vàng treo quanh tán cây.",
     "prevention_en": "Synchronize flush emergence, hang yellow sticky traps.",
-    "treatment_vi": "Imidacloprid, Thiamethoxam, Buprofezin, Pymetrozine, Abamectin"
+    "treatment_vi": "Imidacloprid, Thiamethoxam, Buprofezin, Pymetrozine, Abamectin",
+    "source_image_url": "https://inaturalist-open-data.s3.amazonaws.com/photos/148481934/medium.jpg",
+    "image_url": "/api/v1/kb_images/26_sau_rieng_durian_psyllid.jpg"
   },
   {
     "crop": "Cà chua",
@@ -375,7 +427,9 @@
     "conditions_en": "Cool wet weather (15-22°C), drizzle, and heavy fog.",
     "prevention_vi": "Lên luống cao thoát nước tốt, tỉa bỏ lá già tầng gốc, không tưới phun mưa vào chiều muộn.",
     "prevention_en": "High raised beds, prune lower leaves, avoid late afternoon overhead irrigation.",
-    "treatment_vi": "Metalaxyl + Mancozeb, Cymoxanil + Mancozeb, Dimethomorph, Chlorothalonil"
+    "treatment_vi": "Metalaxyl + Mancozeb, Cymoxanil + Mancozeb, Dimethomorph, Chlorothalonil",
+    "image_url": "/api/v1/kb_images/27_ca_chua_tomato_late_blight.jpg",
+    "source_image_url": "https://inaturalist-open-data.s3.amazonaws.com/photos/2274217/medium.jpg"
   },
   {
     "crop": "Cà chua",
@@ -389,7 +443,9 @@
     "conditions_en": "Warm humid weather (24-29°C) during heavy fruiting stage.",
     "prevention_vi": "Luân canh với cây không phải họ Cà, ngắt bỏ lá già bị bệnh ở gốc, bón thúc đủ NPK.",
     "prevention_en": "Rotate with non-solanaceous crops, remove infected lower leaves, adequate nutrition.",
-    "treatment_vi": "Azoxystrobin, Difenoconazole, Mancozeb, Chlorothalonil, Iprodione"
+    "treatment_vi": "Azoxystrobin, Difenoconazole, Mancozeb, Chlorothalonil, Iprodione",
+    "image_url": "/api/v1/kb_images/28_ca_chua_tomato_early_blight.jpg",
+    "source_image_url": "https://inaturalist-open-data.s3.amazonaws.com/photos/316872824/medium.jpg"
   },
   {
     "crop": "Cà chua",
@@ -403,7 +459,9 @@
     "conditions_en": "Hot dry weather favoring whitefly (Bemisia tabaci) vector populations.",
     "prevention_vi": "Trồng giống kháng TYLCV, che lưới chắn côn trùng vườn ươm, treo bẫy dính vàng, nhổ bỏ cây bệnh sớm.",
     "prevention_en": "Plant TYLCV-resistant hybrids, insect-proof nursery nets, yellow sticky traps, rogue infected plants.",
-    "treatment_vi": "Imidacloprid, Thiamethoxam, Pymetrozine, Spirotetramat (diệt bọ phấn trắng truyền bệnh)"
+    "treatment_vi": "Imidacloprid, Thiamethoxam, Pymetrozine, Spirotetramat (diệt bọ phấn trắng truyền bệnh)",
+    "image_url": "/api/v1/kb_images/29_ca_chua_tomato_yellow_leaf_curl_virus.jpg",
+    "source_image_url": "https://inaturalist-open-data.s3.amazonaws.com/photos/59321502/medium.jpeg"
   },
   {
     "crop": "Khoai tây",
@@ -417,7 +475,9 @@
     "conditions_en": "Cool temperatures (14-20°C), humidity >90%, fog and drizzle.",
     "prevention_vi": "Sử dụng củ giống sạch bệnh, vun luống cao, phun phòng trước các đợt không khí lạnh kèm mưa ẩm.",
     "prevention_en": "Certified disease-free seed tubers, high hilling, preventive sprays before cool wet spells.",
-    "treatment_vi": "Metalaxyl + Mancozeb, Cymoxanil + Mancozeb, Dimethomorph, Fluopicolide + Propamocarb"
+    "treatment_vi": "Metalaxyl + Mancozeb, Cymoxanil + Mancozeb, Dimethomorph, Fluopicolide + Propamocarb",
+    "image_url": "/api/v1/kb_images/30_khoai_tay_potato_late_blight.jpg",
+    "source_image_url": "https://inaturalist-open-data.s3.amazonaws.com/photos/2274217/medium.jpg"
   },
   {
     "crop": "Chuối",
@@ -431,7 +491,9 @@
     "conditions_en": "Warm rainy season (25-30°C), high humidity, dense unpruned mats.",
     "prevention_vi": "Cắt bỏ và đem chôn các tàu lá chuối già bị bệnh, tỉa chồi giữ mật độ thông thoáng, thoát nước tốt.",
     "prevention_en": "Sanitary de-leafing of infected lower leaves, desuckering for ventilation, good drainage.",
-    "treatment_vi": "Propiconazole, Difenoconazole, Azoxystrobin, Mancozeb, Chlorothalonil"
+    "treatment_vi": "Propiconazole, Difenoconazole, Azoxystrobin, Mancozeb, Chlorothalonil",
+    "image_url": "/api/v1/kb_images/31_chuoi_banana_sigatoka_leaf_spot.jpg",
+    "source_image_url": "https://inaturalist-open-data.s3.amazonaws.com/photos/246370282/medium.jpeg"
   },
   {
     "crop": "Chuối",
@@ -445,7 +507,9 @@
     "conditions_en": "Acidic soil (pH < 5.5), poor drainage, infected suckers.",
     "prevention_vi": "Dùng cây giống nuôi cấy mô sạch bệnh, bón vôi nâng pH đất, tăng cường phân hữu cơ và nấm Trichoderma, đào bỏ khử trùng hố cây bệnh bằng vôi bột.",
     "prevention_en": "Tissue-culture disease-free plantlets, lime acidic soil, apply Trichoderma, eradicate infected mats.",
-    "treatment_vi": "Carbendazim, Copper Oxychloride, Hymexazol (tưới gốc phòng lây lan; cây đã nhiễm nặng cần tiêu hủy)"
+    "treatment_vi": "Carbendazim, Copper Oxychloride, Hymexazol (tưới gốc phòng lây lan; cây đã nhiễm nặng cần tiêu hủy)",
+    "image_url": "/api/v1/kb_images/32_chuoi_banana_panama_disease_fusarium_wilt.jpg",
+    "source_image_url": "https://inaturalist-open-data.s3.amazonaws.com/photos/32036896/medium.jpeg"
   },
   {
     "crop": "Nhãn/Vải",
@@ -459,7 +523,9 @@
     "conditions_en": "Spread by eriphyid gall mites during new vegetative flush and flowering stages.",
     "prevention_vi": "Cắt bỏ toàn bộ chồi/chùm hoa bị chổi rồng đem tiêu hủy ngay, phun trừ nhện lông nhung khi cây vừa nhú lộc non.",
     "prevention_en": "Prune and burn all witches' broom shoots/panicles, spray miticides at new flush emergence.",
-    "treatment_vi": "Abamectin, Propargite, Sulfur, Fenpyroximate, Pyridaben (diệt nhện lông nhung)"
+    "treatment_vi": "Abamectin, Propargite, Sulfur, Fenpyroximate, Pyridaben (diệt nhện lông nhung)",
+    "image_url": "/api/v1/kb_images/33_nhan_vai_longan_witches_broom.jpg",
+    "source_image_url": "https://inaturalist-open-data.s3.amazonaws.com/photos/152841636/medium.jpeg"
   },
   {
     "crop": "Nhãn/Vải",
@@ -473,6 +539,264 @@
     "conditions_en": "Prolonged spring drizzle, fog, and high humidity during flowering and fruit development.",
     "prevention_vi": "Tỉa cành thông thoáng sau thu hoạch, rung cành rũ bỏ cánh hoa tàn đọng nước sau mưa xuân.",
     "prevention_en": "Post-harvest canopy pruning, shake off wet senescent petals after spring rain.",
-    "treatment_vi": "Metalaxyl + Mancozeb, Dimethomorph, Azoxystrobin + Difenoconazole, Propineb"
+    "treatment_vi": "Metalaxyl + Mancozeb, Dimethomorph, Azoxystrobin + Difenoconazole, Propineb",
+    "image_url": "/api/v1/kb_images/34_nhan_vai_lychee_longan_downy_blight_anthracnose.jpg",
+    "source_image_url": "https://inaturalist-open-data.s3.amazonaws.com/photos/44834073/medium.jpg"
+  },
+  {
+    "crop": "Lúa",
+    "name_vi": "Bệnh nghẹt rễ sinh lý lúa (Ngộ độc hữu cơ / phèn)",
+    "name_en": "Rice Physiological Root Choking / Acid Sulfate Toxicity",
+    "scientific_name": "Physiological disorder (Fe2+ / H2S toxicity)",
+    "severity": "medium",
+    "symptoms_vi": "Cây lúa còi cọc, đẻ nhánh kém, chóp lá và mép lá già biến màu vàng đỏ hoặc nâu gỉ sắt có các chấm nhỏ màu nâu đen lan từ đầu lá xuống; nhổ lên thấy bộ rễ thâm đen, thối có mùi hôi tanh, rất ít rễ trắng mới.",
+    "symptoms_en": "Stunted tillering, reddish-brown or rusty yellowing starting from tips of older leaves with tiny brown-black speckles; roots turn black and foul-smelling with few white feeder roots.",
+    "conditions_vi": "Đất chua phèn, ruộng ngập nước sâu thiếu oxy, vùi rơm rạ chưa phân hủy hoặc thời tiết lạnh dưới 15°C sau cấy/sạ (CABI Vietnam PMDG).",
+    "conditions_en": "Acid sulfate waterlogged soils, undecomposed organic matter, or cold spells.",
+    "prevention_vi": "Cày ải phơi đất, bón vôi khử chua và phân lân nung chảy trước khi gieo cấy; tháo cạn nước phơi ruộng nhẹ 3-5 ngày để xả độc khí H2S, làm cỏ sục bùn giúp rễ thông thoáng.",
+    "prevention_en": "Drain and aerate paddy soil for 3-5 days, apply agricultural lime and fused phosphate, rotary weeding to oxygenate roots.",
+    "treatment_vi": "Bón phân lân dễ tiêu (Super lân), Kali, phun phân bón lá chứa Humic + Kẽm + Silic giúp ra rễ trắng mới (không phun thuốc trừ nấm vì đây là bệnh sinh lý)",
+    "image_url": "/api/v1/kb_images/35_lua_rice_physiological_root_choking_acid_sulfate_toxicity.jpg",
+    "source_image_url": "https://inaturalist-open-data.s3.amazonaws.com/photos/48742632/medium.jpg"
+  },
+  {
+    "crop": "Lúa",
+    "name_vi": "Rầy nâu và Rầy lưng trắng hại lúa",
+    "name_en": "Rice Brown Planthopper & White-backed Planthopper",
+    "scientific_name": "Nilaparvata lugens / Sogatella furcifera",
+    "severity": "high",
+    "symptoms_vi": "Rầy tập trung chích hút nhựa ở phần gốc bẹ lúa sát mặt nước làm lá lúa chuyển vàng từ lá dưới lên, sau đó cả chòm lúa khô cháy màu nâu rụi lõm xuống như lòng chảo (triệu chứng cháy rầy); bẹ lúa có vết chích nâu đen và lớp muội đen.",
+    "symptoms_en": "Planthoppers congregate at the base of rice tillers above the waterline, causing yellowing of lower leaves followed by circular patches of brownish-orange dried plants (hopperburn).",
+    "conditions_vi": "Thời tiết nắng nóng xen mưa rào ẩm ướt, ruộng gieo sạ quá dày, bón thừa phân đạm và phun thuốc trừ sâu phổ rộng sớm làm chết thiên địch.",
+    "conditions_en": "Warm humid weather, dense seeding, excess nitrogen, early broad-spectrum insecticide sprays.",
+    "prevention_vi": "Gieo sạ đồng loạt né rầy, dùng giống kháng rầy, giữ mực nước và bảo tồn thiên địch (nhện, kiến ba khoang, bọ xít mù xanh) trong 40 ngày đầu sau sạ.",
+    "prevention_en": "Synchronous planting, resistant varieties, conserve natural enemies in first 40 days.",
+    "treatment_vi": "Pymetrozine, Dinotefuran, Triflumezopyrim, Buprofezin, Imidacloprid (rẽ hàng lúa phun kỹ vào gốc bẹ)",
+    "image_url": "/api/v1/kb_images/36_lua_rice_brown_planthopper_white_backed_planthopper.jpg",
+    "source_image_url": "https://inaturalist-open-data.s3.amazonaws.com/photos/439632934/medium.jpg"
+  },
+  {
+    "crop": "Lúa",
+    "name_vi": "Sâu cuốn lá nhỏ hại lúa",
+    "name_en": "Rice Leaf Folder",
+    "scientific_name": "Cnaphalocrocis medinalis",
+    "severity": "medium",
+    "symptoms_vi": "Sâu non nhả tơ khâu dính hai mép lá lúa dọc theo chiều dài tạo thành ống cuốn tròn; sâu nằm bên trong ăn phần diệp lục xanh chỉ để lại lớp biểu bì mỏng màu trắng bạch thành từng vệt dài dọc phiến lá.",
+    "symptoms_en": "Larvae fold rice leaves longitudinally with silk threads and scrape the green mesophyll inside, leaving long translucent white streaks on the leaf blade.",
+    "conditions_vi": "Ruộng lúa xanh tốt, bón thừa đạm, thời tiết âm u mưa nhỏ xen nắng nhẹ giai đoạn đẻ nhánh rộ và làm đòng.",
+    "conditions_en": "Lush high-nitrogen fields at maximum tillering and booting stages.",
+    "prevention_vi": "Không bón thừa đạm, bảo vệ ong ký sinh và thiên địch ngoài đồng, chỉ phun thuốc khi mật độ sâu vượt ngưỡng (>20 con/m2 giai đoạn làm đòng).",
+    "prevention_en": "Avoid excess nitrogen, conserve parasitoid wasps, spray only above economic threshold.",
+    "treatment_vi": "Chlorantraniliprole, Indoxacarb, Emamectin benzoate, Spinetoram, Flubendiamide",
+    "image_url": "/api/v1/kb_images/37_lua_rice_leaf_folder.jpg",
+    "source_image_url": "https://inaturalist-open-data.s3.amazonaws.com/photos/119774459/medium.jpg"
+  },
+  {
+    "crop": "Cam/Bưởi",
+    "name_vi": "Rầy mềm hại cây có múi",
+    "name_en": "Citrus Aphids",
+    "scientific_name": "Toxoptera citricida / Toxoptera aurantii",
+    "severity": "medium",
+    "symptoms_vi": "Rầy mềm màu nâu đen hoặc xanh đen tập trung dày đặc ở đọt non, mặt dưới lá non và nụ hoa chích hút nhựa làm lá non cong queo, co rúm úp xuống, đọt non chùn lại; tiết mật ngọt gây nấm muội đen phủ kín mặt lá và truyền bệnh virus Tristeza.",
+    "symptoms_en": "Dense colonies of dark brown/black aphids on tender shoots and undersides of young leaves causing downward leaf curling, stunted shoots, black sooty mold, and Citrus Tristeza Virus transmission.",
+    "conditions_vi": "Phát sinh mạnh vào các đợt cây ra lộc non mùa xuân và đầu mùa mưa (Tài liệu CABI Plantwise Vietnam & SOFRI).",
+    "conditions_en": "Flush periods in spring and early rainy season.",
+    "prevention_vi": "Tỉa cành điều khiển lộc non ra tập trung, bảo vệ thiên địch (bọ rùa, ruồi ăn rầy), phun dầu khoáng nông nghiệp khi lộc vừa nhú.",
+    "prevention_en": "Synchronize flush growth, conserve ladybird beetles, spray horticultural mineral oil.",
+    "treatment_vi": "Imidacloprid, Thiamethoxam, Pymetrozine, Spirotetramat, Dầu khoáng (Mineral oil)",
+    "image_url": "/api/v1/kb_images/38_cam_buoi_citrus_aphids.jpg",
+    "source_image_url": "https://inaturalist-open-data.s3.amazonaws.com/photos/4728889/medium.jpg"
+  },
+  {
+    "crop": "Cam/Bưởi",
+    "name_vi": "Nhện đỏ và Nhện rám vàng hại cây có múi",
+    "name_en": "Citrus Red Mite & Citrus Rust Mite",
+    "scientific_name": "Panonychus citri / Phyllocoptruta oleivora",
+    "severity": "medium",
+    "symptoms_vi": "Trên lá bánh tẻ xuất hiện dày đặc các chấm nhỏ li ti màu trắng bạc/vàng xám làm phiến lá mất màu bóng chuyển xám bạc khô cằn; trên quả làm vỏ quả bị rám nắng màu nâu đồng hoặc xám đen sần sùi (da cám, da lu).",
+    "symptoms_en": "Pale stippling and silvery-gray dullness on leaves; bronzing or dark russeting ('sharkskin' / 'mahogany' rind) on citrus fruits.",
+    "conditions_vi": "Thời tiết nắng nóng, khô hạn kéo dài, độ ẩm không khí thấp.",
+    "conditions_en": "Hot, dry weather with low humidity.",
+    "prevention_vi": "Tưới phun mưa lên tán cây trong mùa khô, phun dầu khoáng định kỳ, tránh lạm dụng thuốc gốc Cúc (Pyrethroid) gây bộc phát nhện.",
+    "prevention_en": "Overhead water spraying in dry season, mineral oil applications, avoid pyrethroid overuse.",
+    "treatment_vi": "Abamectin, Spirodiclofen, Propargite, Fenpyroximate, Hexythiazox, Dầu khoáng",
+    "image_url": "/api/v1/kb_images/39_cam_buoi_citrus_red_mite_citrus_rust_mite.jpg",
+    "source_image_url": "https://static.inaturalist.org/photos/118012616/medium.jpg"
+  },
+  {
+    "crop": "Sầu riêng",
+    "name_vi": "Sâu đục quả sầu riêng",
+    "name_en": "Durian Fruit Borer / Yellow Peach Moth",
+    "scientific_name": "Conogethes punctiferalis",
+    "severity": "high",
+    "symptoms_vi": "Sâu non đục vào vỏ quả sầu riêng (đặc biệt nơi hai quả tiếp xúc nhau) từ khi quả non đến khi chín, đùn phân màu nâu đen kết dính bằng tơ ra ngoài miệng lỗ đục trên gai quả; vết đục tạo điều kiện cho nấm Phytophthora xâm nhập gây thối quả và rụng quả.",
+    "symptoms_en": "Larvae bore into durian fruits (especially where two fruits touch), extruding dark brown frass webbed with silk between spines and predisposing fruits to Phytophthora fruit rot.",
+    "conditions_vi": "Giai đoạn quả non đến thu hoạch, vườn rậm rạp hoặc để quả mọc thành chùm sát nhau (CABI Vietnam PMDG).",
+    "conditions_en": "Fruit development stage, particularly in clustered touching fruits.",
+    "prevention_vi": "Tỉa bớt quả trong chùm hoặc chèn que nhỏ tách rời không để hai quả dính sát nhau, bao quả, thu gom tiêu hủy quả rụng bị sâu.",
+    "prevention_en": "Thin fruit clusters or separate touching fruits with spacers, fruit bagging, destroy fallen infested fruits.",
+    "treatment_vi": "Chlorantraniliprole, Emamectin benzoate, Spinetoram, Indoxacarb, Lambda-cyhalothrin",
+    "image_url": "/api/v1/kb_images/40_sau_rieng_durian_fruit_borer_yellow_peach_moth.jpg",
+    "source_image_url": "https://inaturalist-open-data.s3.amazonaws.com/photos/59425860/medium.jpeg"
+  },
+  {
+    "crop": "Sầu riêng",
+    "name_vi": "Bệnh đốm rong (Tảo đỏ) hại lá và cành sầu riêng",
+    "name_en": "Durian Algal Leaf Spot / Red Rust",
+    "scientific_name": "Cephaleuros virescens",
+    "severity": "medium",
+    "symptoms_vi": "Trên mặt lá già và vỏ cành xuất hiện các đốm tròn hơi nổi gồ có lớp nhung mịn như nhung lụa màu xanh xám, sau chuyển sang màu nâu đỏ gỉ sắt hoặc cam gạch rất đặc trưng; làm lá khô cứng giảm quang hợp và vỏ cành nứt nẻ.",
+    "symptoms_en": "Circular raised velvety spots on mature leaves and twigs that turn from greenish-gray to rusty orange-red, reducing photosynthesis and cracking twig bark.",
+    "conditions_vi": "Vườn ẩm thấp, rậm rạp thiếu ánh nắng, mưa nhiều trong mùa mưa.",
+    "conditions_en": "High humidity, poor canopy aeration, shaded damp orchards.",
+    "prevention_vi": "Cắt tỉa cành vô hiệu tạo độ thông thoáng cho ánh nắng chiếu vào thân cành, thoát nước tốt và bón phân cân đối.",
+    "prevention_en": "Prune canopy for sunlight penetration and airflow, improve drainage.",
+    "treatment_vi": "Copper Oxychloride, Copper Hydroxide, Cuprous Oxide (phun rửa vườn bằng thuốc gốc đồng)",
+    "image_url": "/api/v1/kb_images/41_sau_rieng_durian_algal_leaf_spot_red_rust.jpg",
+    "source_image_url": "https://inaturalist-open-data.s3.amazonaws.com/photos/57606453/medium.jpeg"
+  },
+  {
+    "crop": "Xoài",
+    "name_vi": "Bệnh thán thư hại xoài (Khô bông, đốm đen lá và quả)",
+    "name_en": "Mango Anthracnose",
+    "scientific_name": "Colletotrichum gloeosporioides",
+    "severity": "high",
+    "symptoms_vi": "Trên lá non tạo các đốm tròn/đa giác màu nâu sẫm làm lá co rúm rách thủng; trên lá già tạo vết cháy nâu đen ở chóp và mép lá; trên chùm hoa gây khô đen rụng hoa; trên vỏ quả tạo vết lõm đen tròn có bào tử màu hồng nhạt khi ẩm.",
+    "symptoms_en": "Dark brown angular spots and shot-holes on young leaves, tip/margin blight on mature leaves, blackened panicle blight, and sunken black tear-stain lesions on ripening fruit.",
+    "conditions_vi": "Mưa phùn, sương mù, ẩm độ >85% trùng vào giai đoạn xoài ra đọt non, trổ bông và nuôi quả.",
+    "conditions_en": "Rain, fog, and high humidity (>85%) during flushing, flowering, and fruiting.",
+    "prevention_vi": "Tỉa cành thông thoáng sau thu hoạch, bao quả xoài, thu gom cành hoa và quả bệnh rụng.",
+    "prevention_en": "Post-harvest pruning, fruit bagging, orchard sanitation.",
+    "treatment_vi": "Azoxystrobin, Difenoconazole, Propineb, Mancozeb, Carbendazim",
+    "image_url": "/api/v1/kb_images/42_xoai_mango_anthracnose.jpg",
+    "source_image_url": "https://inaturalist-open-data.s3.amazonaws.com/photos/111482357/medium.jpeg"
+  },
+  {
+    "crop": "Xoài",
+    "name_vi": "Sâu đục quả xoài (Sâu đục hạt xoài)",
+    "name_en": "Mango Red-banded Fruit Borer",
+    "scientific_name": "Deanolis albizonalis (Noorda albizonalis)",
+    "severity": "high",
+    "symptoms_vi": "Sâu non có các khoang màu đỏ trắng xen kẽ đục vào phần chóp đuôi quả xoài tạo lỗ thủng có nhựa và phân sâu đùn ra, ăn sâu vào thịt quả và hạt làm quả xoài bị nứt dọc và rụng hàng loạt (CABI Plantwise Vietnam Factsheet).",
+    "symptoms_en": "Red-and-white banded caterpillars bore into the distal tip of mango fruits, exuding sap and frass, tunneling into the flesh and seed and causing longitudinal fruit cracking and drop.",
+    "conditions_vi": "Phát sinh mạnh từ khi quả xoài bằng quả trứng gà đến khi thu hoạch, đặc biệt ở ĐBSCL và Đông Nam Bộ.",
+    "conditions_en": "From marble/egg-sized fruit stage to harvest.",
+    "prevention_vi": "Bao quả xoài sớm sau khi rụng sinh lý (30-35 ngày sau đậu quả), thu gom tiêu hủy quả rụng và cạo vỏ khô trên thân để diệt nhộng.",
+    "prevention_en": "Early fruit bagging 30-35 days after fruit set, destroy fallen fruits, scrape loose bark to remove pupae.",
+    "treatment_vi": "Chlorantraniliprole, Emamectin benzoate, Spinetoram, Cypermethrin",
+    "image_url": "/api/v1/kb_images/43_xoai_mango_red_banded_fruit_borer.jpg",
+    "source_image_url": "https://static.inaturalist.org/photos/5291878/medium.jpg"
+  },
+  {
+    "crop": "Xoài",
+    "name_vi": "Rầy bông xoài (Rầy chổng cánh xoài)",
+    "name_en": "Mango Leafhopper",
+    "scientific_name": "Idioscopus nitidulus / Idioscopus clypealis",
+    "severity": "high",
+    "symptoms_vi": "Rầy tập trung chích hút nhựa ở đọt non và chùm hoa xoài làm hoa khô héo, chuyển màu nâu đen và rụng trơ cuống; rầy tiết rất nhiều mật ngọt làm lá và cành phủ một lớp nấm muội đen dày đặc.",
+    "symptoms_en": "Hoppers suck sap from tender shoots and inflorescences causing blossom withering, flower drop, and heavy black sooty mold coating on leaves from honeydew secretion.",
+    "conditions_vi": "Thời tiết nắng ấm, khô hanh trùng kỳ xoài ra lộc và trổ bông (vụ đông xuân).",
+    "conditions_en": "Warm dry weather during flushing and flowering.",
+    "prevention_vi": "Tỉa cành tạo tán thông thoáng ánh sáng, treo bẫy dính vàng, rửa vườn sau thu hoạch.",
+    "prevention_en": "Canopy pruning for light penetration, yellow sticky traps.",
+    "treatment_vi": "Imidacloprid, Thiamethoxam, Buprofezin, Pymetrozine, Lambda-cyhalothrin",
+    "image_url": "/api/v1/kb_images/44_xoai_mango_leafhopper.jpg",
+    "source_image_url": "https://inaturalist-open-data.s3.amazonaws.com/photos/119952478/medium.jpg"
+  },
+  {
+    "crop": "Thanh long",
+    "name_vi": "Bệnh đốm nâu thanh long (Bệnh tắc kè / Đốm trắng)",
+    "name_en": "Dragon Fruit Brown Spot / Stem Canker",
+    "scientific_name": "Neoscytalidium dimidiatum",
+    "severity": "high",
+    "symptoms_vi": "Trên cành non và vỏ quả thanh long xuất hiện các chấm nhỏ lõm màu trắng như mắt cá, sau nhanh chóng chuyển thành mụn tròn nổi gồ màu nâu đỏ như mắt tắc kè, liên kết thành mảng sần sùi thối nâu làm cành và quả thối rữa.",
+    "symptoms_en": "Small sunken white specks on young cladodes and fruits that turn into raised reddish-brown scabby spots, coalescing into large corky brown cankers and rot.",
+    "conditions_vi": "Mùa mưa ẩm độ cao, sương đêm nhiều, lây lan rất nhanh qua nước mưa và dụng cụ cắt tỉa.",
+    "conditions_en": "Rainy season, high humidity, heavy dew.",
+    "prevention_vi": "Cắt bỏ và đem ra khỏi vườn tiêu hủy toàn bộ cành/quả nhiễm bệnh, khử trùng kéo cắt cành, bón vôi và Trichoderma.",
+    "prevention_en": "Sanitary pruning and burning of infected cladodes, disinfect pruning shears, apply lime and Trichoderma.",
+    "treatment_vi": "Azoxystrobin + Difenoconazole, Tebuconazole, Trifloxystrobin, Mancozeb, Copper Hydroxide",
+    "image_url": "/api/v1/kb_images/45_thanh_long_dragon_fruit_brown_spot_stem_canker.jpg",
+    "source_image_url": "https://inaturalist-open-data.s3.amazonaws.com/photos/21957574/medium.jpeg"
+  },
+  {
+    "crop": "Rau màu/Bắp cải",
+    "name_vi": "Sâu tơ hại rau họ thập tự (Bắp cải, Súp lơ, Cải xanh)",
+    "name_en": "Diamondback Moth on Crucifers",
+    "scientific_name": "Plutella xylostella",
+    "severity": "high",
+    "symptoms_vi": "Sâu non màu xanh nhạt gặm phần thịt lá ở mặt dưới, chỉ chừa lại lớp biểu bì mặt trên tạo thành các đốm trắng mờ như cửa sổ kính; khi lớn cắn thủng lá lỗ chỗ như lưới rách làm cây cải không cuốn bắp được (CABI Vietnam PMDG).",
+    "symptoms_en": "Small green caterpillars feed on the lower leaf epidermis leaving translucent upper 'windowpanes' and riddling leaves with irregular holes.",
+    "conditions_vi": "Thời tiết khô mát đến ấm áp (20-30°C), trồng rau họ cải liên tục quanh năm.",
+    "conditions_en": "Dry cool-to-warm weather, continuous crucifer cultivation.",
+    "prevention_vi": "Luân canh với cây khác họ (họ Đậu, hành tỏi, lúa), trồng xen cà chua để xua đuổi trưởng thành, tưới phun mưa vào chiều tối, dùng bẫy pheromone.",
+    "prevention_en": "Crop rotation with non-crucifers, intercrop with tomato, evening overhead sprinkler irrigation, pheromone traps.",
+    "treatment_vi": "Bacillus thuringiensis (Bt), Spinetoram, Emamectin benzoate, Chlorantraniliprole, Indoxacarb (luân phiên hoạt chất chống kháng thuốc)",
+    "image_url": "/api/v1/kb_images/46_rau_mau_bap_cai_diamondback_moth_on_crucifers.jpg",
+    "source_image_url": "https://inaturalist-open-data.s3.amazonaws.com/photos/45323592/medium.jpg"
+  },
+  {
+    "crop": "Rau màu/Bắp cải",
+    "name_vi": "Sâu khoang và Sâu xanh da láng hại rau màu",
+    "name_en": "Cluster Caterpillar & Beet Armyworm",
+    "scientific_name": "Spodoptera litura / Spodoptera exigua",
+    "severity": "high",
+    "symptoms_vi": "Sâu tuổi nhỏ sống tập trung hàng trăm con ở mặt dưới lá ăn khuyết hết thịt lá chỉ còn mạng gân lá trắng xơ xác; sâu tuổi lớn phân tán cắn thủng lá thành các lỗ rách lớn và đục vào bắp/quả (CABI Vietnam Sơn La Factsheet).",
+    "symptoms_en": "Gregarious young larvae skeletonize leaves leaving only a mesh of veins; older larvae chew large irregular holes in foliage and bore into heads/pods.",
+    "conditions_vi": "Thời tiết nóng ẩm xen kẽ nắng mưa, ruộng nhiều cỏ dại.",
+    "conditions_en": "Warm humid weather, weedy fields.",
+    "prevention_vi": "Ngắt bỏ các ổ trứng có phủ lông vàng nâu và các lá có sâu non mới nở tập trung, dùng bẫy chua ngọt và bẫy pheromone.",
+    "prevention_en": "Hand-pick egg masses and gregarious young larval clusters, use pheromone and sweet-sour traps.",
+    "treatment_vi": "Emamectin benzoate, Spinetoram, Indoxacarb, Lufenuron, Bacillus thuringiensis (Bt)",
+    "image_url": "/api/v1/kb_images/47_rau_mau_bap_cai_cluster_caterpillar_beet_armyworm.jpg",
+    "source_image_url": "https://inaturalist-open-data.s3.amazonaws.com/photos/253028015/medium.jpg"
+  },
+  {
+    "crop": "Rau màu/Bắp cải",
+    "name_vi": "Bệnh thối nhũn vi khuẩn hại bắp cải và rau màu",
+    "name_en": "Bacterial Soft Rot of Crucifers",
+    "scientific_name": "Pectobacterium carotovorum (Erwinia carotovora)",
+    "severity": "high",
+    "symptoms_vi": "Vết bệnh xuất hiện ở gốc cuống lá hoặc đỉnh bắp cải dạng đốm ướt như luộc nước sôi, nhanh chóng lan rộng làm mô lá và bắp thối nhũn thành dịch nhầy màu nâu vàng, bốc mùi hôi thối nồng nặc rất đặc trưng.",
+    "symptoms_en": "Water-soaked lesions at petiole bases or heads that rapidly macerate into a slimy, foul-smelling soft rot.",
+    "conditions_vi": "Thời tiết nóng ẩm mưa nhiều, ruộng thoát nước kém, bón thừa đạm hoặc có vết thương do sâu tơ/sâu khoang cắn phá.",
+    "conditions_en": "Warm wet weather, poor drainage, excess nitrogen, insect feeding wounds.",
+    "prevention_vi": "Trồng luống cao thoát nước tốt, bón vôi khử trùng đất, kiểm soát tốt sâu ăn lá để tránh tạo vết thương.",
+    "prevention_en": "High raised beds, soil liming, control leaf-chewing insects to prevent entry wounds.",
+    "treatment_vi": "Kasugamycin, Streptomycin, Oxolinic acid, Copper Hydroxide",
+    "image_url": "/api/v1/kb_images/48_rau_mau_bap_cai_bacterial_soft_rot_of_crucifers.jpg",
+    "source_image_url": "https://static.inaturalist.org/photos/40410605/medium.jpeg"
+  },
+  {
+    "crop": "Lạc/Đậu tương",
+    "name_vi": "Bệnh đốm nâu và đốm đen hại lạc (Đậu phộng)",
+    "name_en": "Peanut Early & Late Leaf Spot",
+    "scientific_name": "Cercospora arachidicola / Phaeoisariopsis personata",
+    "severity": "medium",
+    "symptoms_vi": "Trên lá lạc xuất hiện nhiều đốm tròn (2-8mm): đốm nâu có màu nâu sáng kèm quầng vàng tươi rất rõ ở mặt trên; đốm đen có màu nâu đen đến đen kịt không có quầng vàng rõ và mặt dưới có các vòng ổ bào tử đen; làm lá lạc vàng và rụng trơ gốc (CABI Vietnam PMDG).",
+    "symptoms_en": "Circular 2-8mm leaf spots: early leaf spot is reddish-brown with a bright yellow halo; late leaf spot is dark brown-to-black with dark spore tufts underneath, causing severe defoliation.",
+    "conditions_vi": "Thời tiết nóng ẩm mưa nhiều giai đoạn lạc ra hoa đâm tia đến chắc củ, đất thiếu canxi và magie.",
+    "conditions_en": "Warm humid weather during flowering and pegging, calcium/magnesium deficiency.",
+    "prevention_vi": "Luân canh lạc với lúa nước, bón vôi (Canxi) và lân đầy đủ, thu dọn sạch tàn dư cây lạc sau thu hoạch.",
+    "prevention_en": "Rotate with paddy rice, apply lime (calcium) and phosphorus, remove crop residues.",
+    "treatment_vi": "Difenoconazole, Azoxystrobin, Tebuconazole, Chlorothalonil, Mancozeb",
+    "image_url": "/api/v1/kb_images/49_lac_dau_tuong_peanut_early_late_leaf_spot.jpg",
+    "source_image_url": "https://inaturalist-open-data.s3.amazonaws.com/photos/98388074/medium.jpeg"
+  },
+  {
+    "crop": "Lạc/Đậu tương",
+    "name_vi": "Bệnh sương mai và gỉ sắt hại đậu tương (Đậu nành)",
+    "name_en": "Soybean Downy Mildew & Rust",
+    "scientific_name": "Peronospora manshurica / Phakopsora pachyrhizi",
+    "severity": "high",
+    "symptoms_vi": "Bệnh sương mai tạo các đốm vàng xanh nhạt ở mặt trên lá và lớp mốc xám tím ở mặt dưới; bệnh gỉ sắt tạo vô số mụn u nhỏ li ti màu nâu đỏ gạch ở mặt dưới lá làm lá vàng khô và rụng sớm, hạt đậu lép (CABI Vietnam Sơn La Factsheet).",
+    "symptoms_en": "Downy mildew causes pale green-yellow upper spots with grayish-purple fuzz underneath; soybean rust produces dense reddish-brown pustules on the lower leaf surface leading to premature defoliation.",
+    "conditions_vi": "Ẩm độ cao (>85%), sương mù nhiều, nhiệt độ 20-28°C.",
+    "conditions_en": "High humidity (>85%), heavy dew/fog, temperatures 20-28°C.",
+    "prevention_vi": "Dùng hạt giống sạch bệnh, gieo trồng mật độ vừa phải thông thoáng, luân canh với cây ngô hoặc lúa.",
+    "prevention_en": "Clean seed, moderate planting density, crop rotation.",
+    "treatment_vi": "Azoxystrobin + Difenoconazole, Hexaconazole, Metalaxyl + Mancozeb, Propiconazole",
+    "image_url": "/api/v1/kb_images/50_lac_dau_tuong_soybean_downy_mildew_rust.jpg",
+    "source_image_url": "https://inaturalist-open-data.s3.amazonaws.com/photos/743663156/medium.jpg"
   }
 ]

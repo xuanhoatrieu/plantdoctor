@@ -5,6 +5,7 @@ from contextlib import asynccontextmanager
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 load_dotenv()
 
@@ -78,6 +79,10 @@ app.include_router(admin_router)
 app.include_router(auth_router)
 app.include_router(feedback_router)
 app.include_router(feedback_admin_router)
+
+_kb_images_dir = os.path.join(os.path.dirname(__file__), "data", "kb_images")
+os.makedirs(_kb_images_dir, exist_ok=True)
+app.mount("/api/v1/kb_images", StaticFiles(directory=_kb_images_dir), name="kb_images")
 
 
 @app.get("/api/v1/health", response_model=HealthResponse)

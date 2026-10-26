@@ -13,6 +13,7 @@ import imagehash
 from cachetools import TTLCache
 from PIL import Image, ImageFilter, ImageOps, ImageStat
 from .pesticide_matcher import match_medicines
+from .kb_matcher import match_kb_disease
 from ..database.models import Setting, Disease, DiagnosisFeedback  # noqa: F401  (kept for backwards-compatible imports)
 from ..llm_config import resolve_llm_config
 
@@ -481,11 +482,19 @@ _CROP_HINT_SYNONYMS = {
     "ớt": "hồ tiêu/ớt",
     "nhãn": "nhãn/vải",
     "vải": "nhãn/vải",
+    "bắp cải": "rau màu/bắp cải",
+    "cải": "rau màu/bắp cải",
+    "súp lơ": "rau màu/bắp cải",
+    "rau": "rau màu/bắp cải",
+    "lạc": "lạc/đậu tương",
+    "đậu phộng": "lạc/đậu tương",
+    "đậu tương": "lạc/đậu tương",
+    "đậu nành": "lạc/đậu tương",
 }
 
 
 def _load_db_disease_context(db, plant_hint: Optional[str], lang: str) -> str:
-    """Load expert-curated disease reference entries and reviewed feedback corrections from DB."""
+    """Load expert-curated CABI Plantwise Vietnam disease entries and reviewed feedback corrections from DB."""
     if db is None:
         return ""
     sections: list[str] = []
@@ -503,32 +512,42 @@ def _load_db_disease_context(db, plant_hint: Optional[str], lang: str) -> str:
                     crop_low = (row.crop or "").lower()
                     if any(tok in crop_low or crop_low in tok for tok in expanded_tokens):
                         matched.append(row)
-                rows = matched if matched else all_rows[:25]
+                rows = matched if matched else all_rows[:35]
             else:
-                rows = all_rows[:35]
+                # Compact morphological index of all CABI Plantwise Vietnam diseases so the VLM
+                # can match an unhinted leaf photo directly to the right crop & disease in 1 pass.
+                rows = all_rows[:80]
 
             lines = []
             for d in rows:
                 if lang == "vi":
-                    sym = (d.symptoms_vi or "")[:280]
-                    cond = f" Điều kiện: {(d.conditions_vi or '')[:120]}." if getattr(d, "conditions_vi", "") else ""
-                    trt = (d.treatment_vi or "")[:160]
-                    lines.append(f"- [{d.crop}] {d.name_vi} ({d.scientific_name}): {sym}{cond} Hoạt chất/Xử lý: {trt}")
+                    if plant_hint:
+                        sym = (d.symptoms_vi or "")[:320]
+                        cond = f" Điều kiện: {(d.conditions_vi or '')[:140]}." if getattr(d, "conditions_vi", "") else ""
+                        trt = (d.treatment_vi or "")[:160]
+                        lines.append(f"- [{d.crop}] {d.name_vi} ({d.scientific_name}): {sym}{cond} Hoạt chất/Xử lý: {trt}")
+                    else:
+                        sym = (d.symptoms_vi or "")[:175]
+                        trt = (d.treatment_vi or "")[:100]
+                        lines.append(f"- [{d.crop}] {d.name_vi} ({d.scientific_name}): {sym} | Thuốc: {trt}")
                 else:
-                    sym = (d.symptoms_en or d.symptoms_vi or "")[:280]
-                    trt = (d.treatment_en or d.treatment_vi or "")[:160]
+                    sym = (d.symptoms_en or d.symptoms_vi or "")[:220]
+                    trt = (d.treatment_en or d.treatment_vi or "")[:140]
                     lines.append(f"- [{d.crop}] {d.name_en or d.name_vi} ({d.scientific_name}): {sym} Treatment: {trt}")
 
             if lang == "vi":
                 if plant_hint:
                     header = (
-                        f"\n\nKHO TRI THỨC BỆNH CÂY CHUẨN CHO CÂY '{plant_hint}' "
-                        f"(BẮT BUỘC ưu tiên đối chiếu với danh mục này):\n"
+                        f"\n\nKHO TRI THỨC CABI PLANTWISE VIỆT NAM CHO CÂY '{plant_hint}' "
+                        f"(BẮT BUỘC ưu tiên đối chiếu triệu chứng và đặt tên bệnh chuẩn theo danh mục này):\n"
                     )
                 else:
-                    header = "\n\nKHO TRI THỨC BỆNH CÂY VIỆT NAM THAM CHIẾU (ĐỐI CHIẾU TRIỆU CHỨNG):\n"
+                    header = (
+                        "\n\nCHỈ MỤC KHO TRI THỨC BỆNH CÂY CABI PLANTWISE VIỆT NAM "
+                        "(Hãy đối chiếu dấu hiệu hình thái trên ảnh với danh mục chuẩn dưới đây để chọn đúng tên cây và tên bệnh):\n"
+                    )
             else:
-                header = "\n\nVIETNAMESE CROP DISEASE KNOWLEDGE BASE REFERENCE:\n"
+                header = "\n\nCABI PLANTWISE VIETNAM CROP DISEASE KNOWLEDGE BASE REFERENCE:\n"
             sections.append(header + "\n".join(lines))
     except Exception:
         pass
@@ -718,8 +737,9 @@ def _format_result(
     candidate_plants: list = None,
     clarification_message: str = None,
     session_token: str = None,
+    db = None,
 ) -> dict:
-    """Format parsed VLM result into prediction response schema."""
+    """Format parsed VLM result into prediction response schema, enriched with CABI KB match."""
     disease_str = _clean_disease_label(str(result.get("disease") or "Unknown"))
     is_healthy = disease_str.lower() in ("healthy", "khỏe mạnh")
 
@@ -735,6 +755,19 @@ def _format_result(
         conf_val = 0
 
     plant_str = str(result.get("plant") or "").strip()
+    desc_str = str(result.get("description") or "")
+    reasoning_str = str(result.get("reasoning") or "")
+
+    kb_ref = None
+    if not is_healthy and db is not None:
+        kb_ref = match_kb_disease(
+            db=db,
+            plant=plant_str,
+            disease=disease_str,
+            description=desc_str,
+            reasoning=reasoning_str,
+        )
+
     medicine_match = match_medicines(medicines) if medicines else {"matched_products": [], "banned_warning": []}
 
     image_quality_warnings = result.get("image_quality_warnings", [])
@@ -747,12 +780,13 @@ def _format_result(
         "label": disease_str,
         "confidence": conf_val,
         "name": f"{plant_str} - {disease_str}" if plant_str else disease_str,
-        "description": str(result.get("description") or ""),
+        "description": desc_str,
         "treatment": str(result.get("treatment") or "") if not is_healthy else "",
         "medicines": medicines,
         "severity": str(result.get("severity") or ""),
         "matched_products": medicine_match["matched_products"],
         "banned_warning": medicine_match["banned_warning"],
+        "kb_reference": kb_ref,
     }]
 
     return {
@@ -960,7 +994,7 @@ def predict_vlm(
         if confidence >= VOTING_CONFIDENCE_THRESHOLD:
             logger.info("VLM prediction [%s]: %s - %s (confidence=%d%%, no voting needed)",
                         model_tag, raw_plant, raw_disease, confidence)
-            formatted = _format_result(result, lang, voting_used=False, status="success")
+            formatted = _format_result(result, lang, voting_used=False, status="success", db=db)
             _store_cache(img_hashes, lang, plant_hint, formatted, model_tag=model_tag)
             return formatted
 
@@ -988,9 +1022,9 @@ def predict_vlm(
                         break
             logger.info("Voting result [%s]: %s - %s (averaged confidence=%s)",
                         model_tag, final.get("plant"), final.get("disease"), final.get("confidence", 0))
-            formatted = _format_result(final, lang, voting_used=True, status="success")
+            formatted = _format_result(final, lang, voting_used=True, status="success", db=db)
         else:
-            formatted = _format_result(result, lang, voting_used=False, status="success")
+            formatted = _format_result(result, lang, voting_used=False, status="success", db=db)
 
         _store_cache(img_hashes, lang, plant_hint, formatted, model_tag=model_tag)
         return formatted
@@ -1040,7 +1074,7 @@ def clarify_vlm(session_token: str, selected_plant: str, lang: str = "vi", db = 
         result = _fallback()
         used_fallback = True
 
-    formatted = _format_result(result, lang, voting_used=False, status="success")
+    formatted = _format_result(result, lang, voting_used=False, status="success", db=db)
     if img_hashes and not used_fallback:
         _store_cache(img_hashes, lang, selected_plant, formatted, model_tag=model_tag)
     # Invalidate session

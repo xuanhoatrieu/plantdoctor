@@ -219,7 +219,15 @@ def seed_default_diseases(db, overwrite: bool = False) -> int:
             row.prevention_en = str(item.get("prevention_en") or row.prevention_en)
             row.treatment_vi = str(item.get("treatment_vi") or row.treatment_vi)
             row.treatment_en = str(item.get("treatment_en") or row.treatment_en)
+            row.image_url = str(item.get("image_url") or row.image_url)
             added += 1
+        else:
+            # Always migrate empty or external http(s) image_url to local self-hosted /api/v1/kb_images/...
+            new_img = str(item.get("image_url") or "").strip()
+            cur_img = str(row.image_url or "").strip()
+            if new_img and (not cur_img or (cur_img.startswith("http") and new_img.startswith("/api/v1/kb_images/"))):
+                row.image_url = new_img
+                added += 1
     if added:
         db.commit()
         logger.info("Seeded/updated %d Vietnamese disease knowledge base entries", added)
