@@ -27,7 +27,7 @@ export default function Layout() {
     >
       <Tabs.Screen name="index" options={{ tabBarIcon: ({ focused }) => <TabIcon emoji="🔍" label="Chẩn đoán" focused={focused} /> }} />
       <Tabs.Screen name="history" options={{ tabBarIcon: ({ focused }) => <TabIcon emoji="📜" label="Lịch sử" focused={focused} /> }} />
-      <Tabs.Screen name="library" options={{ tabBarIcon: ({ focused }) => <TabIcon emoji="📚" label="Thư viện" focused={focused} /> }} />
+      <Tabs.Screen name="library" options={{ tabBarIcon: ({ focused }) => <TabIcon emoji="📚" label="Cẩm nang" focused={focused} /> }} />
       <Tabs.Screen name="pesticides" options={{ tabBarIcon: ({ focused }) => <TabIcon emoji="🧪" label="Thuốc" focused={focused} /> }} />
       <Tabs.Screen name="profile" options={{ tabBarIcon: ({ focused }) => <TabIcon emoji="👤" label="Tôi" focused={focused} /> }} />
       <Tabs.Screen name="admin" options={{ href: null }} />

@@ -27,7 +27,7 @@ const vi = {
   wind: 'Gió',
   tab_diagnose: '🔍 Chẩn đoán',
   tab_history: '📜 Lịch sử',
-  tab_library: '📚 Thư viện bệnh',
+  tab_library: '📚 Cẩm nang',
   tab_pesticides: '🧪 Thuốc BVTV',
   tab_admin: '⚙️ Quản lý',
 }
@@ -61,7 +61,7 @@ const en = {
   wind: 'Wind',
   tab_diagnose: '🔍 Diagnose',
   tab_history: '📜 History',
-  tab_library: '📚 Disease Library',
+  tab_library: '📚 Crop Guide',
   tab_pesticides: '🧪 Pesticides',
   tab_admin: '⚙️ Admin',
 }

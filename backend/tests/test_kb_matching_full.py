@@ -55,6 +55,7 @@ def main():
 
     served_ok = 0
     invalid_imgs = []
+    sha256_seen = set()
     for d in diseases:
         r = client.get(d.image_url)
         if r.status_code == 200 and len(r.content) > 1024:
@@ -62,6 +63,8 @@ def main():
                 im = Image.open(io.BytesIO(r.content))
                 im.verify()
                 served_ok += 1
+                import hashlib
+                sha256_seen.add(hashlib.sha256(r.content).hexdigest())
             except Exception as e:
                 invalid_imgs.append((d.id, d.image_url, str(e)))
         else:
@@ -71,6 +74,11 @@ def main():
         f"All {len(diseases)} reference images are served via FastAPI /api/v1/kb_images/* and verified as valid JPEGs",
         served_ok == len(diseases) and len(invalid_imgs) == 0,
         invalid_imgs,
+    )
+    check(
+        f"All {len(diseases)} reference images are 100% distinct (zero duplicate photos across different crops/diseases)",
+        len(sha256_seen) == len(diseases),
+        f"{len(sha256_seen)}/{len(diseases)} unique",
     )
 
     print("\n=== [2] Full 50-Disease KB Matching Recall Across 15 Crop Groups ===")
@@ -182,6 +190,34 @@ def main():
     for label, plant_in, disease_in, desc_in in negative_cases:
         m = match_kb_disease(db, plant=plant_in, disease=disease_in, description=desc_in)
         check(label, m is None, m)
+
+    print("\n=== [5] Server-Local Crop Cultivation Guides & Stage-to-Disease Linking ===")
+    guides_resp = client.get("/api/v1/crop-guides")
+    check("GET /api/v1/crop-guides returns HTTP 200", guides_resp.status_code == 200, guides_resp.status_code)
+    guides_data = guides_resp.json() if guides_resp.status_code == 200 else []
+    check("All 15 crop cultivation guides are present", len(guides_data) == 15, len(guides_data))
+
+    all_stages_count = 0
+    unlinked_diseases = []
+    missing_fields = []
+    for g in guides_data:
+        stages = g.get("stages") or []
+        all_stages_count += len(stages)
+        if len(stages) != 5 or not g.get("source_agency") or not g.get("summary_vi"):
+            missing_fields.append(g.get("crop"))
+        for st in stages:
+            if not (st.get("title_vi") and st.get("timing_vi") and st.get("care_vi") and st.get("notes_vi")):
+                missing_fields.append(f"{g.get('crop')}:stage-{st.get('stage_number')}")
+            for ld in st.get("linked_diseases") or []:
+                if not ld.get("id") or not str(ld.get("image_url") or "").startswith("/api/v1/kb_images/"):
+                    unlinked_diseases.append((g.get("crop"), st.get("stage_number"), ld))
+
+    check("All 15 crops have 5 complete stages (75 stages total)", all_stages_count == 75 and not missing_fields, missing_fields)
+    check("Every stage disease links to a valid DB Disease with local /api/v1/kb_images/*.jpg", len(unlinked_diseases) == 0, unlinked_diseases[:3])
+
+    durian_resp = client.get("/api/v1/crop-guides", params={"crop": "Sầu riêng"})
+    durian_data = durian_resp.json() if durian_resp.status_code == 200 else []
+    check("GET /api/v1/crop-guides?crop=Sầu riêng filters accurately", len(durian_data) == 1 and durian_data[0]["crop"] == "Sầu riêng", len(durian_data))
 
     db.close()
     client.__exit__(None, None, None)

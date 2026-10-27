@@ -29,7 +29,7 @@
     "prevention_en": "Remove diseased foliage after pruning, increase organic fertilizer and potassium.",
     "treatment_vi": "Mancozeb, Carbendazim, Propiconazole, Difenoconazole, Copper Oxychloride",
     "image_url": "/api/v1/kb_images/02_che_tea_gray_blight.jpg",
-    "source_image_url": "https://inaturalist-open-data.s3.amazonaws.com/photos/172916627/medium.jpg"
+    "source_image_url": "https://huggingface.co/datasets/anupamavm/sri_lankan_tea_leaf_diseases/resolve/main/GrayBlight/20240904_132627.jpg"
   },
   {
     "crop": "Chè",
@@ -45,7 +45,7 @@
     "prevention_en": "Sanitary plucking of infected shoots, canopy ventilation, balanced fertilizer.",
     "treatment_vi": "Azoxystrobin, Difenoconazole, Mancozeb, Chlorothalonil",
     "image_url": "/api/v1/kb_images/03_che_tea_brown_blight_anthracnose.jpg",
-    "source_image_url": "https://inaturalist-open-data.s3.amazonaws.com/photos/151908918/medium.jpg"
+    "source_image_url": "https://huggingface.co/datasets/anupamavm/sri_lankan_tea_leaf_diseases/resolve/main/BrownBlight/20240718_105227.jpg"
   },
   {
     "crop": "Chè",
@@ -141,7 +141,7 @@
     "prevention_en": "Certified disease-free seedlings, rogue infected trees, control psyllids on new flushes.",
     "treatment_vi": "Imidacloprid, Thiamethoxam, Pymetrozine, Abamectin (diệt vector rầy chổng cánh; bệnh vi khuẩn mạch dẫn không có thuốc trị khỏi hoàn toàn)",
     "image_url": "/api/v1/kb_images/09_cam_buoi_citrus_greening_huanglongbing.jpg",
-    "source_image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/35/20200225-APHIS-VHY-IYPH_0034_%2849644705696%29.jpg/500px-20200225-APHIS-VHY-IYPH_0034_%2849644705696%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail"
+    "source_image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/73/Citrus_greening_UGA5201066.jpg/960px-Citrus_greening_UGA5201066.jpg"
   },
   {
     "crop": "Cam/Bưởi",
@@ -157,7 +157,7 @@
     "prevention_en": "Synchronize flush emergence through pruning and fertilization.",
     "treatment_vi": "Abamectin, Emamectin benzoate, Imidacloprid, Spinetoram, Dầu khoáng (Mineral oil)",
     "image_url": "/api/v1/kb_images/10_cam_buoi_citrus_leafminer.jpg",
-    "source_image_url": "https://static.inaturalist.org/photos/57485522/medium.jpg"
+    "source_image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/47/Phyllocnistis_citrella_damage.jpg/960px-Phyllocnistis_citrella_damage.jpg"
   },
   {
     "crop": "Cam/Bưởi",
@@ -173,7 +173,7 @@
     "prevention_en": "Plant on raised mounds with good drainage, apply lime and Trichoderma bio-fungicide.",
     "treatment_vi": "Fosetyl-aluminium, Metalaxyl + Mancozeb, Dimethomorph, Phosphorous acid",
     "image_url": "/api/v1/kb_images/11_cam_buoi_citrus_phytophthora_foot_rot_gummosis.jpg",
-    "source_image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3c/Nicotiana_tabacum_with_Phytophthora_blight_%28Phytophthora_nicotianae%29_1436051-Clemson_University_-_USDA.jpg/500px-Nicotiana_tabacum_with_Phytophthora_blight_%28Phytophthora_nicotianae%29_1436051-Clemson_University_-_USDA.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail"
+    "source_image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/33/Lemon_tree_with_phytophtora_02_-_foot_rot_gummosis.jpg/960px-Lemon_tree_with_phytophtora_02_-_foot_rot_gummosis.jpg"
   },
   {
     "crop": "Lúa",
@@ -189,7 +189,7 @@
     "prevention_en": "Use blast-resistant varieties, balanced NPK without late excess nitrogen, maintain field water.",
     "treatment_vi": "Tricyclazole, Isoprothiolane, Fenoxanil, Azoxystrobin, Kasugamycin",
     "image_url": "/api/v1/kb_images/12_lua_rice_blast.jpg",
-    "source_image_url": "https://inaturalist-open-data.s3.amazonaws.com/photos/263656072/medium.jpg"
+    "source_image_url": "https://datasets-server.huggingface.co/cached-assets/Project-AgML/rice_leaf_disease_classification/--/b0675c92b6932e940a4097e09cf49621b35997a4/--/default/train/0/image/image.jpg?Expires=1793022148&Signature=HDpf7DVfcS4R-yrdEYqYPdl~6gEnw6RebKMlBOYBB3pUbp-okNpxUGF2uerFINz37isGr2rZxzYkzgzTIrFpyeCH4lE3XJR2VT971~2AQra5ZgPRCWwfQr7Gr2xp5fkYpgbIcLSsmOCNcyuxZjAebXnUf6xLZQc-yb8890sb-IrFoL1tYWSA9oqdxmupHbBHFAFJnVnyCDcWaTjLuU8jCi7Hf7StIn7SASCf3KofV36g89Pc80UFFvFb7Mer4Wuv4x6Q64a5tGu~~RMmxHhX5yj~~lkn5tw4KLTaTVSlRExPoEEhaiPmU-dLjqB55IX7Q3i5i1xCqUmBkXBHX3gA9g__&Key-Pair-Id=K3C0L9WB6U5DUC"
   },
   {
     "crop": "Lúa",
@@ -221,7 +221,7 @@
     "prevention_en": "Optimal spacing, weed control, alternate wetting and drying irrigation.",
     "treatment_vi": "Validamycin, Hexaconazole, Azoxystrobin + Difenoconazole, Propiconazole",
     "image_url": "/api/v1/kb_images/14_lua_rice_sheath_blight.jpg",
-    "source_image_url": "https://inaturalist-open-data.s3.amazonaws.com/photos/2474934/medium.jpg"
+    "source_image_url": "https://upload.wikimedia.org/wikipedia/commons/1/15/RiceSheathArk.jpg"
   },
   {
     "crop": "Lúa",
@@ -237,7 +237,7 @@
     "prevention_en": "Apply lime, fused phosphate, and potassium; prevent drought stress.",
     "treatment_vi": "Propiconazole, Difenoconazole, Mancozeb, Iprodione, Carbendazim",
     "image_url": "/api/v1/kb_images/15_lua_rice_brown_spot.jpg",
-    "source_image_url": "https://static.inaturalist.org/photos/579091368/medium.jpg"
+    "source_image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9c/Cochliobolus_miyabeanus.jpg/960px-Cochliobolus_miyabeanus.jpg"
   },
   {
     "crop": "Ngô",
@@ -333,7 +333,7 @@
     "prevention_en": "Prune and burn infected twigs, improve drainage, supply potassium and calcium.",
     "treatment_vi": "Azoxystrobin + Difenoconazole, Carbendazim, Mancozeb, Copper Oxychloride",
     "image_url": "/api/v1/kb_images/21_ca_phe_coffee_anthracnose_berry_blotch.jpg",
-    "source_image_url": "https://inaturalist-open-data.s3.amazonaws.com/photos/111482357/medium.jpeg"
+    "source_image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/62/Coffee_Berries_with_Insect_Bites.jpg/960px-Coffee_Berries_with_Insect_Bites.jpg"
   },
   {
     "crop": "Hồ tiêu/Ớt",
@@ -349,7 +349,7 @@
     "prevention_en": "Deep drainage trenches, prune runner shoots near soil, apply Trichoderma and organic matter.",
     "treatment_vi": "Fosetyl-aluminium, Metalaxyl + Mancozeb, Dimethomorph, Phosphorous acid",
     "image_url": "/api/v1/kb_images/22_ho_tieu_ot_black_pepper_quick_wilt_foot_rot.jpg",
-    "source_image_url": "https://inaturalist-open-data.s3.amazonaws.com/photos/32036435/medium.jpeg"
+    "source_image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/50/P._capsici_blight_on_sweet_pepper.jpg/960px-P._capsici_blight_on_sweet_pepper.jpg"
   },
   {
     "crop": "Hồ tiêu/Ớt",
@@ -381,7 +381,7 @@
     "prevention_en": "Canopy pruning for aeration, collect fallen diseased leaves, avoid excess nitrogen.",
     "treatment_vi": "Hexaconazole, Validamycin, Azoxystrobin + Difenoconazole, Propiconazole",
     "image_url": "/api/v1/kb_images/24_sau_rieng_durian_rhizoctonia_leaf_blight.jpg",
-    "source_image_url": "https://inaturalist-open-data.s3.amazonaws.com/photos/2474934/medium.jpg"
+    "source_image_url": "https://huggingface.co/datasets/shangzx/Durian-Plantation-Disease-Leaf-Rot-Detection-Image-Dataset/resolve/main/53ac25d844dc2c8daece53690d847536.jpg"
   },
   {
     "crop": "Sầu riêng",
@@ -397,7 +397,7 @@
     "prevention_en": "Prune diseased leaves, post-harvest root recovery and balanced nutrition.",
     "treatment_vi": "Propineb, Mancozeb, Difenoconazole, Azoxystrobin, Copper Hydroxide",
     "image_url": "/api/v1/kb_images/25_sau_rieng_durian_leaf_anthracnose.jpg",
-    "source_image_url": "https://inaturalist-open-data.s3.amazonaws.com/photos/111482357/medium.jpeg"
+    "source_image_url": "https://huggingface.co/datasets/shangzx/Durian-Plantation-Disease-Leaf-Rot-Detection-Image-Dataset/resolve/main/53d671af9ce629a7b4591c20ca627868.jpg"
   },
   {
     "crop": "Sầu riêng",
@@ -429,7 +429,7 @@
     "prevention_en": "High raised beds, prune lower leaves, avoid late afternoon overhead irrigation.",
     "treatment_vi": "Metalaxyl + Mancozeb, Cymoxanil + Mancozeb, Dimethomorph, Chlorothalonil",
     "image_url": "/api/v1/kb_images/27_ca_chua_tomato_late_blight.jpg",
-    "source_image_url": "https://inaturalist-open-data.s3.amazonaws.com/photos/2274217/medium.jpg"
+    "source_image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/10/Phytophthora_infestans_%28late_blight%29_on_tomato.jpg/960px-Phytophthora_infestans_%28late_blight%29_on_tomato.jpg"
   },
   {
     "crop": "Cà chua",
@@ -445,7 +445,7 @@
     "prevention_en": "Rotate with non-solanaceous crops, remove infected lower leaves, adequate nutrition.",
     "treatment_vi": "Azoxystrobin, Difenoconazole, Mancozeb, Chlorothalonil, Iprodione",
     "image_url": "/api/v1/kb_images/28_ca_chua_tomato_early_blight.jpg",
-    "source_image_url": "https://inaturalist-open-data.s3.amazonaws.com/photos/316872824/medium.jpg"
+    "source_image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/04/Alternaria_solani_-_leaf_lesions.jpg/960px-Alternaria_solani_-_leaf_lesions.jpg"
   },
   {
     "crop": "Cà chua",
@@ -509,7 +509,7 @@
     "prevention_en": "Tissue-culture disease-free plantlets, lime acidic soil, apply Trichoderma, eradicate infected mats.",
     "treatment_vi": "Carbendazim, Copper Oxychloride, Hymexazol (tưới gốc phòng lây lan; cây đã nhiễm nặng cần tiêu hủy)",
     "image_url": "/api/v1/kb_images/32_chuoi_banana_panama_disease_fusarium_wilt.jpg",
-    "source_image_url": "https://inaturalist-open-data.s3.amazonaws.com/photos/32036896/medium.jpeg"
+    "source_image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/92/Banana_%28Variety-_Koa_e_Kea%29-_Fusarium_wilt_%28Panama_disease%29_-_26445956338.jpg/960px-Banana_%28Variety-_Koa_e_Kea%29-_Fusarium_wilt_%28Panama_disease%29_-_26445956338.jpg"
   },
   {
     "crop": "Nhãn/Vải",
@@ -541,7 +541,7 @@
     "prevention_en": "Post-harvest canopy pruning, shake off wet senescent petals after spring rain.",
     "treatment_vi": "Metalaxyl + Mancozeb, Dimethomorph, Azoxystrobin + Difenoconazole, Propineb",
     "image_url": "/api/v1/kb_images/34_nhan_vai_lychee_longan_downy_blight_anthracnose.jpg",
-    "source_image_url": "https://inaturalist-open-data.s3.amazonaws.com/photos/44834073/medium.jpg"
+    "source_image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e4/2013-12-28_19-46-10_Litchi-17f.jpg/960px-2013-12-28_19-46-10_Litchi-17f.jpg"
   },
   {
     "crop": "Lúa",
@@ -557,7 +557,7 @@
     "prevention_en": "Drain and aerate paddy soil for 3-5 days, apply agricultural lime and fused phosphate, rotary weeding to oxygenate roots.",
     "treatment_vi": "Bón phân lân dễ tiêu (Super lân), Kali, phun phân bón lá chứa Humic + Kẽm + Silic giúp ra rễ trắng mới (không phun thuốc trừ nấm vì đây là bệnh sinh lý)",
     "image_url": "/api/v1/kb_images/35_lua_rice_physiological_root_choking_acid_sulfate_toxicity.jpg",
-    "source_image_url": "https://inaturalist-open-data.s3.amazonaws.com/photos/48742632/medium.jpg"
+    "source_image_url": "https://datasets-server.huggingface.co/cached-assets/Project-AgML/rice_leaf_disease_classification/--/b0675c92b6932e940a4097e09cf49621b35997a4/--/default/train/3250/image/image.jpg?Expires=1793022171&Signature=s1QwsHvWuQAZYDI1K57HgWSgIc3oPc7HR7PVdmiG8za8TnX-bFz4ENqtsoqO8A1xj2qR1WYIrCmf5hMzc3kkQYU6o8yHKIahl1GGTLOaWQPg5j6H7Z~IFNsk62mKfX4YXjw~kn~VdcltZXzykFdaFR5tbZnudSdrOyi2CjQ413fP78BlCyR5u-nqvIKsPwSx5g3SPqVq8eM5DpserWcJyAkGdMG9V-FUWSWv2Bbg1QtzOPujyTJF1BPmxgN1lNcZsZhYBNt3va81bzvebbOEePy9BeJokoGr8RBvM1Dqq6Wd~pFwvSvH0HuSd5MqH22tskuxGOL6vPvgETU3YcrKSg__&Key-Pair-Id=K3C0L9WB6U5DUC"
   },
   {
     "crop": "Lúa",
@@ -717,7 +717,7 @@
     "prevention_en": "Sanitary pruning and burning of infected cladodes, disinfect pruning shears, apply lime and Trichoderma.",
     "treatment_vi": "Azoxystrobin + Difenoconazole, Tebuconazole, Trifloxystrobin, Mancozeb, Copper Hydroxide",
     "image_url": "/api/v1/kb_images/45_thanh_long_dragon_fruit_brown_spot_stem_canker.jpg",
-    "source_image_url": "https://inaturalist-open-data.s3.amazonaws.com/photos/21957574/medium.jpeg"
+    "source_image_url": "https://datasets-server.huggingface.co/cached-assets/Project-AgML/dragonfruit_disease_classification/--/9339f2ab9626b876b7302f43002660aae037f9c2/--/raw/train/0/image/image.jpg?Expires=1793021893&Signature=OBGD0wO7oms22-0szf~zV2jhGGziuHhG2XdbtxDVcDkmMTiKkKcjuykYtM6EIbTm8Hojmpjd~Ft11U8FK7ShbQK5tSyBaEZYQt42OvaVvwzxu18-nMiNVsa9SaaBwXOgHzXHLT6bh-WPf~6euI~Ac7Qz3dGzxAQ0EJFjlWPo1YZwAlqglvkYLNA4ZUXFj9NcypZX2hZbnAQiGZBGGMlsbw5KqvdzICXE~ZceKAOuH91f9a4BLgogjIu1wzjISDu9YZ6Dokhdmtyxz0OeNWhMQlXpULA0zG1WtS1CCAfj09WokDqDCgfeS3~axSzshMtTQxCV21~1w1LmCtTxC9JbSA__&Key-Pair-Id=K3C0L9WB6U5DUC"
   },
   {
     "crop": "Rau màu/Bắp cải",
@@ -765,7 +765,7 @@
     "prevention_en": "High raised beds, soil liming, control leaf-chewing insects to prevent entry wounds.",
     "treatment_vi": "Kasugamycin, Streptomycin, Oxolinic acid, Copper Hydroxide",
     "image_url": "/api/v1/kb_images/48_rau_mau_bap_cai_bacterial_soft_rot_of_crucifers.jpg",
-    "source_image_url": "https://static.inaturalist.org/photos/40410605/medium.jpeg"
+    "source_image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ac/Kohlrabi_Xanthomonas_campestris_an_Pflanzen--Josef_Schlaghecken.jpg/960px-Kohlrabi_Xanthomonas_campestris_an_Pflanzen--Josef_Schlaghecken.jpg"
   },
   {
     "crop": "Lạc/Đậu tương",

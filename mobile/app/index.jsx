@@ -9,6 +9,7 @@ import {
   StyleSheet,
   Alert,
   Animated,
+  Modal,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -20,17 +21,27 @@ import { FeedbackModal, CustomPlantModal } from '../src/components/DiagnosisModa
 // Keep in sync with backend QUALITY_MIN_SIDE_PX (backend/app/models/vlm.py)
 const MIN_SIDE_PX = 300;
 
-const POPULAR_PLANTS = [
-  { id: null, label: 'Tất cả cây', icon: '🌱' },
+const CROP_CHOICES = [
+  { id: 'Chè', label: 'Chè', icon: '🍵' },
   { id: 'Cam/Bưởi', label: 'Cam/Bưởi', icon: '🍊' },
   { id: 'Lúa', label: 'Lúa', icon: '🌾' },
-  { id: 'Chè', label: 'Chè', icon: '🍵' },
+  { id: 'Ngô', label: 'Ngô (Bắp)', icon: '🌽' },
   { id: 'Cà phê', label: 'Cà phê', icon: '☕' },
   { id: 'Sầu riêng', label: 'Sầu riêng', icon: '🍈' },
   { id: 'Hồ tiêu/Ớt', label: 'Tiêu/Ớt', icon: '🌶️' },
   { id: 'Cà chua', label: 'Cà chua', icon: '🍅' },
+  { id: 'Khoai tây', label: 'Khoai tây', icon: '🥔' },
   { id: 'Chuối', label: 'Chuối', icon: '🍌' },
-  { id: 'Ngô', label: 'Ngô (Bắp)', icon: '🌽' },
+  { id: 'Nhãn/Vải', label: 'Nhãn/Vải', icon: '🍒' },
+  { id: 'Xoài', label: 'Xoài', icon: '🥭' },
+  { id: 'Thanh long', label: 'Thanh long', icon: '🐉' },
+  { id: 'Rau màu/Bắp cải', label: 'Rau màu', icon: '🥬' },
+  { id: 'Lạc/Đậu tương', label: 'Lạc/Đậu', icon: '🥜' },
+];
+
+const POPULAR_PLANTS = [
+  { id: null, label: 'Tự động nhận diện', icon: '🌱' },
+  ...CROP_CHOICES,
 ];
 
 function ScanOverlay() {
@@ -66,6 +77,7 @@ export default function HomeScreen() {
   const [feedbackState, setFeedbackState] = useState('idle'); // idle | sending | sent
   const [feedbackModal, setFeedbackModal] = useState(false);
   const [customPlantOpen, setCustomPlantOpen] = useState(false);
+  const [pendingPick, setPendingPick] = useState(null); // { slotIndex, useCamera } -> shows crop selector popup first
 
   // Load saved plant filter on start (only accept a known value)
   useEffect(() => {
@@ -105,7 +117,7 @@ export default function HomeScreen() {
         'Ảnh độ phân giải thấp',
         `Ảnh chỉ có ${w}x${h}px nên AI khó nhìn rõ vết bệnh. Nên chụp gần hơn hoặc dùng ảnh gốc từ camera.`,
         [
-          { text: 'Chọn lại', onPress: () => pickImage(slotIndex, fromCamera) },
+          { text: 'Chọn lại', onPress: () => executePickImage(slotIndex, fromCamera) },
           { text: 'Vẫn dùng', onPress: () => setSlotImage(slotIndex, asset) },
         ]
       );
@@ -114,7 +126,7 @@ export default function HomeScreen() {
     setSlotImage(slotIndex, asset);
   };
 
-  const pickImage = async (slotIndex, useCamera) => {
+  const executePickImage = async (slotIndex, useCamera) => {
     if (useCamera) {
       // SmartCamera handles its own permission flow
       setCameraSlot(slotIndex);
@@ -128,6 +140,23 @@ export default function HomeScreen() {
     const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.8 });
     if (!res.canceled && res.assets?.[0]) {
       acceptAsset(slotIndex, res.assets[0], false);
+    }
+  };
+
+  const pickImage = (slotIndex, useCamera) => {
+    if (slotIndex === 1) {
+      setPendingPick({ slotIndex, useCamera });
+      return;
+    }
+    executePickImage(slotIndex, useCamera);
+  };
+
+  const confirmPlantAndPick = (plantId) => {
+    handleSelectPlant(plantId);
+    const next = pendingPick;
+    setPendingPick(null);
+    if (next) {
+      setTimeout(() => executePickImage(next.slotIndex, next.useCamera), 250);
     }
   };
 
@@ -669,6 +698,59 @@ export default function HomeScreen() {
           handleClarify(name);
         }}
       />
+
+      {/* Crop Selection Popup before taking/picking Photo 1 */}
+      <Modal
+        visible={pendingPick !== null}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setPendingPick(null)}
+      >
+        <View style={s.popupBackdrop}>
+          <View style={s.popupSheet}>
+            <View style={s.popupHeader}>
+              <View style={{ flex: 1 }}>
+                <Text style={s.popupTitle}>🌿 Chọn loại cây trồng hoặc rau màu</Text>
+                <Text style={s.popupSubtitle}>
+                  Chọn đúng cây giúp AI khoanh vùng chính xác Kho tri thức bệnh trước khi chụp/tải ảnh.
+                </Text>
+              </View>
+              <TouchableOpacity onPress={() => setPendingPick(null)} style={{ padding: 4 }}>
+                <Text style={{ fontSize: 18, color: '#6b7280', fontWeight: '700' }}>✕</Text>
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView style={{ maxHeight: 360 }} contentContainerStyle={s.popupGrid}>
+              {CROP_CHOICES.map((item) => {
+                const active = selectedPlant === item.id;
+                return (
+                  <TouchableOpacity
+                    key={item.id}
+                    style={[s.popupCropItem, active && s.popupCropItemActive]}
+                    onPress={() => confirmPlantAndPick(item.id)}
+                  >
+                    <Text style={{ fontSize: 24, marginBottom: 4 }}>{item.icon}</Text>
+                    <Text style={[s.popupCropLabel, active && s.popupCropLabelActive]}>
+                      {item.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+
+            {/* LAST OPTION AT THE BOTTOM: Auto-detect */}
+            <TouchableOpacity
+              style={s.popupAutoBtn}
+              onPress={() => confirmPlantAndPick(null)}
+            >
+              <Text style={{ fontSize: 18 }}>🌱</Text>
+              <Text style={s.popupAutoBtnText}>
+                Tự động phát hiện loại cây (Để AI tự nhận diện)
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -946,5 +1028,89 @@ const s = StyleSheet.create({
   },
   feedbackBtnActive: { backgroundColor: '#dcfce7', borderColor: '#86efac' },
   feedbackBtnNoActive: { backgroundColor: '#fee2e2', borderColor: '#fca5a5' },
+
+  // Crop Selector Popup Modal
+  popupBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.55)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 16,
+  },
+  popupSheet: {
+    backgroundColor: '#ffffff',
+    borderRadius: 20,
+    width: '100%',
+    maxWidth: 440,
+    padding: 18,
+  },
+  popupHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e7eb',
+    paddingBottom: 12,
+    marginBottom: 12,
+  },
+  popupTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#14532d',
+  },
+  popupSubtitle: {
+    fontSize: 12,
+    color: '#4b5563',
+    marginTop: 3,
+    lineHeight: 17,
+  },
+  popupGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    rowGap: 10,
+  },
+  popupCropItem: {
+    width: '31%',
+    backgroundColor: '#f9fafb',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  popupCropItemActive: {
+    backgroundColor: '#166534',
+    borderColor: '#166534',
+  },
+  popupCropLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#1f2937',
+    textAlign: 'center',
+  },
+  popupCropLabelActive: {
+    color: '#ffffff',
+  },
+  popupAutoBtn: {
+    marginTop: 14,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderStyle: 'dashed',
+    borderColor: '#16a34a',
+    backgroundColor: '#f0fdf4',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  popupAutoBtnText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#14532d',
+  },
   feedbackBtnText: { fontSize: 12, fontWeight: '600', color: '#334155' },
 });

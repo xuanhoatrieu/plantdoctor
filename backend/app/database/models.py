@@ -64,6 +64,18 @@ class Disease(Base):
     updated_by = Column(Integer, ForeignKey("users.id"), nullable=True)
 
 
+class CropGuide(Base):
+    __tablename__ = "crop_guides"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    crop = Column(String(100), unique=True, nullable=False, index=True)
+    scientific_name = Column(String(200), default="")
+    source_agency = Column(String(300), default="")
+    summary_vi = Column(Text, default="")
+    summary_en = Column(Text, default="")
+    stages_json = Column(Text, default="[]")
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
 class Pesticide(Base):
     __tablename__ = "pesticides"
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -155,6 +167,7 @@ def init_db():
                 db.add(Setting(key=k, value=v))
         db.commit()
         seed_default_diseases(db)
+        seed_default_crop_guides(db)
     except Exception as e:
         logger.warning(f"Error during init_db seed: {e}")
         db.rollback()
@@ -231,6 +244,56 @@ def seed_default_diseases(db, overwrite: bool = False) -> int:
     if added:
         db.commit()
         logger.info("Seeded/updated %d Vietnamese disease knowledge base entries", added)
+    return added
+
+
+def seed_default_crop_guides(db, overwrite: bool = False) -> int:
+    """Seed the Vietnamese crop cultivation guides from app/data/vn_crop_guides.json if missing."""
+    import json
+
+    guides_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "vn_crop_guides.json")
+    if not os.path.exists(guides_path):
+        return 0
+    try:
+        with open(guides_path, "r", encoding="utf-8") as f:
+            entries = json.load(f)
+    except Exception as e:
+        logger.warning("Failed to load vn_crop_guides.json: %s", e)
+        return 0
+
+    existing = {
+        row.crop.strip().lower(): row
+        for row in db.query(CropGuide).all()
+        if row.crop
+    }
+    added = 0
+    for item in entries:
+        crop = str(item.get("crop") or "").strip()
+        if not crop:
+            continue
+        key = crop.lower()
+        row = existing.get(key)
+        stages_str = json.dumps(item.get("stages") or [], ensure_ascii=False)
+        if row is None:
+            db.add(CropGuide(
+                crop=crop,
+                scientific_name=str(item.get("scientific_name") or ""),
+                source_agency=str(item.get("source_agency") or ""),
+                summary_vi=str(item.get("summary_vi") or ""),
+                summary_en=str(item.get("summary_en") or ""),
+                stages_json=stages_str,
+            ))
+            added += 1
+        elif overwrite:
+            row.scientific_name = str(item.get("scientific_name") or row.scientific_name)
+            row.source_agency = str(item.get("source_agency") or row.source_agency)
+            row.summary_vi = str(item.get("summary_vi") or row.summary_vi)
+            row.summary_en = str(item.get("summary_en") or row.summary_en)
+            row.stages_json = stages_str
+            added += 1
+    if added:
+        db.commit()
+        logger.info("Seeded/updated %d Vietnamese crop cultivation guides", added)
     return added
 
 

@@ -8,7 +8,7 @@ from ..auth import get_optional_user
 from ..models.vlm import predict_vlm, clarify_vlm, assess_image_quality
 from ..rate_limit import SlidingWindowLimiter, client_ip, env_int
 from ..schemas.prediction import ModelsResponse, PredictionResponse, ClarifyRequest
-from ..database.models import get_db, Setting, User, Disease
+from ..database.models import get_db, Setting, User, Disease, CropGuide, seed_default_diseases, seed_default_crop_guides
 
 router = APIRouter(prefix="/api/v1", tags=["prediction"])
 
@@ -48,10 +48,77 @@ async def get_public_config(db: Session = Depends(get_db)):
 
 @router.get("/diseases")
 async def get_public_diseases(crop: Optional[str] = None, db: Session = Depends(get_db)):
+    if db.query(Disease).count() == 0:
+        seed_default_diseases(db)
     query = db.query(Disease).order_by(Disease.crop, Disease.name_vi)
     if crop and crop.strip():
         query = query.filter(Disease.crop.ilike(f"%{crop.strip()}%"))
     return query.all()
+
+
+@router.get("/crop-guides")
+async def get_public_crop_guides(crop: Optional[str] = None, db: Session = Depends(get_db)):
+    import json
+
+    if db.query(Disease).count() == 0:
+        seed_default_diseases(db)
+    if db.query(CropGuide).count() == 0:
+        seed_default_crop_guides(db)
+
+    all_diseases = db.query(Disease).all()
+    disease_by_name = {d.name_vi.strip().lower(): d for d in all_diseases if d.name_vi}
+
+    query = db.query(CropGuide).order_by(CropGuide.id)
+    if crop and crop.strip():
+        query = query.filter(CropGuide.crop.ilike(f"%{crop.strip()}%"))
+
+    guides = query.all()
+    result = []
+    for g in guides:
+        try:
+            stages = json.loads(g.stages_json or "[]")
+        except Exception:
+            stages = []
+        enriched_stages = []
+        for st in stages:
+            common_names = st.get("common_diseases") or []
+            linked = []
+            for dname in common_names:
+                d_obj = disease_by_name.get(str(dname).strip().lower())
+                if d_obj:
+                    linked.append({
+                        "id": d_obj.id,
+                        "crop": d_obj.crop,
+                        "name_vi": d_obj.name_vi,
+                        "name_en": d_obj.name_en,
+                        "scientific_name": d_obj.scientific_name,
+                        "severity": d_obj.severity,
+                        "image_url": d_obj.image_url,
+                    })
+                else:
+                    linked.append({
+                        "id": None,
+                        "crop": g.crop,
+                        "name_vi": dname,
+                        "name_en": "",
+                        "scientific_name": "",
+                        "severity": "medium",
+                        "image_url": "",
+                    })
+            enriched_stages.append({
+                **st,
+                "linked_diseases": linked,
+            })
+        result.append({
+            "id": g.id,
+            "crop": g.crop,
+            "scientific_name": g.scientific_name,
+            "source_agency": g.source_agency,
+            "summary_vi": g.summary_vi,
+            "summary_en": g.summary_en,
+            "stages": enriched_stages,
+        })
+    return result
 
 
 @router.get("/models", response_model=ModelsResponse)

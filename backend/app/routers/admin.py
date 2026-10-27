@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import Optional
 
 from ..auth import require_admin
-from ..database.models import get_db, Disease, Pesticide, User, Setting, seed_default_diseases
+from ..database.models import get_db, Disease, CropGuide, Pesticide, User, Setting, seed_default_diseases, seed_default_crop_guides
 
 router = APIRouter(prefix="/api/v1/admin", tags=["admin"])
 
@@ -18,6 +18,13 @@ def list_diseases(db: Session = Depends(get_db), admin: User = Depends(require_a
 def seed_diseases_endpoint(overwrite: bool = False, db: Session = Depends(get_db), admin: User = Depends(require_admin)):
     count = seed_default_diseases(db, overwrite=overwrite)
     total = db.query(Disease).count()
+    return {"ok": True, "seeded": count, "total": total}
+
+
+@router.post("/crop-guides/seed")
+def seed_crop_guides_endpoint(overwrite: bool = False, db: Session = Depends(get_db), admin: User = Depends(require_admin)):
+    count = seed_default_crop_guides(db, overwrite=overwrite)
+    total = db.query(CropGuide).count()
     return {"ok": True, "seeded": count, "total": total}
 
 

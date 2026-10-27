@@ -381,8 +381,123 @@ function ClientCheckHint({ check, lang }) {
 function DiagnoseView({ t, file, preview, file2, preview2, clientChecks, loading, result, resultSeq, error, topPrediction, isHealthy, fileRef, fileRef2, handleFile, removeSecond, handlePredict, handleReset, handleRetake, weather, lang, user, token, selectedPlant, setSelectedPlant, handleClarify, wasClarified }) {
   const vi = lang === 'vi'
   const status = result?.status || 'success'
+  const [showPlantPopup, setShowPlantPopup] = useState(false)
+  const [customPlantInput, setCustomPlantInput] = useState('')
+  const [showCustomInput, setShowCustomInput] = useState(false)
+
+  const handlePopupSelectPlant = (plantId) => {
+    setSelectedPlant(plantId)
+    setShowPlantPopup(false)
+    setShowCustomInput(false)
+    setCustomPlantInput('')
+    if (fileRef.current) {
+      fileRef.current.click()
+    }
+  }
+
   return (
     <div className="grid md:grid-cols-2 gap-4 sm:gap-6">
+      {/* Popup Modal: Select Crop Before Taking/Picking Photo */}
+      {showPlantPopup && (
+        <div
+          className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4"
+          onClick={() => { setShowPlantPopup(false); setShowCustomInput(false) }}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-4 sm:p-6 space-y-4 max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start justify-between gap-2 border-b pb-3">
+              <div>
+                <h3 className="text-base sm:text-lg font-bold text-green-900 flex items-center gap-2">
+                  <span>🌿</span>
+                  <span>{vi ? 'Chọn loại cây trồng hoặc rau màu' : 'Select Crop or Vegetable'}</span>
+                </h3>
+                <p className="text-xs text-gray-600 mt-0.5">
+                  {vi
+                    ? 'Chọn đúng loại cây giúp AI khoanh vùng chính xác Kho tri thức bệnh của cây đó trước khi tải ảnh.'
+                    : 'Selecting the crop locks the AI to the exact disease knowledge base before uploading.'}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => { setShowPlantPopup(false); setShowCustomInput(false) }}
+                className="text-gray-400 hover:text-gray-600 text-lg font-bold px-2"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Grid of common crops and vegetables */}
+            <div className="grid grid-cols-3 sm:grid-cols-3 gap-2">
+              {PLANT_CHOICES.map((item) => {
+                const active = selectedPlant === item.id
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => handlePopupSelectPlant(item.id)}
+                    className={`flex flex-col items-center justify-center p-2.5 sm:p-3 rounded-xl border text-center transition cursor-pointer ${
+                      active
+                        ? 'bg-green-700 text-white border-green-700 shadow-sm ring-2 ring-green-300'
+                        : 'bg-gray-50 hover:bg-green-50 hover:border-green-400 text-gray-800 border-gray-200'
+                    }`}
+                  >
+                    <span className="text-2xl mb-1">{item.icon}</span>
+                    <span className="text-xs font-semibold leading-tight">{item.label}</span>
+                  </button>
+                )
+              })}
+
+              {/* Custom crop button */}
+              <button
+                type="button"
+                onClick={() => setShowCustomInput((v) => !v)}
+                className={`flex flex-col items-center justify-center p-2.5 sm:p-3 rounded-xl border text-center transition cursor-pointer ${
+                  showCustomInput
+                    ? 'bg-amber-100 border-amber-400 text-amber-900'
+                    : 'bg-amber-50/70 hover:bg-amber-100 text-amber-800 border-amber-200'
+                }`}
+              >
+                <span className="text-2xl mb-1">✏️</span>
+                <span className="text-xs font-semibold leading-tight">{vi ? 'Cây khác...' : 'Other crop...'}</span>
+              </button>
+            </div>
+
+            {showCustomInput && (
+              <div className="flex gap-2 bg-amber-50 p-2.5 rounded-xl border border-amber-200">
+                <input
+                  type="text"
+                  value={customPlantInput}
+                  onChange={(e) => setCustomPlantInput(e.target.value)}
+                  placeholder={vi ? 'Nhập tên cây (VD: Ổi, Dưa lưới, Hoa hồng...)' : 'Enter crop name (e.g. Guava, Melon, Rose...)'}
+                  className="flex-1 px-3 py-1.5 text-xs sm:text-sm border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+                <button
+                  type="button"
+                  disabled={!customPlantInput.trim()}
+                  onClick={() => handlePopupSelectPlant(customPlantInput.trim().slice(0, 60))}
+                  className="px-3 py-1.5 bg-green-700 text-white rounded-lg text-xs sm:text-sm font-semibold disabled:opacity-50"
+                >
+                  {vi ? 'Chọn & Tải ảnh' : 'Select & Upload'}
+                </button>
+              </div>
+            )}
+
+            {/* LAST OPTION AT THE BOTTOM: Auto-detect */}
+            <div className="pt-2 border-t">
+              <button
+                type="button"
+                onClick={() => handlePopupSelectPlant(null)}
+                className="w-full py-3 px-4 rounded-xl border-2 border-dashed border-green-500 bg-green-50/70 hover:bg-green-100 text-green-900 font-semibold text-xs sm:text-sm flex items-center justify-center gap-2 transition cursor-pointer"
+              >
+                <span className="text-lg">🌱</span>
+                <span>{vi ? 'Tự động phát hiện loại cây (Để AI tự nhận diện)' : 'Auto-detect plant species (Let AI identify)'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Left column */}
       <div className="space-y-3 sm:space-y-4">
         {/* Plant Selector Chips */}
@@ -482,7 +597,7 @@ function DiagnoseView({ t, file, preview, file2, preview2, clientChecks, loading
           id="upload-slot-1"
           onDrop={(e) => { e.preventDefault(); handleFile(e.dataTransfer.files[0], 1) }}
           onDragOver={(e) => e.preventDefault()}
-          onClick={() => fileRef.current.click()}
+          onClick={() => setShowPlantPopup(true)}
           className="relative border-2 border-dashed border-green-300 rounded-xl p-4 sm:p-6 text-center cursor-pointer hover:border-green-500 hover:bg-green-50/50 transition min-h-[160px] sm:min-h-[220px] flex flex-col items-center justify-center"
         >
           <span className="absolute top-2 left-2 text-[10px] sm:text-xs font-semibold bg-green-100 text-green-800 px-2 py-0.5 rounded-full">
@@ -808,18 +923,44 @@ function HistoryView({ t, history, setHistory }) {
 }
 
 function LibraryView({ t, lang }) {
+  const vi = lang === 'vi'
+  const [subTab, setSubTab] = useState('guide') // 'guide' | 'diseases'
   const [expanded, setExpanded] = useState(null)
   const [dbDiseases, setDbDiseases] = useState([])
+  const [cropGuides, setCropGuides] = useState([])
   const [search, setSearch] = useState('')
   const [cropFilter, setCropFilter] = useState('')
+  const [selectedGuideCrop, setSelectedGuideCrop] = useState('Lúa')
+  const [fromStageCrop, setFromStageCrop] = useState(null)
+
   const toggle = (key) => setExpanded(expanded === key ? null : key)
-  const severityLabel = { high: { vi: 'Nguy hiểm cao', en: 'High risk', color: 'bg-red-100 text-red-700' }, medium: { vi: 'Trung bình', en: 'Medium', color: 'bg-yellow-100 text-yellow-700' }, low: { vi: 'Thấp', en: 'Low', color: 'bg-green-100 text-green-700' } }
+  const severityLabel = {
+    high: { vi: 'Nguy hiểm cao', en: 'High risk', color: 'bg-red-100 text-red-700 border-red-200' },
+    medium: { vi: 'Trung bình', en: 'Medium', color: 'bg-yellow-100 text-yellow-700 border-yellow-200' },
+    low: { vi: 'Thấp', en: 'Low', color: 'bg-green-100 text-green-700 border-green-200' },
+  }
 
   useEffect(() => {
     axios.get('/api/v1/diseases').then(r => {
       if (Array.isArray(r.data) && r.data.length > 0) setDbDiseases(r.data)
     }).catch(() => {})
+    axios.get('/api/v1/crop-guides').then(r => {
+      if (Array.isArray(r.data) && r.data.length > 0) {
+        setCropGuides(r.data)
+        if (!r.data.some(g => g.crop === selectedGuideCrop)) {
+          setSelectedGuideCrop(r.data[0].crop)
+        }
+      }
+    }).catch(() => {})
   }, [])
+
+  const getCropIcon = (cropName) => {
+    if (!cropName) return '🌿'
+    const iconMatch = PLANT_CHOICES.find(
+      p => p.id.toLowerCase() === cropName.toLowerCase() || cropName.toLowerCase().includes(p.label.toLowerCase())
+    )
+    return iconMatch ? iconMatch.icon : '🌿'
+  }
 
   // Build unified groups from DB knowledge base (or fallback to static diseaseLibrary)
   const groups = (() => {
@@ -830,6 +971,8 @@ function LibraryView({ t, lang }) {
       if (!byCrop.has(c)) byCrop.set(c, [])
       const splitLines = (txt) => (txt || '').split(/\n|;\s*/).map(s => s.trim()).filter(Boolean)
       byCrop.get(c).push({
+        id: d.id,
+        rawNameVi: d.name_vi || d.name_en,
         name: { vi: d.name_vi || d.name_en, en: d.name_en || d.name_vi },
         scientific: d.scientific_name || '',
         severity: d.severity || 'medium',
@@ -841,8 +984,7 @@ function LibraryView({ t, lang }) {
       })
     }
     return Array.from(byCrop.entries()).map(([cropName, list]) => {
-      const iconMatch = PLANT_CHOICES.find(p => p.id.toLowerCase() === cropName.toLowerCase() || cropName.toLowerCase().includes(p.label.toLowerCase()))
-      const icon = iconMatch ? iconMatch.icon : '🌿'
+      const icon = getCropIcon(cropName)
       return {
         cropKey: cropName,
         crop: { vi: `${icon} ${cropName}`, en: `${icon} ${cropName}` },
@@ -850,6 +992,19 @@ function LibraryView({ t, lang }) {
       }
     })
   })()
+
+  const openDiseaseFromStage = (cropName, diseaseNameVi) => {
+    setFromStageCrop(cropName)
+    setCropFilter(cropName)
+    setSearch('')
+    const targetKey = `${cropName}::${diseaseNameVi}`
+    setExpanded(targetKey)
+    setSubTab('diseases')
+    setTimeout(() => {
+      const el = document.getElementById(`disease-card-${encodeURIComponent(targetKey)}`)
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }, 120)
+  }
 
   const filteredGroups = groups.map(g => ({
     ...g,
@@ -865,96 +1020,348 @@ function LibraryView({ t, lang }) {
     })
   })).filter(g => g.diseases.length > 0)
 
+  const activeGuide = cropGuides.find(g => g.crop === selectedGuideCrop) || cropGuides[0] || null
+
   return (
-    <div className="space-y-5">
-      <div className="bg-white p-3 sm:p-4 rounded-xl border flex flex-col sm:flex-row gap-2">
-        <input
-          type="text"
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          placeholder={lang === 'vi' ? '🔍 Tìm tên bệnh, tên khoa học, triệu chứng...' : '🔍 Search disease name, scientific name, symptoms...'}
-          className="flex-1 px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
-        />
-        {dbDiseases.length > 0 && (
-          <select
-            value={cropFilter}
-            onChange={e => setCropFilter(e.target.value)}
-            className="px-3 py-2 border rounded-lg text-sm bg-white"
-          >
-            <option value="">{lang === 'vi' ? 'Tất cả cây trồng' : 'All crops'}</option>
-            {groups.map((g, i) => (
-              <option key={i} value={g.cropKey}>{g.crop[lang]} ({g.diseases.length})</option>
-            ))}
-          </select>
-        )}
+    <div className="space-y-4 sm:space-y-5">
+      {/* Sub-tab switcher: Quy trình trồng vs Danh mục bệnh */}
+      <div className="bg-white p-2 rounded-xl border shadow-sm flex gap-2">
+        <button
+          id="subtab-cultivation-guide"
+          type="button"
+          onClick={() => setSubTab('guide')}
+          className={`flex-1 py-2.5 px-3 rounded-lg font-bold text-xs sm:text-sm transition flex items-center justify-center gap-2 ${
+            subTab === 'guide'
+              ? 'bg-green-600 text-white shadow-sm'
+              : 'bg-gray-50 text-gray-700 hover:bg-green-50 hover:text-green-800'
+          }`}
+        >
+          <span>🌱</span>
+          <span>{vi ? 'Quy trình trồng & Chăm sóc' : 'Cultivation & Care Guide'}</span>
+        </button>
+        <button
+          id="subtab-disease-catalog"
+          type="button"
+          onClick={() => setSubTab('diseases')}
+          className={`flex-1 py-2.5 px-3 rounded-lg font-bold text-xs sm:text-sm transition flex items-center justify-center gap-2 ${
+            subTab === 'diseases'
+              ? 'bg-green-600 text-white shadow-sm'
+              : 'bg-gray-50 text-gray-700 hover:bg-green-50 hover:text-green-800'
+          }`}
+        >
+          <span>🔬</span>
+          <span>{vi ? `Danh mục bệnh (${dbDiseases.length || 50})` : `Disease Catalog (${dbDiseases.length || 50})`}</span>
+        </button>
       </div>
 
-      {filteredGroups.map((group, gi) => (
-        <div key={gi}>
-          <h3 className="font-bold text-gray-800 mb-3 text-lg">{group.crop[lang]}</h3>
-          <div className="space-y-2">
-            {group.diseases.map((d, di) => {
-              const key = `${gi}-${di}`
-              const isOpen = expanded === key
-              const sev = severityLabel[d.severity] || severityLabel.medium
-              return (
-                <div key={di} className="bg-white rounded-xl border overflow-hidden">
-                  {/* Collapsed row */}
-                  <button onClick={() => toggle(key)} className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 transition text-left">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${sev.color}`}>{sev[lang]}</span>
-                      <span className="font-medium text-gray-900 truncate">{d.name[lang]}</span>
-                    </div>
-                    <svg className={`w-5 h-5 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+      {/* SUB-TAB 1: QUY TRÌNH TRỒNG & CHĂM SÓC THEO GIAI ĐOẠN */}
+      {subTab === 'guide' && (
+        <div className="space-y-4">
+          {/* Crop selector pills */}
+          <div className="bg-white p-3 sm:p-4 rounded-xl border space-y-2.5">
+            <div className="flex items-center justify-between">
+              <p className="text-xs sm:text-sm font-bold text-gray-800">
+                {vi ? '🌿 Chọn cây trồng để xem quy trình từ gieo trồng đến thu hoạch:' : '🌿 Select a crop to view its cultivation & care timeline:'}
+              </p>
+              <span className="text-[11px] text-green-700 bg-green-50 border border-green-200 px-2 py-0.5 rounded-full font-medium">
+                {cropGuides.length} {vi ? 'nhóm cây chính thống' : 'crops'}
+              </span>
+            </div>
+            <div className="flex flex-wrap gap-1.5 sm:gap-2">
+              {cropGuides.map((g) => {
+                const active = activeGuide && activeGuide.crop === g.crop
+                return (
+                  <button
+                    key={g.crop}
+                    type="button"
+                    onClick={() => setSelectedGuideCrop(g.crop)}
+                    className={`px-3 py-1.5 rounded-full text-xs sm:text-sm font-semibold border transition flex items-center gap-1.5 ${
+                      active
+                        ? 'bg-green-600 text-white border-green-600 shadow-sm'
+                        : 'bg-gray-50 text-gray-700 border-gray-200 hover:border-green-400 hover:bg-green-50'
+                    }`}
+                  >
+                    <span>{getCropIcon(g.crop)}</span>
+                    <span>{g.crop}</span>
                   </button>
+                )
+              })}
+            </div>
+          </div>
 
-                  {/* Expanded content */}
-                  {isOpen && (
-                    <div className="px-3 sm:px-4 pb-3 sm:pb-4 space-y-3 sm:space-y-4 border-t">
-                      {/* Image + basic info */}
-                      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-3 sm:pt-4">
-                        {d.image && <img src={d.image} alt={d.name[lang]} className="w-full sm:w-32 h-32 sm:h-24 object-cover rounded-lg bg-gray-100" onError={(e) => { e.target.style.display = 'none' }} />}
-                        <div className="flex-1">
-                          <p className="text-xs text-gray-500 italic mb-1">{d.scientific}</p>
-                          <p className="text-sm text-gray-700 leading-relaxed">{d.symptoms[lang]}</p>
-                        </div>
-                      </div>
-
-                      {/* Conditions */}
-                      {d.conditions[lang] && (
-                        <div className="bg-amber-50 p-3 rounded-lg">
-                          <h5 className="font-semibold text-amber-800 text-sm mb-1">⚠️ {lang === 'vi' ? 'Điều kiện phát bệnh' : 'Disease conditions'}</h5>
-                          <p className="text-sm text-amber-700">{d.conditions[lang]}</p>
-                        </div>
-                      )}
-
-                      {/* Prevention */}
-                      {d.prevention[lang]?.length > 0 && (
-                        <div className="bg-green-50 p-3 rounded-lg">
-                          <h5 className="font-semibold text-green-800 text-sm mb-1">🛡️ {lang === 'vi' ? 'Phòng tránh' : 'Prevention'}</h5>
-                          <ul className="list-disc list-inside text-sm text-green-700 space-y-0.5">
-                            {d.prevention[lang].map((item, i) => <li key={i}>{item}</li>)}
-                          </ul>
-                        </div>
-                      )}
-
-                      {/* Treatment */}
-                      {d.treatment[lang]?.length > 0 && (
-                        <div className="bg-blue-50 p-3 rounded-lg">
-                          <h5 className="font-semibold text-blue-800 text-sm mb-1">💊 {lang === 'vi' ? 'Hoạt chất / Điều trị' : 'Treatment'}</h5>
-                          <ul className="list-disc list-inside text-sm text-blue-700 space-y-0.5">
-                            {d.treatment[lang].map((item, i) => <li key={i}>{item}</li>)}
-                          </ul>
-                        </div>
-                      )}
-                    </div>
+          {/* Active Crop Overview + 5 Phenological Stages */}
+          {activeGuide ? (
+            <div className="space-y-4">
+              {/* Crop Overview Header */}
+              <div className="bg-gradient-to-r from-green-700 to-emerald-600 text-white rounded-xl p-4 sm:p-5 shadow-md">
+                <div className="flex flex-wrap items-start justify-between gap-2 mb-2">
+                  <div>
+                    <h3 className="text-lg sm:text-xl font-bold flex items-center gap-2">
+                      <span>{getCropIcon(activeGuide.crop)}</span>
+                      <span>{vi ? `Quy trình kỹ thuật canh tác: ${activeGuide.crop}` : `Cultivation & Care Guide: ${activeGuide.crop}`}</span>
+                    </h3>
+                    {activeGuide.scientific_name && (
+                      <p className="text-xs sm:text-sm text-green-100 italic mt-0.5">
+                        🧬 {activeGuide.scientific_name}
+                      </p>
+                    )}
+                  </div>
+                  {activeGuide.source_agency && (
+                    <span className="text-[11px] bg-white/20 backdrop-blur-sm text-white px-2.5 py-1 rounded-lg font-medium">
+                      🏛️ {activeGuide.source_agency}
+                    </span>
                   )}
                 </div>
-              )
-            })}
-          </div>
+                <p className="text-xs sm:text-sm text-green-50 leading-relaxed bg-black/15 p-3 rounded-lg">
+                  {vi ? activeGuide.summary_vi : (activeGuide.summary_en || activeGuide.summary_vi)}
+                </p>
+              </div>
+
+              {/* 5 Growth Stages Timeline */}
+              <div className="space-y-3.5">
+                {(activeGuide.stages || []).map((st) => (
+                  <div
+                    key={st.stage_number}
+                    className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden hover:border-green-300 transition"
+                  >
+                    {/* Stage header bar */}
+                    <div className="bg-green-50/80 border-b border-green-100 px-4 py-3 flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex items-center gap-2.5">
+                        <span className="w-7 h-7 rounded-full bg-green-600 text-white font-bold text-xs flex items-center justify-center shrink-0">
+                          {st.stage_number}
+                        </span>
+                        <h4 className="font-bold text-gray-900 text-sm sm:text-base">
+                          {vi ? st.title_vi : (st.title_en || st.title_vi)}
+                        </h4>
+                      </div>
+                      <span className="text-xs font-semibold bg-white text-green-800 border border-green-200 px-2.5 py-1 rounded-full">
+                        🕒 {vi ? st.timing_vi : (st.timing_en || st.timing_vi)}
+                      </span>
+                    </div>
+
+                    {/* Stage body */}
+                    <div className="p-4 space-y-3">
+                      {/* Care & Fertilization */}
+                      <div className="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                        <h5 className="text-xs sm:text-sm font-bold text-green-800 mb-1 flex items-center gap-1.5">
+                          <span>🌱</span>
+                          <span>{vi ? 'Kỹ thuật chăm sóc & Bón phân:' : 'Care & Fertilization:'}</span>
+                        </h5>
+                        <p className="text-xs sm:text-sm text-gray-700 leading-relaxed">
+                          {vi ? st.care_vi : (st.care_en || st.care_vi)}
+                        </p>
+                      </div>
+
+                      {/* Critical Notes / Warnings */}
+                      {(st.notes_vi || st.notes_en) && (
+                        <div className="bg-amber-50/80 rounded-lg p-3 border border-amber-200">
+                          <h5 className="text-xs sm:text-sm font-bold text-amber-900 mb-1 flex items-center gap-1.5">
+                            <span>⚠️</span>
+                            <span>{vi ? 'Chú ý quan trọng ở giai đoạn này:' : 'Critical Stage Notes:'}</span>
+                          </h5>
+                          <p className="text-xs sm:text-sm text-amber-800 leading-relaxed">
+                            {vi ? st.notes_vi : (st.notes_en || st.notes_vi)}
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Common Diseases in this stage (Interactive links to Disease Catalog tab) */}
+                      {st.linked_diseases?.length > 0 && (
+                        <div className="pt-1">
+                          <h5 className="text-xs font-bold text-gray-700 mb-2 flex items-center gap-1.5">
+                            <span>🐛</span>
+                            <span>
+                              {vi
+                                ? 'Bệnh & dịch hại thường gặp giai đoạn này (nhấn để xem chi tiết & thuốc trị):'
+                                : 'Common diseases at this stage (click to view details & treatment):'}
+                            </span>
+                          </h5>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            {st.linked_diseases.map((ld, idx) => {
+                              const sev = severityLabel[ld.severity] || severityLabel.medium
+                              return (
+                                <button
+                                  key={idx}
+                                  type="button"
+                                  onClick={() => openDiseaseFromStage(activeGuide.crop, ld.name_vi)}
+                                  className="flex items-center gap-2.5 p-2 rounded-lg border border-gray-200 hover:border-green-500 hover:bg-green-50/60 transition text-left group"
+                                >
+                                  {ld.image_url ? (
+                                    <img
+                                      src={ld.image_url}
+                                      alt={ld.name_vi}
+                                      className="w-11 h-11 rounded-md object-cover bg-gray-100 shrink-0 border"
+                                      onError={(e) => { e.target.style.display = 'none' }}
+                                    />
+                                  ) : (
+                                    <div className="w-11 h-11 rounded-md bg-green-100 flex items-center justify-center text-lg shrink-0">
+                                      🔬
+                                    </div>
+                                  )}
+                                  <div className="min-w-0 flex-1">
+                                    <p className="text-xs sm:text-sm font-semibold text-gray-900 group-hover:text-green-700 truncate">
+                                      {vi ? ld.name_vi : (ld.name_en || ld.name_vi)}
+                                    </p>
+                                    <div className="flex items-center gap-1.5 mt-0.5">
+                                      <span className={`px-1.5 py-0.2 rounded text-[10px] font-medium border ${sev.color}`}>
+                                        {sev[lang]}
+                                      </span>
+                                      <span className="text-[11px] text-green-700 font-medium group-hover:underline">
+                                        {vi ? 'Xem bệnh →' : 'View →'}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </button>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <p className="text-center text-gray-400 py-8">{vi ? 'Đang tải cẩm nang cây trồng...' : 'Loading crop guides...'}</p>
+          )}
         </div>
-      ))}
+      )}
+
+      {/* SUB-TAB 2: DANH MỤC BỆNH (CABI PLANTWISE VIETNAM) */}
+      {subTab === 'diseases' && (
+        <div className="space-y-4">
+          {fromStageCrop && (
+            <div className="bg-green-50 border border-green-200 rounded-xl p-3 flex items-center justify-between gap-2">
+              <p className="text-xs sm:text-sm text-green-900 font-medium">
+                🔗 {vi ? `Đang xem bệnh liên kết từ quy trình trồng cây: ${fromStageCrop}` : `Viewing disease linked from ${fromStageCrop} cultivation guide`}
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedGuideCrop(fromStageCrop)
+                  setSubTab('guide')
+                }}
+                className="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-xs font-bold shrink-0 transition"
+              >
+                ← {vi ? `Quay lại Quy trình ${fromStageCrop}` : `Back to ${fromStageCrop} Guide`}
+              </button>
+            </div>
+          )}
+
+          <div className="bg-white p-3 sm:p-4 rounded-xl border flex flex-col sm:flex-row gap-2">
+            <input
+              type="text"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder={vi ? '🔍 Tìm tên bệnh, tên khoa học, triệu chứng...' : '🔍 Search disease name, scientific name, symptoms...'}
+              className="flex-1 px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+            />
+            {dbDiseases.length > 0 && (
+              <select
+                value={cropFilter}
+                onChange={e => {
+                  setCropFilter(e.target.value)
+                  setFromStageCrop(null)
+                }}
+                className="px-3 py-2 border rounded-lg text-sm bg-white"
+              >
+                <option value="">{vi ? 'Tất cả cây trồng' : 'All crops'}</option>
+                {groups.map((g, i) => (
+                  <option key={i} value={g.cropKey}>{g.crop[lang]} ({g.diseases.length})</option>
+                ))}
+              </select>
+            )}
+          </div>
+
+          {filteredGroups.map((group, gi) => (
+            <div key={gi}>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-bold text-gray-800 text-lg">{group.crop[lang]}</h3>
+                {cropGuides.some(cg => cg.crop === group.cropKey) && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedGuideCrop(group.cropKey)
+                      setSubTab('guide')
+                    }}
+                    className="text-xs font-semibold text-green-700 hover:text-green-900 bg-green-50 border border-green-200 px-2.5 py-1 rounded-full transition"
+                  >
+                    🌱 {vi ? `Xem quy trình trồng ${group.cropKey}` : `View ${group.cropKey} cultivation guide`}
+                  </button>
+                )}
+              </div>
+              <div className="space-y-2">
+                {group.diseases.map((d, di) => {
+                  const key = `${group.cropKey || gi}::${d.rawNameVi || d.name.vi}`
+                  const isOpen = expanded === key
+                  const sev = severityLabel[d.severity] || severityLabel.medium
+                  return (
+                    <div
+                      key={di}
+                      id={`disease-card-${encodeURIComponent(key)}`}
+                      className={`bg-white rounded-xl border overflow-hidden transition ${
+                        isOpen ? 'ring-2 ring-green-500 border-green-400 shadow-md' : ''
+                      }`}
+                    >
+                      {/* Collapsed row */}
+                      <button onClick={() => toggle(key)} className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 transition text-left">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <span className={`px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${sev.color}`}>{sev[lang]}</span>
+                          <span className="font-medium text-gray-900 truncate">{d.name[lang]}</span>
+                        </div>
+                        <svg className={`w-5 h-5 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                      </button>
+
+                      {/* Expanded content */}
+                      {isOpen && (
+                        <div className="px-3 sm:px-4 pb-3 sm:pb-4 space-y-3 sm:space-y-4 border-t">
+                          {/* Image + basic info */}
+                          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-3 sm:pt-4">
+                            {d.image && <img src={d.image} alt={d.name[lang]} className="w-full sm:w-36 h-36 sm:h-28 object-cover rounded-lg bg-gray-100 border" onError={(e) => { e.target.style.display = 'none' }} />}
+                            <div className="flex-1">
+                              <p className="text-xs text-gray-500 italic mb-1">{d.scientific}</p>
+                              <p className="text-sm text-gray-700 leading-relaxed">{d.symptoms[lang]}</p>
+                            </div>
+                          </div>
+
+                          {/* Conditions */}
+                          {d.conditions[lang] && (
+                            <div className="bg-amber-50 p-3 rounded-lg">
+                              <h5 className="font-semibold text-amber-800 text-sm mb-1">⚠️ {vi ? 'Điều kiện phát bệnh' : 'Disease conditions'}</h5>
+                              <p className="text-sm text-amber-700">{d.conditions[lang]}</p>
+                            </div>
+                          )}
+
+                          {/* Prevention */}
+                          {d.prevention[lang]?.length > 0 && (
+                            <div className="bg-green-50 p-3 rounded-lg">
+                              <h5 className="font-semibold text-green-800 text-sm mb-1">🛡️ {vi ? 'Phòng tránh' : 'Prevention'}</h5>
+                              <ul className="list-disc list-inside text-sm text-green-700 space-y-0.5">
+                                {d.prevention[lang].map((item, i) => <li key={i}>{item}</li>)}
+                              </ul>
+                            </div>
+                          )}
+
+                          {/* Treatment */}
+                          {d.treatment[lang]?.length > 0 && (
+                            <div className="bg-blue-50 p-3 rounded-lg">
+                              <h5 className="font-semibold text-blue-800 text-sm mb-1">💊 {vi ? 'Hoạt chất / Điều trị' : 'Treatment'}</h5>
+                              <ul className="list-disc list-inside text-sm text-blue-700 space-y-0.5">
+                                {d.treatment[lang].map((item, i) => <li key={i}>{item}</li>)}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
