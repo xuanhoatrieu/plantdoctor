@@ -3,9 +3,9 @@ import { Platform, View, Text } from 'react-native';
 
 function TabIcon({ emoji, label, focused }) {
   return (
-    <View style={{ alignItems: 'center', justifyContent: 'center', width: 60 }}>
+    <View style={{ alignItems: 'center', justifyContent: 'center', minWidth: 64 }}>
       <Text style={{ fontSize: 22 }}>{emoji}</Text>
-      <Text style={{ fontSize: 10, marginTop: 2, color: focused ? '#16a34a' : '#9ca3af', fontWeight: focused ? '700' : '500' }}>{label}</Text>
+      <Text numberOfLines={1} style={{ fontSize: 10, marginTop: 2, color: focused ? '#16a34a' : '#9ca3af', fontWeight: focused ? '700' : '500' }}>{label}</Text>
     </View>
   );
 }
@@ -27,7 +27,7 @@ export default function Layout() {
     >
       <Tabs.Screen name="index" options={{ tabBarIcon: ({ focused }) => <TabIcon emoji="🔍" label="Chẩn đoán" focused={focused} /> }} />
       <Tabs.Screen name="history" options={{ tabBarIcon: ({ focused }) => <TabIcon emoji="📜" label="Lịch sử" focused={focused} /> }} />
-      <Tabs.Screen name="library" options={{ tabBarIcon: ({ focused }) => <TabIcon emoji="📚" label="Cẩm nang" focused={focused} /> }} />
+      <Tabs.Screen name="library" options={{ tabBarIcon: ({ focused }) => <TabIcon emoji="📚" label="Cẩm nang trồng trọt" focused={focused} /> }} />
       <Tabs.Screen name="pesticides" options={{ tabBarIcon: ({ focused }) => <TabIcon emoji="🧪" label="Thuốc" focused={focused} /> }} />
       <Tabs.Screen name="profile" options={{ tabBarIcon: ({ focused }) => <TabIcon emoji="👤" label="Tôi" focused={focused} /> }} />
       <Tabs.Screen name="admin" options={{ href: null }} />

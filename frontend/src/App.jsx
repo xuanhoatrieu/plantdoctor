@@ -731,14 +731,6 @@ function DiagnoseView({ t, file, preview, file2, preview2, clientChecks, loading
                 </div>
               )}
 
-              {/* Cached badge */}
-              {result.cached && (
-                <div className="bg-green-50 border border-green-200 rounded-lg p-2.5 flex items-center gap-2">
-                  <span>⚡</span>
-                  <p className="text-xs text-green-800">{lang === 'vi' ? 'Kết quả lấy lại từ lần chẩn đoán trước với ảnh gần giống hệt' : 'Reused result from an earlier diagnosis of a near-identical photo'}</p>
-                </div>
-              )}
-
               {/* AI disclaimer */}
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 flex items-start gap-2">
                 <span className="text-yellow-600">⚠️</span>

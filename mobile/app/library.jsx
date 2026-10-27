@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Image, TextInput, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { API_BASE_URL } from '../src/config';
 
-const API_URL = 'https://benhcay.tuaf.edu.vn';
+const API_URL = API_BASE_URL;
 
 const CROP_ICONS = {
   'Chè': '🍵',
@@ -83,7 +84,7 @@ export default function LibraryScreen() {
   return (
     <SafeAreaView style={s.container}>
       <ScrollView contentContainerStyle={s.scroll}>
-        <Text style={s.title}>📚 Cẩm nang cây trồng & bệnh hại</Text>
+        <Text style={s.title}>📚 Cẩm nang trồng trọt</Text>
 
         {/* 2 Sub-tabs */}
         <View style={s.tabBar}>
@@ -240,9 +241,22 @@ export default function LibraryScreen() {
 
             {groupedDiseases.map(([cropName, items]) => (
               <View key={cropName} style={s.group}>
-                <Text style={s.cropTitle}>
-                  {CROP_ICONS[cropName] || '🌿'} {cropName} ({items.length})
-                </Text>
+                <View style={s.groupHeaderRow}>
+                  <Text style={s.cropTitle}>
+                    {CROP_ICONS[cropName] || '🌿'} {cropName} ({items.length})
+                  </Text>
+                  {cropGuides.some((cg) => cg.crop === cropName) && (
+                    <TouchableOpacity
+                      style={s.jumpGuideBtn}
+                      onPress={() => {
+                        setSelectedCrop(cropName);
+                        setSubTab('guide');
+                      }}
+                    >
+                      <Text style={s.jumpGuideBtnText}>🌱 Quy trình trồng</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
                 {items.map((d) => {
                   const key = `${cropName}::${d.name_vi}`;
                   const open = expanded === key;
@@ -260,7 +274,9 @@ export default function LibraryScreen() {
                     >
                       <View style={s.cardRow}>
                         <Text style={s.cardName}>{d.name_vi}</Text>
-                        <Text>{d.severity === 'high' ? '🔴' : d.severity === 'low' ? '🟢' : '🟠'}</Text>
+                        <Text style={s.sevBadge}>
+                          {d.severity === 'high' ? '🔴 Cao' : d.severity === 'low' ? '🟢 Thấp' : '🟠 TB'}
+                        </Text>
                       </View>
                       {open && (
                         <View style={s.cardBody}>
@@ -269,6 +285,12 @@ export default function LibraryScreen() {
                             <Text style={s.sciText}>🧬 {d.scientific_name}</Text>
                           )}
                           <Text style={s.desc}>{d.symptoms_vi}</Text>
+                          {!!d.conditions_vi && (
+                            <View style={s.condBox}>
+                              <Text style={s.condLabel}>⚠️ Điều kiện phát bệnh:</Text>
+                              <Text style={s.condText}>{d.conditions_vi}</Text>
+                            </View>
+                          )}
                           {!!d.prevention_vi && (
                             <View style={s.prevBox}>
                               <Text style={s.prevLabel}>🛡️ Phòng ngừa IPM:</Text>
@@ -334,15 +356,22 @@ const s = StyleSheet.create({
   searchInput: { borderWidth: 1, borderColor: '#d1d5db', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 9, fontSize: 13, marginBottom: 12 },
   loadingText: { textAlign: 'center', color: '#9ca3af', paddingVertical: 24 },
   group: { marginBottom: 18 },
-  cropTitle: { fontSize: 16, fontWeight: 'bold', color: '#166534', marginBottom: 10 },
+  groupHeaderRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 },
+  cropTitle: { fontSize: 16, fontWeight: 'bold', color: '#166534' },
+  jumpGuideBtn: { backgroundColor: '#f0fdf4', borderWidth: 1, borderColor: '#bbf7d0', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 14 },
+  jumpGuideBtnText: { fontSize: 11, fontWeight: '700', color: '#15803d' },
   card: { backgroundColor: '#f9fafb', borderRadius: 14, padding: 14, marginBottom: 8, borderWidth: 1, borderColor: '#e5e7eb' },
   cardHighlight: { borderColor: '#16a34a', borderWidth: 2, backgroundColor: '#f0fdf4' },
-  cardRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  cardRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 8 },
   cardName: { fontWeight: '600', color: '#111', flex: 1, fontSize: 14 },
+  sevBadge: { fontSize: 11, fontWeight: '700', color: '#374151' },
   cardBody: { marginTop: 10 },
   diseaseImg: { width: '100%', height: 150, borderRadius: 10, marginBottom: 8, backgroundColor: '#e5e7eb' },
   sciText: { fontSize: 12, fontStyle: 'italic', color: '#6b7280', marginBottom: 6 },
   desc: { fontSize: 13, color: '#444', lineHeight: 20, marginBottom: 8 },
+  condBox: { backgroundColor: '#fffbeb', padding: 10, borderRadius: 10, marginBottom: 8, borderWidth: 1, borderColor: '#fde68a' },
+  condLabel: { fontWeight: '700', color: '#92400e', marginBottom: 3, fontSize: 12 },
+  condText: { fontSize: 12, color: '#92400e', lineHeight: 18 },
   prevBox: { backgroundColor: '#f0fdf4', padding: 10, borderRadius: 10, marginBottom: 8 },
   prevLabel: { fontWeight: '700', color: '#166534', marginBottom: 3, fontSize: 12 },
   prevText: { fontSize: 12, color: '#166534', lineHeight: 18 },

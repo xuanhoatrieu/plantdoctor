@@ -10,11 +10,13 @@ import {
   Alert,
   Animated,
   Modal,
+  TextInput,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { predict, clarifyPrediction, submitFeedback } from '../src/api';
+import { API_BASE_URL } from '../src/config';
 import SmartCamera from '../src/components/SmartCamera';
 import { FeedbackModal, CustomPlantModal } from '../src/components/DiagnosisModals';
 
@@ -78,11 +80,13 @@ export default function HomeScreen() {
   const [feedbackModal, setFeedbackModal] = useState(false);
   const [customPlantOpen, setCustomPlantOpen] = useState(false);
   const [pendingPick, setPendingPick] = useState(null); // { slotIndex, useCamera } -> shows crop selector popup first
+  const [customPopupPlant, setCustomPopupPlant] = useState('');
+  const [kbExpanded, setKbExpanded] = useState(false);
 
-  // Load saved plant filter on start (only accept a known value)
+  // Load saved plant filter on start
   useEffect(() => {
     AsyncStorage.getItem('last_selected_plant').then((val) => {
-      if (val && POPULAR_PLANTS.some((p) => p.id === val)) setSelectedPlant(val);
+      if (val && val.trim()) setSelectedPlant(val.trim());
     });
   }, []);
 
@@ -99,6 +103,7 @@ export default function HomeScreen() {
     setResult(null);
     setFeedbackState('idle');
     setWasClarified(false);
+    setKbExpanded(false);
   };
 
   const setSlotImage = (slotIndex, asset) => {
@@ -155,7 +160,7 @@ export default function HomeScreen() {
     handleSelectPlant(plantId);
     const next = pendingPick;
     setPendingPick(null);
-    if (next) {
+    if (next && next.slotIndex >= 1) {
       setTimeout(() => executePickImage(next.slotIndex, next.useCamera), 250);
     }
   };
@@ -295,26 +300,23 @@ export default function HomeScreen() {
           <Text style={{ fontSize: 11, color: '#16a34a' }}>Cùng bạn ra thế giới!</Text>
         </View>
 
-        {/* Phase 1.3: Plant Selector Chips */}
-        <View style={{ marginBottom: 14 }}>
-          <Text style={{ fontSize: 13, fontWeight: '600', color: '#374151', marginBottom: 6 }}>
-            🌾 Chọn loại cây trồng (Tùy chọn — giúp AI không nhầm loại cây):
-          </Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingVertical: 2 }}>
-            {POPULAR_PLANTS.map((item) => {
-              const isSelected = selectedPlant === item.id;
-              return (
-                <TouchableOpacity
-                  key={String(item.id)}
-                  style={[s.plantChip, isSelected && s.plantChipActive]}
-                  onPress={() => handleSelectPlant(item.id)}
-                >
-                  <Text style={{ fontSize: 14 }}>{item.icon}</Text>
-                  <Text style={[s.plantChipText, isSelected && s.plantChipTextActive]}>{item.label}</Text>
-                </TouchableOpacity>
-              );
-            })}
-          </ScrollView>
+        {/* Active Crop Indicator Bar (opens Popup to change crop) */}
+        <View style={s.plantStatusBar}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1 }}>
+            <Text style={{ fontSize: 16 }}>🌿</Text>
+            <Text style={{ fontSize: 12, color: '#374151', flex: 1 }} numberOfLines={1}>
+              Loại cây:{' '}
+              <Text style={{ fontWeight: '700', color: '#14532d' }}>
+                {selectedPlant ? selectedPlant : '🌱 Tự động phát hiện'}
+              </Text>
+            </Text>
+          </View>
+          <TouchableOpacity
+            style={s.changePlantBtn}
+            onPress={() => setPendingPick({ slotIndex: 0, useCamera: false })}
+          >
+            <Text style={s.changePlantBtnText}>Đổi loại cây</Text>
+          </TouchableOpacity>
         </View>
 
         {showInputView ? (
@@ -519,7 +521,9 @@ export default function HomeScreen() {
                     <Text style={s.btnPrimaryText}> Đang phân tích kết hợp...</Text>
                   </View>
                 ) : (
-                  <Text style={s.btnPrimaryText}>🔍 Chẩn đoán bệnh bằng AI</Text>
+                  <Text style={s.btnPrimaryText}>
+                    {selectedPlant ? `🔍 Chẩn đoán bệnh (${selectedPlant})` : '🔍 Chẩn đoán bệnh bằng AI'}
+                  </Text>
                 )}
               </TouchableOpacity>
             )}
@@ -562,18 +566,11 @@ export default function HomeScreen() {
               </View>
             )}
 
-            {/* Voting / Cache badges */}
+            {/* Voting badge */}
             {votingUsed && (
               <View style={s.badgeRow}>
                 <Text>🔄</Text>
                 <Text style={s.badgeText}>Kết quả đã được xác nhận qua AI voting (3 lần phân tích)</Text>
-              </View>
-            )}
-
-            {isCached && (
-              <View style={[s.badgeRow, { backgroundColor: '#f0fdf4', borderColor: '#86efac' }]}>
-                <Text>⚡</Text>
-                <Text style={[s.badgeText, { color: '#166534' }]}>Kết quả lấy lại từ lần chẩn đoán trước với ảnh gần giống hệt</Text>
               </View>
             )}
 
@@ -601,6 +598,91 @@ export default function HomeScreen() {
               <View style={s.section}>
                 <Text style={s.secTitle}>🔍 Triệu chứng quan sát được</Text>
                 <Text style={s.secText}>{p.description}</Text>
+              </View>
+            ) : null}
+
+            {/* CABI Plantwise Knowledge Base Reference Card (Visual & Agronomic Cross-Check) */}
+            {p.kb_reference && !isHealthy ? (
+              <View style={s.kbCard}>
+                <View style={s.kbHeaderRow}>
+                  <Text style={s.kbHeaderTitle}>📚 Đối chiếu Kho tri thức CABI Plantwise</Text>
+                  <View style={s.kbScoreBadge}>
+                    <Text style={s.kbScoreText}>
+                      Độ khớp: {Math.round((p.kb_reference.match_score || 0.85) * 100)}%
+                    </Text>
+                  </View>
+                </View>
+
+                <Text style={s.kbDiseaseTitle}>
+                  {p.kb_reference.crop} — {p.kb_reference.name_vi || p.kb_reference.name_en}
+                </Text>
+                {!!p.kb_reference.scientific_name && (
+                  <Text style={s.kbSciText}>
+                    🧬 Tác nhân khoa học: {p.kb_reference.scientific_name}
+                  </Text>
+                )}
+
+                {/* Side-by-side visual comparison: User Photo vs Verified Reference Photo */}
+                {!!p.kb_reference.image_url && (
+                  <View style={s.kbCompareRow}>
+                    {image1 && (
+                      <View style={s.kbCompareBox}>
+                        <Image source={{ uri: image1.uri }} style={s.kbCompareImg} resizeMode="cover" />
+                        <Text style={s.kbCompareCaption}>📷 Ảnh của bạn</Text>
+                      </View>
+                    )}
+                    <View style={s.kbCompareBox}>
+                      <Image
+                        source={{
+                          uri: p.kb_reference.image_url.startsWith('http')
+                            ? p.kb_reference.image_url
+                            : `${API_BASE_URL}${p.kb_reference.image_url}`,
+                        }}
+                        style={s.kbCompareImg}
+                        resizeMode="cover"
+                      />
+                      <Text style={[s.kbCompareCaption, { backgroundColor: '#ecfdf5', color: '#065f46' }]}>
+                        🔬 Ảnh mẫu chuẩn CABI
+                      </Text>
+                    </View>
+                  </View>
+                )}
+
+                {/* Expandable CABI Prevention & Treatment */}
+                {(p.kb_reference.prevention_vi || p.kb_reference.treatment_vi) && (
+                  <View style={{ marginTop: 8 }}>
+                    <TouchableOpacity
+                      style={s.kbExpandBtn}
+                      onPress={() => setKbExpanded(!kbExpanded)}
+                    >
+                      <Text style={s.kbExpandBtnText}>
+                        📖 {kbExpanded ? 'Thu gọn quy trình chuẩn CABI / Cục BVTV ▲' : 'Xem quy trình Phòng ngừa & Điều trị chuẩn CABI ▼'}
+                      </Text>
+                    </TouchableOpacity>
+                    {kbExpanded && (
+                      <View style={s.kbExpandBody}>
+                        {!!p.kb_reference.conditions_vi && (
+                          <Text style={s.kbDetailText}>
+                            <Text style={{ fontWeight: '700', color: '#92400e' }}>⚠️ Điều kiện phát sinh: </Text>
+                            {p.kb_reference.conditions_vi}
+                          </Text>
+                        )}
+                        {!!p.kb_reference.prevention_vi && (
+                          <Text style={s.kbDetailText}>
+                            <Text style={{ fontWeight: '700', color: '#166534' }}>🛡️ Phòng ngừa IPM: </Text>
+                            {p.kb_reference.prevention_vi}
+                          </Text>
+                        )}
+                        {!!p.kb_reference.treatment_vi && (
+                          <Text style={s.kbDetailText}>
+                            <Text style={{ fontWeight: '700', color: '#1e40af' }}>💊 Hoạt chất khuyến cáo: </Text>
+                            {p.kb_reference.treatment_vi}
+                          </Text>
+                        )}
+                      </View>
+                    )}
+                  </View>
+                )}
               </View>
             ) : null}
 
@@ -737,6 +819,29 @@ export default function HomeScreen() {
                 );
               })}
             </ScrollView>
+
+            {/* Custom crop input inside Popup */}
+            <View style={s.popupCustomRow}>
+              <TextInput
+                value={customPopupPlant}
+                onChangeText={setCustomPopupPlant}
+                placeholder="Hoặc nhập tên cây/rau khác (VD: Dưa lưới, Dâu tây...)"
+                style={s.popupCustomInput}
+              />
+              <TouchableOpacity
+                style={[s.popupCustomBtn, !customPopupPlant.trim() && { opacity: 0.45 }]}
+                disabled={!customPopupPlant.trim()}
+                onPress={() => {
+                  const val = customPopupPlant.trim();
+                  if (val) {
+                    setCustomPopupPlant('');
+                    confirmPlantAndPick(val);
+                  }
+                }}
+              >
+                <Text style={s.popupCustomBtnText}>Chọn</Text>
+              </TouchableOpacity>
+            </View>
 
             {/* LAST OPTION AT THE BOTTOM: Auto-detect */}
             <TouchableOpacity
@@ -1111,6 +1216,163 @@ const s = StyleSheet.create({
     fontSize: 13,
     fontWeight: '700',
     color: '#14532d',
+  },
+  // Plant Status Bar
+  plantStatusBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#f0fdf4',
+    borderWidth: 1,
+    borderColor: '#bbf7d0',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginBottom: 14,
+    gap: 8,
+  },
+  changePlantBtn: {
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#86efac',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
+  changePlantBtnText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#15803d',
+  },
+
+  // CABI KB Reference Card
+  kbCard: {
+    backgroundColor: '#ecfdf5',
+    borderWidth: 1,
+    borderColor: '#a7f3d0',
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 10,
+  },
+  kbHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginBottom: 6,
+  },
+  kbHeaderTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#065f46',
+  },
+  kbScoreBadge: {
+    backgroundColor: '#d1fae5',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 12,
+  },
+  kbScoreText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#065f46',
+  },
+  kbDiseaseTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#064e3b',
+  },
+  kbSciText: {
+    fontSize: 12,
+    fontStyle: 'italic',
+    color: '#047857',
+    marginTop: 2,
+    marginBottom: 8,
+  },
+  kbCompareRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 4,
+  },
+  kbCompareBox: {
+    flex: 1,
+    backgroundColor: '#ffffff',
+    borderRadius: 8,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#a7f3d0',
+  },
+  kbCompareImg: {
+    width: '100%',
+    height: 110,
+    backgroundColor: '#f3f4f6',
+  },
+  kbCompareCaption: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#374151',
+    textAlign: 'center',
+    paddingVertical: 4,
+    backgroundColor: '#f9fafb',
+  },
+  kbExpandBtn: {
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#a7f3d0',
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    alignItems: 'center',
+  },
+  kbExpandBtnText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#065f46',
+  },
+  kbExpandBody: {
+    backgroundColor: '#ffffff',
+    borderRadius: 8,
+    padding: 10,
+    marginTop: 6,
+    gap: 6,
+  },
+  kbDetailText: {
+    fontSize: 12,
+    color: '#374151',
+    lineHeight: 18,
+  },
+
+  // Custom Crop Input in Popup
+  popupCustomRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 12,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#e5e7eb',
+  },
+  popupCustomInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    fontSize: 12,
+    backgroundColor: '#f9fafb',
+  },
+  popupCustomBtn: {
+    backgroundColor: '#16a34a',
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  popupCustomBtnText: {
+    color: '#ffffff',
+    fontSize: 12,
+    fontWeight: '700',
   },
   feedbackBtnText: { fontSize: 12, fontWeight: '600', color: '#334155' },
 });
